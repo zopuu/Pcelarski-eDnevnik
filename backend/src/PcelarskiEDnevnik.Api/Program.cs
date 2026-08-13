@@ -15,6 +15,10 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddDataProtection();
+
 builder.Services
     .AddIdentityModule(builder.Configuration)
     .AddAccountsModule(builder.Configuration)
@@ -37,6 +41,13 @@ app.MapGet("/", () => Results.Ok(new {
     status = "running"
 }))
 .ExcludeFromDescription();
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHealthChecks("/health");
 
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
