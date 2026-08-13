@@ -1,0 +1,6 @@
+@PcelarskiEDnevnik.Api_HostAddress = http://localhost:5226
+
+GET {{PcelarskiEDnevnik.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/PcelarskiEDnevnik.SharedKernel/PcelarskiEDnevnik.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/Host/">
+    <Project Path="src/PcelarskiEDnevnik.Api/PcelarskiEDnevnik.Api.csproj" />
+  </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="src/Modules/Accounts/PcelarskiEDnevnik.Modules.Accounts/PcelarskiEDnevnik.Modules.Accounts.csproj" />
+    <Project Path="src/Modules/BeekeeperProfiles/PcelarskiEDnevnik.Modules.BeekeeperProfiles/PcelarskiEDnevnik.Modules.BeekeeperProfiles.csproj" />
+    <Project Path="src/Modules/Identity/PcelarskiEDnevnik.Modules.Identity/PcelarskiEDnevnik.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/PcelarskiEDnevnik.ArchitectureTests/PcelarskiEDnevnik.ArchitectureTests.csproj" />
+  </Folder>
+</Solution>
