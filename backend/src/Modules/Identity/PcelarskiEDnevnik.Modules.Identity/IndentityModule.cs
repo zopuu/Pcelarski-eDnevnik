@@ -84,6 +84,8 @@ public static class IdentityModule {
                 options.UseAspNetCore();
             });
         services.AddScoped<OpenIddictSeeder>();
+        services.AddScoped<OpenIddictSeeder>();
+        services.AddScoped<DevelopmentUserSeeder>();
 
         return services;
     }
@@ -95,11 +97,20 @@ public static class IdentityModule {
     public static async Task InitializeIdentityModuleAsync(
     this IServiceProvider services,
     CancellationToken cancellationToken = default) {
-        await using var scope = services.CreateAsyncScope();
+        await using var scope =
+            services.CreateAsyncScope();
 
-        var seeder =
-            scope.ServiceProvider.GetRequiredService<OpenIddictSeeder>();
+        var openIddictSeeder =
+            scope.ServiceProvider
+                .GetRequiredService<OpenIddictSeeder>();
 
-        await seeder.SeedAsync(cancellationToken);
+        await openIddictSeeder.SeedAsync(
+            cancellationToken);
+
+        var developmentUserSeeder =
+            scope.ServiceProvider
+                .GetRequiredService<DevelopmentUserSeeder>();
+
+        await developmentUserSeeder.SeedAsync();
     }
 }

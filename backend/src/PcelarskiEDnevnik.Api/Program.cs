@@ -1,6 +1,7 @@
 ﻿using PcelarskiEDnevnik.Modules.Accounts;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.Identity;
+using PcelarskiEDnevnik.Modules.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +16,14 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 builder.Services.AddDataProtection();
+
+builder.Services
+    .AddIdentityModule(builder.Configuration)
+    .AddIdentityWebModule()
+    .AddAccountsModule(builder.Configuration)
+    .AddBeekeeperProfilesModule(builder.Configuration);
 
 builder.Services
     .AddIdentityModule(builder.Configuration)
@@ -49,6 +55,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
+
+app.MapControllers();
 
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();

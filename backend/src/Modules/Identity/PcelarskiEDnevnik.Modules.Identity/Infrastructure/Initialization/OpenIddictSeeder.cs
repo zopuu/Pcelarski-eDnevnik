@@ -59,6 +59,8 @@ internal sealed class OpenIddictSeeder {
 
             ClientType = ClientTypes.Public,
 
+            ConsentType = ConsentTypes.Implicit,
+
             DisplayName = "Pčelarski eDnevnik Mobile",
 
             RedirectUris =
@@ -94,7 +96,20 @@ internal sealed class OpenIddictSeeder {
             }
         };
 
-        await _applicationManager.CreateAsync(
+        var application = await _applicationManager.FindByClientIdAsync(
+                                                        MobileClientId,
+                                                        cancellationToken);
+
+        if (application is null) {
+            await _applicationManager.CreateAsync(
+                descriptor,
+                cancellationToken);
+
+            return;
+        }
+
+        await _applicationManager.UpdateAsync(
+            application,
             descriptor,
             cancellationToken);
     }

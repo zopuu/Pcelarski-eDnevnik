@@ -8,6 +8,7 @@
   <Folder Name="/Modules/">
     <Project Path="src/Modules/Accounts/PcelarskiEDnevnik.Modules.Accounts/PcelarskiEDnevnik.Modules.Accounts.csproj" />
     <Project Path="src/Modules/BeekeeperProfiles/PcelarskiEDnevnik.Modules.BeekeeperProfiles/PcelarskiEDnevnik.Modules.BeekeeperProfiles.csproj" />
+    <Project Path="src/Modules/Identity/PcelarskiEDnevnik.Modules.Identity.Web/PcelarskiEDnevnik.Modules.Identity.Web.csproj" />
     <Project Path="src/Modules/Identity/PcelarskiEDnevnik.Modules.Identity/PcelarskiEDnevnik.Modules.Identity.csproj" />
   </Folder>
   <Folder Name="/Tests/">
