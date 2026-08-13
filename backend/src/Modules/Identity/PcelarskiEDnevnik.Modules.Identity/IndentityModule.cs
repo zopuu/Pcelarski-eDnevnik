@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using PcelarskiEDnevnik.Modules.Identity.Domain;
 using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Persistence;
+using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Initialization;
 
 namespace PcelarskiEDnevnik.Modules.Identity;
 
@@ -58,7 +59,8 @@ public static class IdentityModule {
 
                 options.RegisterScopes(
                     OpenIddictConstants.Scopes.Email,
-                    OpenIddictConstants.Scopes.Profile);
+                    OpenIddictConstants.Scopes.Profile,
+                    "pcelarski_api");
 
                 // Development only.
                 options.AddDevelopmentEncryptionCertificate();
@@ -81,6 +83,7 @@ public static class IdentityModule {
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
+        services.AddScoped<OpenIddictSeeder>();
 
         return services;
     }
@@ -88,5 +91,15 @@ public static class IdentityModule {
     public static IEndpointRouteBuilder MapIdentityEndpoints(
         this IEndpointRouteBuilder endpoints) {
         return endpoints;
+    }
+    public static async Task InitializeIdentityModuleAsync(
+    this IServiceProvider services,
+    CancellationToken cancellationToken = default) {
+        await using var scope = services.CreateAsyncScope();
+
+        var seeder =
+            scope.ServiceProvider.GetRequiredService<OpenIddictSeeder>();
+
+        await seeder.SeedAsync(cancellationToken);
     }
 }

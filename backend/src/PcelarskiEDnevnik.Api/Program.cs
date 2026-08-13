@@ -30,6 +30,7 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
+    await app.Services.InitializeIdentityModuleAsync();
 }
 
 app.UseHttpsRedirection();
