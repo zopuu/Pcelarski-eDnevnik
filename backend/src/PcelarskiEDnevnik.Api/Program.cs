@@ -18,6 +18,7 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddAuthorization();
 builder.Services.AddDataProtection();
+builder.Services.AddValidation();
 
 builder.Services
     .AddIdentityModule(builder.Configuration)

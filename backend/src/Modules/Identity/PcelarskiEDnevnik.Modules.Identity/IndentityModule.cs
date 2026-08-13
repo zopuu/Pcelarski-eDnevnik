@@ -12,6 +12,8 @@ using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Persistence;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
+using PcelarskiEDnevnik.Modules.Identity.Application;
+using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Services;
 
 namespace PcelarskiEDnevnik.Modules.Identity;
 
@@ -91,6 +93,9 @@ public static class IdentityModule {
         services.AddScoped<OpenIddictSeeder>();
         services.AddScoped<OpenIddictSeeder>();
         services.AddScoped<DevelopmentUserSeeder>();
+        services.AddScoped<
+            IUserRegistrationService,
+            UserRegistrationService>();
 
         services.AddAuthorization(options =>
         {

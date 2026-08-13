@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles
     .Infrastructure.Persistence;
+using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Application;
+using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Infrastructure.Services;
 
 namespace PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 
@@ -20,6 +22,9 @@ public static class BeekeeperProfilesModule {
             options => {
                 options.UseNpgsql(connectionString);
             });
+        services.AddScoped<
+            IBeekeeperProfileRegistrationService,
+            BeekeeperProfileRegistrationService>();
 
         return services;
     }
