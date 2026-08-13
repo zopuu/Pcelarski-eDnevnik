@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 using PcelarskiEDnevnik.Modules.Identity.Domain;
-using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Initialization;
+using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Persistence;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 
 namespace PcelarskiEDnevnik.Modules.Identity;
 
@@ -87,11 +92,37 @@ public static class IdentityModule {
         services.AddScoped<OpenIddictSeeder>();
         services.AddScoped<DevelopmentUserSeeder>();
 
+        services.AddAuthorization(options =>
+        {
+            options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .AddAuthenticationSchemes(
+                    OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)
+                .RequireAuthenticatedUser()
+                .RequireAssertion(context =>
+                    context.User.HasScope("pcelarski_api"))
+                .Build();
+        });
+
         return services;
     }
 
     public static IEndpointRouteBuilder MapIdentityEndpoints(
-        this IEndpointRouteBuilder endpoints) {
+    this IEndpointRouteBuilder endpoints) {
+        endpoints
+            .MapGet("/api/me", (ClaimsPrincipal user) => {
+                return Results.Ok(new {
+                    userId = user.GetClaim(
+                        OpenIddictConstants.Claims.Subject),
+
+                    email = user.GetClaim(
+                        OpenIddictConstants.Claims.Email),
+
+                    username = user.GetClaim(
+                        OpenIddictConstants.Claims.PreferredUsername)
+                });
+            })
+            .RequireAuthorization();
+
         return endpoints;
     }
     public static async Task InitializeIdentityModuleAsync(

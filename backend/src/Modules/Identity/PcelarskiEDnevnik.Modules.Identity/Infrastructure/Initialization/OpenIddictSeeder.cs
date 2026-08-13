@@ -1,4 +1,5 @@
 ﻿using OpenIddict.Abstractions;
+using Microsoft.Extensions.Configuration;
 
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -9,19 +10,103 @@ internal sealed class OpenIddictSeeder {
     private const string ApiScope = "pcelarski_api";
     private const string ApiResource = "pcelarski_ednevnik_api";
 
+    private const string DevelopmentClientId =
+    "pcelarski-ednevnik-dev-tester";
+
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IConfiguration _configuration;
 
     public OpenIddictSeeder(
         IOpenIddictApplicationManager applicationManager,
-        IOpenIddictScopeManager scopeManager) {
-        _applicationManager = applicationManager;
-        _scopeManager = scopeManager;
+        IOpenIddictScopeManager scopeManager,
+        IConfiguration configuration) {
+            _applicationManager = applicationManager;
+            _scopeManager = scopeManager;
+            _configuration = configuration;
     }
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default) {
-        await EnsureApiScopeAsync(cancellationToken);
-        await EnsureMobileClientAsync(cancellationToken);
+    public async Task SeedAsync(
+        CancellationToken cancellationToken = default) {
+            await EnsureApiScopeAsync(cancellationToken);
+            await EnsureMobileClientAsync(cancellationToken);
+
+            await EnsureDevelopmentClientAsync(
+                cancellationToken);
+    }
+    private async Task EnsureDevelopmentClientAsync(
+    CancellationToken cancellationToken) {
+        var redirectUri =
+            _configuration[
+                "Identity:DevelopmentClient:RedirectUri"];
+
+        if (string.IsNullOrWhiteSpace(redirectUri)) {
+            return;
+        }
+
+        var descriptor =
+            new OpenIddictApplicationDescriptor {
+                ApplicationType =
+                    ApplicationTypes.Native,
+
+                ClientId =
+                    DevelopmentClientId,
+
+                ClientType =
+                    ClientTypes.Public,
+
+                ConsentType =
+                    ConsentTypes.Implicit,
+
+                DisplayName =
+                    "Pčelarski eDnevnik Development Tester",
+
+                RedirectUris =
+                {
+                new Uri(redirectUri)
+                },
+
+                Permissions =
+                {
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+
+                Permissions.ResponseTypes.Code,
+
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+
+                Permissions.Prefixes.Scope + ApiScope
+                },
+
+                Requirements =
+                {
+                Requirements.Features
+                    .ProofKeyForCodeExchange
+                }
+            };
+
+        var application =
+            await _applicationManager
+                .FindByClientIdAsync(
+                    DevelopmentClientId,
+                    cancellationToken);
+
+        if (application is null) {
+            await _applicationManager.CreateAsync(
+                descriptor,
+                cancellationToken);
+
+            return;
+        }
+
+        await _applicationManager.UpdateAsync(
+            application,
+            descriptor,
+            cancellationToken);
     }
 
     private async Task EnsureApiScopeAsync(

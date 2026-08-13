@@ -38,6 +38,27 @@ if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
     await app.Services.InitializeIdentityModuleAsync();
 }
+if (app.Environment.IsDevelopment()) {
+    await app.Services
+        .InitializeIdentityModuleAsync();
+
+    app.MapGet(
+        "/debug/oauth/callback",
+        (
+            string? code,
+            string? state,
+            string? error,
+            string? error_description) => {
+                return Results.Ok(new {
+                    code,
+                    state,
+                    error,
+                    errorDescription =
+                        error_description
+                });
+            })
+        .ExcludeFromDescription();
+}
 
 app.UseHttpsRedirection();
 
