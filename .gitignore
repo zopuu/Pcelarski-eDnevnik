@@ -1,0 +1,114 @@
+# =========================
+# Operating System
+# =========================
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+
+# =========================
+# Environment / Secrets
+# =========================
+
+.env
+.env.*
+!.env.example
+
+secrets.json
+
+
+# =========================
+# .NET
+# =========================
+
+**/bin/
+**/obj/
+
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+TestResults/
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+
+# =========================
+# Visual Studio
+# =========================
+
+.vs/
+
+
+# =========================
+# JetBrains
+# =========================
+
+.idea/
+*.sln.iml
+
+
+# =========================
+# VS Code
+# =========================
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+
+# =========================
+# Node / React Native / Expo
+# =========================
+
+node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.expo/
+.expo-shared/
+
+dist/
+build/
+
+web-build/
+
+*.tsbuildinfo
+
+
+# =========================
+# Expo / React Native native builds
+# =========================
+
+frontend/android/
+frontend/ios/
+
+
+# =========================
+# Local certificates
+# =========================
+
+*.pfx
+*.p12
+*.cer
+*.crt
+*.key
+
+
+# =========================
+# Temporary files
+# =========================
+
+*.tmp
+*.temp
+*.log
+~$*
