@@ -2,6 +2,7 @@
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
+using PcelarskiEDnevnik.Api.Features.Registration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,22 +27,20 @@ builder.Services
     .AddAccountsModule(builder.Configuration)
     .AddBeekeeperProfilesModule(builder.Configuration);
 
-builder.Services
-    .AddIdentityModule(builder.Configuration)
-    .AddAccountsModule(builder.Configuration)
-    .AddBeekeeperProfilesModule(builder.Configuration);
-
 var app = builder.Build();
 
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
+
+    app.UseSwaggerUI(options => {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "Pčelarski eDnevnik API v1");
+    });
+
     await app.Services.InitializeIdentityModuleAsync();
-}
-if (app.Environment.IsDevelopment()) {
-    await app.Services
-        .InitializeIdentityModuleAsync();
 
     app.MapGet(
         "/debug/oauth/callback",
@@ -54,14 +53,16 @@ if (app.Environment.IsDevelopment()) {
                     code,
                     state,
                     error,
-                    errorDescription =
-                        error_description
+                    errorDescription = error_description
                 });
             })
         .ExcludeFromDescription();
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 
@@ -71,14 +72,9 @@ app.MapGet("/", () => Results.Ok(new {
 }))
 .ExcludeFromDescription();
 
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapHealthChecks("/health");
-
 app.MapControllers();
+
+app.MapRegistrationEndpoints();
 
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
