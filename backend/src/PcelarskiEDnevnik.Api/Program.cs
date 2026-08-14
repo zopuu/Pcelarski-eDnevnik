@@ -34,6 +34,23 @@ builder.Services
     .AddAccountsModule(builder.Configuration)
     .AddBeekeeperProfilesModule(builder.Configuration);
 
+var frontendOrigins =
+    builder.Configuration
+        .GetSection("Frontend:AllowedOrigins")
+        .Get<string[]>()
+    ?? [];
+
+builder.Services.AddCors(options => {
+    options.AddPolicy(
+        "Frontend",
+        policy => {
+            policy
+                .WithOrigins(frontendOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -82,7 +99,7 @@ if (app.Environment.IsDevelopment()) {
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
