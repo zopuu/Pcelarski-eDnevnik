@@ -11,6 +11,7 @@ internal sealed class OpenIddictSeeder {
                                 "pcelarski-ednevnik-swagger";
     private const string ApiScope = "pcelarski_api";
     private const string ApiResource = "pcelarski_ednevnik_api";
+    private const string FrontendClientId = "pcelarski-ednevnik-app";
 
     private const string DevelopmentClientId =
     "pcelarski-ednevnik-dev-tester";
@@ -34,6 +35,7 @@ internal sealed class OpenIddictSeeder {
             await EnsureMobileClientAsync(cancellationToken);
 
             await EnsureSwaggerClientAsync(cancellationToken);
+        await EnsureFrontendClientAsync(cancellationToken);
 
         await EnsureDevelopmentClientAsync(
                 cancellationToken);
@@ -260,6 +262,58 @@ internal sealed class OpenIddictSeeder {
 
         await _applicationManager.UpdateAsync(
             application,
+            descriptor,
+            cancellationToken);
+    }
+    private async Task EnsureFrontendClientAsync(
+        CancellationToken cancellationToken) {
+        if (await _applicationManager.FindByClientIdAsync(
+                FrontendClientId,
+                cancellationToken) is not null) {
+            return;
+        }
+
+        var descriptor =
+            new OpenIddictApplicationDescriptor {
+                ClientId = FrontendClientId,
+                ClientType = ClientTypes.Public,
+                ConsentType = ConsentTypes.Implicit,
+                DisplayName = "Pčelarski eDnevnik aplikacija",
+            };
+
+        descriptor.RedirectUris.Add(
+            new Uri(
+                "http://localhost:8081/auth/callback"));
+
+        descriptor.RedirectUris.Add(
+            new Uri(
+                "pcelarskiednevnik://auth/callback"));
+
+        descriptor.Permissions.Add(
+            Permissions.Endpoints.Authorization);
+
+        descriptor.Permissions.Add(
+            Permissions.Endpoints.Token);
+
+        descriptor.Permissions.Add(
+            Permissions.GrantTypes.AuthorizationCode);
+
+        descriptor.Permissions.Add(
+            Permissions.ResponseTypes.Code);
+
+        descriptor.Permissions.Add(
+            Permissions.Scopes.Profile);
+
+        descriptor.Permissions.Add(
+            Permissions.Scopes.Email);
+
+        descriptor.Permissions.Add(
+            Permissions.Prefixes.Scope + ApiScope);
+
+        descriptor.Requirements.Add(
+            Requirements.Features.ProofKeyForCodeExchange);
+
+        await _applicationManager.CreateAsync(
             descriptor,
             cancellationToken);
     }

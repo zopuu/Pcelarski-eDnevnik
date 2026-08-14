@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Pcelarski eDnevnik",
+    "slug": "Pcelarski-ednevnik",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "pcelarsiednevnik",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"

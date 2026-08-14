@@ -1,4 +1,6 @@
-function normalizeBaseUrl(value: string): string {
+function normalizeBaseUrl(
+  value: string,
+): string {
   return value.replace(/\/+$/, '');
 }
 
@@ -20,6 +22,21 @@ const apiUrl = requireEnvironmentVariable(
   'EXPO_PUBLIC_API_URL',
 );
 
-export const environment = Object.freeze({
-  apiUrl: normalizeBaseUrl(apiUrl),
-});
+const oidcClientId =
+  requireEnvironmentVariable(
+    process.env.EXPO_PUBLIC_OIDC_CLIENT_ID,
+    'EXPO_PUBLIC_OIDC_CLIENT_ID',
+  );
+
+const oidcApiScope =
+  requireEnvironmentVariable(
+    process.env.EXPO_PUBLIC_OIDC_API_SCOPE,
+    'EXPO_PUBLIC_OIDC_API_SCOPE',
+  );
+
+export const environment =
+  Object.freeze({
+    apiUrl: normalizeBaseUrl(apiUrl),
+    oidcClientId,
+    oidcApiScope,
+  });
