@@ -161,7 +161,7 @@ internal sealed class OpenIddictSeeder {
 
             PostLogoutRedirectUris =
             {
-                new Uri("pcelarskiednevnik://auth/logout")
+                new Uri("pcelarskiednevnik://auth/logout-callback")
             },
 
             Permissions =
@@ -266,54 +266,70 @@ internal sealed class OpenIddictSeeder {
             cancellationToken);
     }
     private async Task EnsureFrontendClientAsync(
-        CancellationToken cancellationToken) {
-        if (await _applicationManager.FindByClientIdAsync(
-                FrontendClientId,
-                cancellationToken) is not null) {
-            return;
-        }
-
+    CancellationToken cancellationToken) {
         var descriptor =
             new OpenIddictApplicationDescriptor {
                 ClientId = FrontendClientId,
+
                 ClientType = ClientTypes.Public,
+
                 ConsentType = ConsentTypes.Implicit,
-                DisplayName = "Pčelarski eDnevnik aplikacija",
+
+                DisplayName =
+                    "Pčelarski eDnevnik Web",
+
+                RedirectUris =
+                {
+                new Uri(
+                    "http://localhost:8081/auth/callback")
+                },
+
+                PostLogoutRedirectUris =
+                {
+                new Uri(
+                    "http://localhost:8081/auth/logout-callback")
+                },
+
+                Permissions =
+                {
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+                Permissions.Endpoints.EndSession,
+
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+
+                Permissions.ResponseTypes.Code,
+
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+
+                Permissions.Prefixes.Scope + ApiScope
+                },
+
+                Requirements =
+                {
+                Requirements.Features
+                    .ProofKeyForCodeExchange
+                }
             };
 
-        descriptor.RedirectUris.Add(
-            new Uri(
-                "http://localhost:8081/auth/callback"));
+        var application =
+            await _applicationManager
+                .FindByClientIdAsync(
+                    FrontendClientId,
+                    cancellationToken);
 
-        descriptor.RedirectUris.Add(
-            new Uri(
-                "pcelarskiednevnik://auth/callback"));
+        if (application is null) {
+            await _applicationManager.CreateAsync(
+                descriptor,
+                cancellationToken);
 
-        descriptor.Permissions.Add(
-            Permissions.Endpoints.Authorization);
+            return;
+        }
 
-        descriptor.Permissions.Add(
-            Permissions.Endpoints.Token);
-
-        descriptor.Permissions.Add(
-            Permissions.GrantTypes.AuthorizationCode);
-
-        descriptor.Permissions.Add(
-            Permissions.ResponseTypes.Code);
-
-        descriptor.Permissions.Add(
-            Permissions.Scopes.Profile);
-
-        descriptor.Permissions.Add(
-            Permissions.Scopes.Email);
-
-        descriptor.Permissions.Add(
-            Permissions.Prefixes.Scope + ApiScope);
-
-        descriptor.Requirements.Add(
-            Requirements.Features.ProofKeyForCodeExchange);
-
-        await _applicationManager.CreateAsync(
+        await _applicationManager.UpdateAsync(
+            application,
             descriptor,
             cancellationToken);
     }

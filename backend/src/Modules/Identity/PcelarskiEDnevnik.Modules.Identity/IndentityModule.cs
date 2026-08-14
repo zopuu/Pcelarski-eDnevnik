@@ -91,7 +91,6 @@ public static class IdentityModule {
                 options.UseAspNetCore();
             });
         services.AddScoped<OpenIddictSeeder>();
-        services.AddScoped<OpenIddictSeeder>();
         services.AddScoped<DevelopmentUserSeeder>();
         services.AddScoped<
             IUserRegistrationService,
