@@ -200,6 +200,26 @@ public sealed class AuthorizationController : Controller {
             OpenIddictServerAspNetCoreDefaults
                 .AuthenticationScheme);
     }
+    [HttpGet("~/connect/logout")]
+    public IActionResult Logout() {
+        return View();
+    }
+
+    [ActionName(nameof(Logout))]
+    [HttpPost("~/connect/logout")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LogoutPost() {
+        await _signInManager.SignOutAsync();
+
+        return SignOut(
+            authenticationSchemes:
+                OpenIddictServerAspNetCoreDefaults
+                    .AuthenticationScheme,
+            properties:
+                new AuthenticationProperties {
+                    RedirectUri = "/"
+                });
+    }
 
     private static IEnumerable<string> GetDestinations(
         Claim claim) {

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Account\" />
+    <Folder Include="Views\Authorization\" />
   </ItemGroup>
 
 

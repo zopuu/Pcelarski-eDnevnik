@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1" />
+
+    <title>Odjava - Pčelarski eDnevnik</title>
+</head>
+
+<body>
+    <main>
+        <h1>Pčelarski eDnevnik</h1>
+
+        <p>Da li želite da se odjavite?</p>
+
+        <form method="post"
+              action="/connect/logout">
+
+            @Html.AntiForgeryToken()
+
+            <button type="submit">
+                Odjavi se
+            </button>
+        </form>
+    </main>
+</body>
+</html>
