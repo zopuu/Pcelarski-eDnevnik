@@ -7,6 +7,8 @@ namespace PcelarskiEDnevnik.Modules.Identity.Infrastructure.Initialization;
 
 internal sealed class OpenIddictSeeder {
     private const string MobileClientId = "pcelarski-ednevnik-mobile";
+    private const string SwaggerClientId =
+                                "pcelarski-ednevnik-swagger";
     private const string ApiScope = "pcelarski_api";
     private const string ApiResource = "pcelarski_ednevnik_api";
 
@@ -31,7 +33,9 @@ internal sealed class OpenIddictSeeder {
             await EnsureApiScopeAsync(cancellationToken);
             await EnsureMobileClientAsync(cancellationToken);
 
-            await EnsureDevelopmentClientAsync(
+            await EnsureSwaggerClientAsync(cancellationToken);
+
+        await EnsureDevelopmentClientAsync(
                 cancellationToken);
     }
     private async Task EnsureDevelopmentClientAsync(
@@ -184,6 +188,67 @@ internal sealed class OpenIddictSeeder {
         var application = await _applicationManager.FindByClientIdAsync(
                                                         MobileClientId,
                                                         cancellationToken);
+
+        if (application is null) {
+            await _applicationManager.CreateAsync(
+                descriptor,
+                cancellationToken);
+
+            return;
+        }
+
+        await _applicationManager.UpdateAsync(
+            application,
+            descriptor,
+            cancellationToken);
+    }
+    private async Task EnsureSwaggerClientAsync(
+    CancellationToken cancellationToken) {
+        var redirectUri =
+            _configuration["Identity:SwaggerClient:RedirectUri"];
+
+        if (string.IsNullOrWhiteSpace(redirectUri)) {
+            return;
+        }
+
+        var descriptor = new OpenIddictApplicationDescriptor {
+            ClientId = SwaggerClientId,
+            ClientType = OpenIddictConstants.ClientTypes.Public,
+            ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
+            DisplayName = "Pčelarski eDnevnik Swagger",
+
+            RedirectUris =
+            {
+            new Uri(redirectUri)
+        },
+
+            Permissions =
+            {
+            OpenIddictConstants.Permissions.Endpoints.Authorization,
+            OpenIddictConstants.Permissions.Endpoints.Token,
+
+            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+
+            OpenIddictConstants.Permissions.ResponseTypes.Code,
+
+            OpenIddictConstants.Permissions.Scopes.Email,
+            OpenIddictConstants.Permissions.Scopes.Profile,
+
+            OpenIddictConstants.Permissions.Prefixes.Scope
+                + ApiScope
+        },
+
+            Requirements =
+            {
+            OpenIddictConstants.Requirements.Features
+                .ProofKeyForCodeExchange
+        }
+        };
+
+        var application =
+            await _applicationManager.FindByClientIdAsync(
+                SwaggerClientId,
+                cancellationToken);
 
         if (application is null) {
             await _applicationManager.CreateAsync(

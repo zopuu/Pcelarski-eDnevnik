@@ -3,6 +3,7 @@ using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
 using PcelarskiEDnevnik.Api.Features.Registration;
+using PcelarskiEDnevnik.Api.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,13 @@ builder.Services.AddProblemDetails(options => {
     };
 });
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => {
+    options.AddDocumentTransformer<
+        OAuthSecuritySchemeTransformer>();
+
+    options.AddOperationTransformer<
+        OAuthSecurityRequirementTransformer>();
+});
 
 builder.Services.AddHealthChecks();
 
@@ -34,10 +41,25 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
 
-    app.UseSwaggerUI(options => {
+    app.UseSwaggerUI(options =>
+    {
         options.SwaggerEndpoint(
             "/openapi/v1.json",
             "Pčelarski eDnevnik API v1");
+
+        options.OAuthClientId(
+            "pcelarski-ednevnik-swagger");
+
+        options.OAuthAppName(
+            "Pčelarski eDnevnik Swagger");
+
+        options.OAuthScopes(
+            "openid",
+            "profile",
+            "email",
+            "pcelarski_api");
+
+        options.OAuthUsePkce();
     });
 
     await app.Services.InitializeIdentityModuleAsync();
