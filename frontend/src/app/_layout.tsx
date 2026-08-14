@@ -56,6 +56,9 @@ function RootNavigator() {
       <Stack.Screen
         name="auth/callback"
       />
+      <Stack.Screen
+        name="auth/logout-callback"
+      />
     </Stack>
   );
 }

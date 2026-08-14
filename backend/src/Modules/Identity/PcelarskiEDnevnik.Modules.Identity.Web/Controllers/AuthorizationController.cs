@@ -48,21 +48,23 @@ public sealed class AuthorizationController : Controller {
                 IdentityConstants.ApplicationScheme);
 
         var authenticationIsTooOld =
-            request.MaxAge is not null &&
-            authentication.Properties?.IssuedUtc is not null &&
-            TimeProvider.System.GetUtcNow() -
-                authentication.Properties.IssuedUtc >
-            TimeSpan.FromSeconds(request.MaxAge.Value);
-
-        var requiresAuthentication =
-            !authentication.Succeeded ||
-            request.HasPromptValue(PromptValues.Login) ||
-            request.MaxAge is 0 ||
-            authenticationIsTooOld;
+    request.MaxAge is not null &&
+    authentication.Properties?.IssuedUtc is not null &&
+    TimeProvider.System.GetUtcNow() -
+        authentication.Properties.IssuedUtc >
+    TimeSpan.FromSeconds(request.MaxAge.Value);
 
         if (
-            requiresAuthentication &&
-            TempData[IgnoreAuthenticationChallenge] is not true) {
+            !authentication.Succeeded ||
+            (
+                (
+                    request.HasPromptValue(PromptValues.Login) ||
+                    request.MaxAge is 0 ||
+                    authenticationIsTooOld
+                ) &&
+                TempData[IgnoreAuthenticationChallenge] is not true
+            )
+        ) {
             if (request.HasPromptValue(PromptValues.None)) {
                 return Forbid(
                     authenticationSchemes:

@@ -1,327 +1,348 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
+    PropsWithChildren,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
 } from 'react';
 
 import {
-  clearAuthSession,
-  loadAuthSession,
-  saveAuthSession,
+    clearAuthSession,
+    loadAuthSession,
+    saveAuthSession,
 } from '@/features/auth/api/auth-session-storage';
 import {
-  AuthContext,
-  AuthStatus,
+    AuthContext,
+    AuthStatus,
 } from '@/features/auth/hooks/use-auth';
 import {
-  setApiAccessTokenProvider,
+    setApiAccessTokenProvider,
 } from '@/shared/api/api-client';
 import { environment } from '@/shared/config/environment';
 
 const redirectUri =
-  AuthSession.makeRedirectUri({
-    scheme: 'pcelarskiednevnik',
-    path: 'auth/callback',
-  });
+    AuthSession.makeRedirectUri({
+        scheme: 'pcelarskiednevnik',
+        path: 'auth/callback',
+    });
+const logoutRedirectUri =
+    AuthSession.makeRedirectUri({
+        scheme: 'pcelarskiednevnik',
+        path: 'auth/logout-callback',
+    });
 
 export function AuthProvider({
-  children,
+    children,
 }: PropsWithChildren) {
-  const discovery =
-    AuthSession.useAutoDiscovery(
-      environment.apiUrl,
+    const discovery =
+        AuthSession.useAutoDiscovery(
+            environment.apiUrl,
+        );
+
+    const [
+        request,
+        response,
+        promptAsync,
+    ] = AuthSession.useAuthRequest(
+        {
+            clientId:
+                environment.oidcClientId,
+
+            redirectUri,
+
+            responseType:
+                AuthSession.ResponseType.Code,
+
+            scopes: [
+                'openid',
+                'profile',
+                'email',
+                environment.oidcApiScope,
+            ],
+            prompt: AuthSession.Prompt.Login,
+
+            usePKCE: true,
+        },
+        discovery,
     );
 
-  const [
-    request,
-    response,
-    promptAsync,
-  ] = AuthSession.useAuthRequest(
-    {
-      clientId:
-        environment.oidcClientId,
+    const [accessToken, setAccessToken] =
+        useState<string | null>(null);
 
-      redirectUri,
+    const [status, setStatus] =
+        useState<AuthStatus>('loading');
 
-      responseType:
-        AuthSession.ResponseType.Code,
+    const [isSigningIn, setIsSigningIn] =
+        useState(false);
 
-      scopes: [
-        'openid',
-        'profile',
-        'email',
-        environment.oidcApiScope,
-      ],
-      prompt: AuthSession.Prompt.Login,
+    const [error, setError] =
+        useState<string | null>(null);
 
-      usePKCE: true,
-    },
-    discovery,
-  );
+    const exchangedCodeRef =
+        useRef<string | null>(null);
 
-  const [accessToken, setAccessToken] =
-    useState<string | null>(null);
+    useEffect(() => {
+        WebBrowser.maybeCompleteAuthSession();
+    }, []);
 
-  const [status, setStatus] =
-    useState<AuthStatus>('loading');
+    useEffect(() => {
+        let active = true;
 
-  const [isSigningIn, setIsSigningIn] =
-    useState(false);
+        async function restoreSession() {
+            const stored =
+                await loadAuthSession();
 
-  const [error, setError] =
-    useState<string | null>(null);
+            if (!active) {
+                return;
+            }
 
-  const exchangedCodeRef =
-    useRef<string | null>(null);
+            if (!stored) {
+                setStatus('unauthenticated');
+                return;
+            }
 
-  useEffect(() => {
-    WebBrowser.maybeCompleteAuthSession();
-  }, []);
+            if (
+                stored.expiresAt &&
+                stored.expiresAt <= Date.now()
+            ) {
+                await clearAuthSession();
 
-  useEffect(() => {
-    let active = true;
+                setStatus('unauthenticated');
+                return;
+            }
 
-    async function restoreSession() {
-      const stored =
-        await loadAuthSession();
+            setAccessToken(
+                stored.accessToken,
+            );
 
-      if (!active) {
-        return;
-      }
+            setStatus('authenticated');
+        }
 
-      if (!stored) {
-        setStatus('unauthenticated');
-        return;
-      }
+        void restoreSession();
 
-      if (
-        stored.expiresAt &&
-        stored.expiresAt <= Date.now()
-      ) {
-        await clearAuthSession();
+        return () => {
+            active = false;
+        };
+    }, []);
 
-        setStatus('unauthenticated');
-        return;
-      }
+    useEffect(() => {
+        setApiAccessTokenProvider(
+            () => accessToken,
+        );
+    }, [accessToken]);
 
-      setAccessToken(
-        stored.accessToken,
-      );
-
-      setStatus('authenticated');
-    }
-
-    void restoreSession();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    setApiAccessTokenProvider(
-      () => accessToken,
-    );
-  }, [accessToken]);
-
-  useEffect(() => {
-    if (
-        response?.type !== 'success' ||
-        !request ||
-        !request.codeVerifier ||
-        !discovery
+    useEffect(() => {
+        if (
+            response?.type !== 'success' ||
+            !request ||
+            !request.codeVerifier ||
+            !discovery
         ) {
-        return;
+            return;
         }
 
         const code = response.params.code;
         const codeVerifier = request.codeVerifier;
         const currentDiscovery = discovery;
 
-    if (
-      !code ||
-      exchangedCodeRef.current === code
-    ) {
-      return;
-    }
-
-    exchangedCodeRef.current = code;
-
-    async function exchangeCode() {
-      setIsSigningIn(true);
-      setError(null);
-
-      try {
-        const tokenResponse =
-          await AuthSession.exchangeCodeAsync(
-            {
-              clientId:
-                environment.oidcClientId,
-
-              code,
-
-              redirectUri,
-
-              extraParams: {
-                code_verifier: codeVerifier,
-            },
-            },
-            currentDiscovery,
-          );
-
-        const expiresAt =
-          tokenResponse.expiresIn
-            ? Date.now() +
-              tokenResponse.expiresIn *
-                1000
-            : undefined;
-
-        const session = {
-          accessToken:
-            tokenResponse.accessToken,
-
-          idToken:
-            tokenResponse.idToken,
-
-          expiresAt,
-        };
-
-        await saveAuthSession(session);
-
-        setAccessToken(
-          tokenResponse.accessToken,
-        );
-
-        setStatus('authenticated');
-      } catch (cause) {
-        exchangedCodeRef.current = null;
-
-        setStatus('unauthenticated');
-
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : 'Prijavljivanje nije uspelo.',
-        );
-      } finally {
-        setIsSigningIn(false);
-      }
-    }
-
-    void exchangeCode();
-  }, [
-    discovery,
-    request,
-    response,
-  ]);
-
-  const signIn =
-    useCallback(async () => {
-      if (!request || !discovery) {
-        setError(
-          'Servis za prijavljivanje još nije spreman.',
-        );
-
-        return;
-      }
-
-      setError(null);
-      setIsSigningIn(true);
-
-      try {
-        const result =
-          await promptAsync();
-
         if (
-          result.type === 'cancel' ||
-          result.type === 'dismiss'
+            !code ||
+            exchangedCodeRef.current === code
         ) {
-          setIsSigningIn(false);
+            return;
         }
 
-        if (result.type === 'error') {
-          setError(
-            result.error?.description ??
-              'Prijavljivanje nije uspelo.',
-          );
+        exchangedCodeRef.current = code;
 
-          setIsSigningIn(false);
+        async function exchangeCode() {
+            setIsSigningIn(true);
+            setError(null);
+
+            try {
+                const tokenResponse =
+                    await AuthSession.exchangeCodeAsync(
+                        {
+                            clientId:
+                                environment.oidcClientId,
+
+                            code,
+
+                            redirectUri,
+
+                            extraParams: {
+                                code_verifier: codeVerifier,
+                            },
+                        },
+                        currentDiscovery,
+                    );
+
+                const expiresAt =
+                    tokenResponse.expiresIn
+                        ? Date.now() +
+                        tokenResponse.expiresIn *
+                        1000
+                        : undefined;
+
+                const session = {
+                    accessToken:
+                        tokenResponse.accessToken,
+
+                    idToken:
+                        tokenResponse.idToken,
+
+                    expiresAt,
+                };
+
+                await saveAuthSession(session);
+
+                setAccessToken(
+                    tokenResponse.accessToken,
+                );
+
+                setStatus('authenticated');
+            } catch (cause) {
+                exchangedCodeRef.current = null;
+
+                setStatus('unauthenticated');
+
+                setError(
+                    cause instanceof Error
+                        ? cause.message
+                        : 'Prijavljivanje nije uspelo.',
+                );
+            } finally {
+                setIsSigningIn(false);
+            }
         }
-      } catch (cause) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : 'Prijavljivanje nije uspelo.',
-        );
 
-        setIsSigningIn(false);
-      }
+        void exchangeCode();
     }, [
-      discovery,
-      promptAsync,
-      request,
+        discovery,
+        request,
+        response,
     ]);
 
-  const signOut =
-  useCallback(async () => {
-    const tokenToRevoke =
-      accessToken;
+    const signIn =
+        useCallback(async () => {
+            if (!request || !discovery) {
+                setError(
+                    'Servis za prijavljivanje još nije spreman.',
+                );
 
-    try {
-      if (
-        tokenToRevoke &&
-        discovery?.revocationEndpoint
-      ) {
-        await AuthSession.revokeAsync(
-          {
-            clientId:
-              environment.oidcClientId,
+                return;
+            }
 
-            token: tokenToRevoke,
+            setError(null);
+            setIsSigningIn(true);
 
-            tokenTypeHint:
-              AuthSession.TokenTypeHint
-                .AccessToken,
-          },
-          discovery,
-        );
-      }
-    } catch {
-      // Logout must still succeed locally even
-      // if the authorization server is unavailable.
-    } finally {
-      await clearAuthSession();
+            try {
+                const result =
+                    await promptAsync();
 
-      setAccessToken(null);
+                if (
+                    result.type === 'cancel' ||
+                    result.type === 'dismiss'
+                ) {
+                    setIsSigningIn(false);
+                }
 
-      setApiAccessTokenProvider(
-        () => null,
-      );
+                if (result.type === 'error') {
+                    setError(
+                        result.error?.description ??
+                        'Prijavljivanje nije uspelo.',
+                    );
 
-      setStatus('unauthenticated');
-    }
-  }, [
-    accessToken,
-    discovery,
-  ]);
+                    setIsSigningIn(false);
+                }
+            } catch (cause) {
+                setError(
+                    cause instanceof Error
+                        ? cause.message
+                        : 'Prijavljivanje nije uspelo.',
+                );
 
-  return (
-    <AuthContext.Provider
-      value={{
-        status,
-        isAuthenticated:
-          status === 'authenticated',
-        isSigningIn,
-        error,
-        signIn,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+                setIsSigningIn(false);
+            }
+        }, [
+            discovery,
+            promptAsync,
+            request,
+        ]);
+
+    const signOut =
+        useCallback(async () => {
+            setError(null);
+
+            try {
+                const session =
+                    await loadAuthSession();
+
+                if (
+                    discovery?.endSessionEndpoint &&
+                    session
+                ) {
+                    const logoutUrl =
+                        new URL(
+                            discovery.endSessionEndpoint,
+                        );
+
+                    logoutUrl.searchParams.set(
+                        'client_id',
+                        environment.oidcClientId,
+                    );
+
+                    logoutUrl.searchParams.set(
+                        'post_logout_redirect_uri',
+                        logoutRedirectUri,
+                    );
+
+                    if (session.idToken) {
+                        logoutUrl.searchParams.set(
+                            'id_token_hint',
+                            session.idToken,
+                        );
+                    }
+
+                    await WebBrowser.openAuthSessionAsync(
+                        logoutUrl.toString(),
+                        logoutRedirectUri,
+                    );
+                }
+            } catch (cause) {
+                console.warn(
+                    'Server logout failed.',
+                    cause,
+                );
+            } finally {
+                await clearAuthSession();
+
+                setAccessToken(null);
+
+                setApiAccessTokenProvider(
+                    () => null,
+                );
+
+                setStatus('unauthenticated');
+            }
+        }, [
+            discovery,
+        ]);
+
+    return (
+        <AuthContext.Provider
+            value={{
+                status,
+                isAuthenticated:
+                    status === 'authenticated',
+                isSigningIn,
+                error,
+                signIn,
+                signOut,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 }
