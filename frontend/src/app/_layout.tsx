@@ -1,11 +1,15 @@
 import { Stack } from 'expo-router';
 
+import { QueryProvider } from '@/providers/query-provider';
+
 export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <QueryProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </QueryProvider>
   );
 }
