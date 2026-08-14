@@ -56,6 +56,7 @@ export function AuthProvider({
         'email',
         environment.oidcApiScope,
       ],
+      prompt: AuthSession.Prompt.Login,
 
       usePKCE: true,
     },
@@ -266,12 +267,47 @@ export function AuthProvider({
     ]);
 
   const signOut =
-    useCallback(async () => {
+  useCallback(async () => {
+    const tokenToRevoke =
+      accessToken;
+
+    try {
+      if (
+        tokenToRevoke &&
+        discovery?.revocationEndpoint
+      ) {
+        await AuthSession.revokeAsync(
+          {
+            clientId:
+              environment.oidcClientId,
+
+            token: tokenToRevoke,
+
+            tokenTypeHint:
+              AuthSession.TokenTypeHint
+                .AccessToken,
+          },
+          discovery,
+        );
+      }
+    } catch {
+      // Logout must still succeed locally even
+      // if the authorization server is unavailable.
+    } finally {
       await clearAuthSession();
 
       setAccessToken(null);
+
+      setApiAccessTokenProvider(
+        () => null,
+      );
+
       setStatus('unauthenticated');
-    }, []);
+    }
+  }, [
+    accessToken,
+    discovery,
+  ]);
 
   return (
     <AuthContext.Provider

@@ -1,18 +1,16 @@
 import {
+  router,
+  useLocalSearchParams,
+} from 'expo-router';
+import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import {
-  router,
-  useLocalSearchParams,
-} from 'expo-router';
 
-import {
-  useAuth,
-} from '@/features/auth/hooks/use-auth';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
 export default function LoginScreen() {
   const {
@@ -21,24 +19,41 @@ export default function LoginScreen() {
     error,
   } = useAuth();
 
-  const {registered} = useLocalSearchParams<{
-    registered?: string;
-  }>();
+  const { registered } =
+    useLocalSearchParams<{
+      registered?: string;
+    }>();
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>
-          Pčelarski eDnevnik
-        </Text>
+      <View style={styles.card}>
+        <View style={styles.brand}>
+          <Text style={styles.logo}>
+            Pčelarski eDnevnik
+          </Text>
 
-        <Text style={styles.subtitle}>
-          Prijavite se da biste nastavili.
-        </Text>
+          <Text style={styles.description}>
+            Digitalna evidencija vaših
+            pčelinjaka, košnica i pčelinjih
+            društava.
+          </Text>
+        </View>
+
         {registered === '1' && (
-        <Text style={styles.success}>
-            Nalog je uspešno kreiran. Sada se prijavite.
-        </Text>
+          <View style={styles.successBox}>
+            <Text style={styles.successText}>
+              Nalog je uspešno kreiran.
+              Možete da se prijavite.
+            </Text>
+          </View>
+        )}
+
+        {error && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>
+              {error}
+            </Text>
+          </View>
         )}
 
         <Pressable
@@ -47,37 +62,46 @@ export default function LoginScreen() {
             void signIn();
           }}
           style={({ pressed }) => [
-            styles.button,
+            styles.primaryButton,
             pressed &&
-              styles.buttonPressed,
+              styles.primaryButtonPressed,
             isSigningIn &&
               styles.buttonDisabled,
           ]}
         >
           {isSigningIn ? (
-            <ActivityIndicator />
+            <ActivityIndicator
+              color="#ffffff"
+            />
           ) : (
-            <Text style={styles.buttonText}>
+            <Text
+              style={styles.primaryButtonText}
+            >
               Prijavi se
             </Text>
           )}
         </Pressable>
 
-        {error && (
-          <Text style={styles.error}>
-            {error}
+        <View style={styles.registration}>
+          <Text style={styles.registrationText}>
+            Nemate nalog?
           </Text>
-        )}
-        <Pressable
-            onPress={() =>
-                router.push('//register')
-            }
-            style={styles.registerButton}
-            >
-            <Text style={styles.registerButtonText}>
-                Nemate nalog? Registrujte se
+
+          <Pressable
+            onPress={() => {
+              router.push('/register');
+            }}
+          >
+            <Text style={styles.registrationLink}>
+              Registrujte se
             </Text>
-        </Pressable>
+          </Pressable>
+        </View>
+
+        <Text style={styles.securityText}>
+          Prijavljivanje se obavlja preko
+          bezbednog OpenID Connect sistema.
+        </Text>
       </View>
     </View>
   );
@@ -88,61 +112,100 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
+    backgroundColor: '#f5f6f3',
   },
 
-  content: {
+  card: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 440,
     alignSelf: 'center',
+    padding: 32,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
   },
 
-  title: {
+  brand: {
+    marginBottom: 28,
+  },
+
+  logo: {
     fontSize: 30,
     fontWeight: '700',
+    textAlign: 'center',
   },
 
-  subtitle: {
-    marginTop: 8,
-    marginBottom: 24,
-    fontSize: 16,
+  description: {
+    marginTop: 10,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
   },
 
-  button: {
-    minHeight: 52,
+  primaryButton: {
+    minHeight: 54,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
-    backgroundColor: '#222',
+    backgroundColor: '#222222',
   },
 
-  buttonPressed: {
-    opacity: 0.8,
+  primaryButtonPressed: {
+    opacity: 0.85,
   },
 
   buttonDisabled: {
     opacity: 0.6,
   },
 
-  buttonText: {
-    color: '#fff',
+  primaryButtonText: {
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
 
-  error: {
-    marginTop: 16,
+  registration: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 22,
+    gap: 5,
   },
-  success: {
-    marginTop: 16,
-    color: '#00ff00',
-  },
-  registerButton: {
-  alignItems: 'center',
-  padding: 16,
-},
 
-registerButtonText: {
-  fontSize: 15,
-  fontWeight: '500',
-},
+  registrationText: {
+    fontSize: 15,
+  },
+
+  registrationLink: {
+    fontSize: 15,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+
+  successBox: {
+    marginBottom: 18,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#eef6ee',
+  },
+
+  successText: {
+    fontSize: 14,
+  },
+
+  errorBox: {
+    marginBottom: 18,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#fbeaea',
+  },
+
+  errorText: {
+    fontSize: 14,
+  },
+
+  securityText: {
+    marginTop: 24,
+    fontSize: 12,
+    textAlign: 'center',
+    opacity: 0.65,
+  },
 });
