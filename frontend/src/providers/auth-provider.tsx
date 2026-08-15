@@ -20,7 +20,12 @@ import {
 import {
     setApiAccessTokenProvider,
 } from '@/shared/api/api-client';
+import type { AccessTokenRequestOptions } from '@/shared/api/api-client';
 import { environment } from '@/shared/config/environment';
+import type { AuthSession as StoredAuthSession } from '@/features/auth/types/auth-session';
+
+const ACCESS_TOKEN_REFRESH_SKEW_MS =
+    60_000;
 
 const redirectUri =
     AuthSession.makeRedirectUri({
@@ -33,9 +38,12 @@ const logoutRedirectUri =
         path: 'auth/logout-callback',
     });
 
+
 export function AuthProvider({
     children,
 }: PropsWithChildren) {
+
+
     const discovery =
         AuthSession.useAutoDiscovery(
             environment.apiUrl,
@@ -83,6 +91,16 @@ export function AuthProvider({
 
     const exchangedCodeRef =
         useRef<string | null>(null);
+    const sessionRef =
+        useRef<StoredAuthSession | null>(
+            null,
+        );
+
+    const refreshPromiseRef =
+        useRef<
+            Promise<StoredAuthSession | null>
+            | null
+        >(null);
 
     useEffect(() => {
         WebBrowser.maybeCompleteAuthSession();
@@ -99,17 +117,16 @@ export function AuthProvider({
                 return;
             }
 
-            if (!stored) {
-                setStatus('unauthenticated');
-                return;
-            }
-
-            if (!stored.refreshToken) {
+            if (!stored?.refreshToken) {
                 await clearAuthSession();
 
+                sessionRef.current = null;
+
                 setStatus('unauthenticated');
                 return;
             }
+
+            sessionRef.current = stored;
 
             setAccessToken(
                 stored.accessToken,
@@ -124,12 +141,6 @@ export function AuthProvider({
             active = false;
         };
     }, []);
-
-    useEffect(() => {
-        setApiAccessTokenProvider(
-            () => accessToken,
-        );
-    }, [accessToken]);
 
     useEffect(() => {
         if (
@@ -175,7 +186,7 @@ export function AuthProvider({
                         },
                         currentDiscovery,
                     );
-                
+
 
                 if (!tokenResponse.refreshToken) {
                     throw new Error(
@@ -202,6 +213,7 @@ export function AuthProvider({
 
                     expiresAt,
                 };
+                sessionRef.current = session;
 
                 await saveAuthSession(session);
 
@@ -231,6 +243,167 @@ export function AuthProvider({
         request,
         response,
     ]);
+    const refreshSession =
+        useCallback(
+            async (): Promise<
+                StoredAuthSession | null
+            > => {
+                if (refreshPromiseRef.current) {
+                    return refreshPromiseRef.current;
+                }
+
+                const currentSession =
+                    sessionRef.current;
+
+                if (
+                    !currentSession?.refreshToken ||
+                    !discovery?.tokenEndpoint
+                ) {
+                    return null;
+                }
+
+                const refreshPromise =
+                    (async () => {
+                        try {
+                            const tokenResponse =
+                                await AuthSession.refreshAsync(
+                                    {
+                                        clientId:
+                                            environment
+                                                .oidcClientId,
+
+                                        refreshToken:
+                                            currentSession
+                                                .refreshToken,
+                                    },
+                                    discovery,
+                                );
+
+                            const expiresAt =
+                                tokenResponse.expiresIn
+                                    ? Date.now() +
+                                    tokenResponse.expiresIn *
+                                    1000
+                                    : undefined;
+
+                            const refreshedSession:
+                                StoredAuthSession = {
+                                accessToken:
+                                    tokenResponse
+                                        .accessToken,
+
+                                refreshToken:
+                                    tokenResponse
+                                        .refreshToken ??
+                                    currentSession
+                                        .refreshToken,
+
+                                idToken:
+                                    tokenResponse
+                                        .idToken ??
+                                    currentSession.idToken,
+
+                                expiresAt,
+                            };
+
+                            sessionRef.current =
+                                refreshedSession;
+
+                            await saveAuthSession(
+                                refreshedSession,
+                            );
+
+                            setAccessToken(
+                                refreshedSession
+                                    .accessToken,
+                            );
+
+                            return refreshedSession;
+                        } catch (cause) {
+                            console.warn(
+                                'Token refresh failed.',
+                                cause,
+                            );
+
+                            return null;
+                        }
+                    })();
+
+                refreshPromiseRef.current =
+                    refreshPromise;
+
+                try {
+                    return await refreshPromise;
+                } finally {
+                    if (
+                        refreshPromiseRef.current ===
+                        refreshPromise
+                    ) {
+                        refreshPromiseRef.current =
+                            null;
+                    }
+                }
+            },
+            [discovery],
+        );
+    const getValidAccessToken =
+        useCallback(
+            async (
+                options:
+                    AccessTokenRequestOptions = {},
+            ): Promise<string | null> => {
+                const session =
+                    sessionRef.current;
+
+                if (!session) {
+                    return null;
+                }
+
+                // Another API request may already
+                // have refreshed this token.
+                if (
+                    options.forceRefresh &&
+                    options.staleAccessToken &&
+                    session.accessToken !==
+                    options.staleAccessToken
+                ) {
+                    return session.accessToken;
+                }
+
+                const tokenIsFresh =
+                    !session.expiresAt ||
+                    session.expiresAt -
+                    Date.now() >
+                    ACCESS_TOKEN_REFRESH_SKEW_MS;
+
+                if (
+                    !options.forceRefresh &&
+                    tokenIsFresh
+                ) {
+                    return session.accessToken;
+                }
+
+                const refreshedSession =
+                    await refreshSession();
+
+                return (
+                    refreshedSession?.accessToken ??
+                    null
+                );
+            },
+            [refreshSession],
+        );
+    useEffect(() => {
+        setApiAccessTokenProvider(
+            getValidAccessToken,
+        );
+
+        return () => {
+            setApiAccessTokenProvider(
+                async () => null,
+            );
+        };
+    }, [getValidAccessToken]);
 
     const signIn =
         useCallback(async () => {
@@ -328,9 +501,7 @@ export function AuthProvider({
 
                 setAccessToken(null);
 
-                setApiAccessTokenProvider(
-                    () => null,
-                );
+                sessionRef.current = null;
 
                 setStatus('unauthenticated');
             }

@@ -12,8 +12,25 @@ type HttpMethod =
   | 'PATCH'
   | 'DELETE';
 
+export interface AccessTokenRequestOptions {
+  forceRefresh?: boolean;
+  staleAccessToken?: string;
+}
+
 type AccessTokenProvider =
-  () => string | null;
+  (
+    options?: AccessTokenRequestOptions,
+  ) => Promise<string | null>;
+
+let accessTokenProvider:
+  AccessTokenProvider =
+  async () => null;
+
+export function setApiAccessTokenProvider(
+  provider: AccessTokenProvider,
+): void {
+  accessTokenProvider = provider;
+}
 
 export interface ApiRequestOptions {
   method?: HttpMethod;
@@ -21,15 +38,6 @@ export interface ApiRequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   authenticated?: boolean;
-}
-
-let accessTokenProvider: AccessTokenProvider =
-  () => null;
-
-export function setApiAccessTokenProvider(
-  provider: AccessTokenProvider,
-): void {
-  accessTokenProvider = provider;
 }
 
 function buildUrl(path: string): string {
@@ -118,9 +126,11 @@ export async function apiRequest<TResponse>(
       'application/json';
   }
 
+  let accessToken: string | null = null;
+
   if (authenticated) {
-    const accessToken =
-      accessTokenProvider();
+    accessToken =
+      await accessTokenProvider();
 
     if (!accessToken) {
       throw new MissingAccessTokenError();
@@ -129,19 +139,45 @@ export async function apiRequest<TResponse>(
     headers.Authorization =
       `Bearer ${accessToken}`;
   }
-
-  const response = await fetch(
+  const requestBody =
+    body === undefined
+      ? undefined
+      : JSON.stringify(body);
+  let response = await fetch(
     buildUrl(path),
     {
       method,
       headers,
       signal,
-      body:
-        body === undefined
-          ? undefined
-          : JSON.stringify(body),
+      body: requestBody,
     },
   );
+  if (
+    authenticated &&
+    response.status === 401
+  ) {
+    const refreshedAccessToken =
+      await accessTokenProvider({
+        forceRefresh: true,
+        staleAccessToken:
+          accessToken ?? undefined,
+      });
+
+    if (refreshedAccessToken) {
+      headers.Authorization =
+        `Bearer ${refreshedAccessToken}`;
+
+      response = await fetch(
+        buildUrl(path),
+        {
+          method,
+          headers,
+          signal,
+          body: requestBody,
+        },
+      );
+    }
+  }
 
   const payload =
     await readResponseBody(response);
