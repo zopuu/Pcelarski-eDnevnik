@@ -7,6 +7,8 @@ using PcelarskiEDnevnik.Api.OpenApi;
 using PcelarskiEDnevnik.Api.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.Modules.Apiaries;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetAll;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,6 +125,8 @@ app.MapGet("/", () => Results.Ok(new {
 app.MapControllers();
 
 app.MapRegistrationEndpoints();
+app.MapCreateApiaryEndpoint();
+app.MapGetApiariesEndpoint();
 
 app.MapIdentityEndpoints();
 app.MapAccountsEndpoints();
