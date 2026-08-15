@@ -6,11 +6,14 @@ import {
 } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/use-auth';
+import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
 
 export default function HomeScreen() {
   const {
     signOut,
   } = useAuth();
+
+  const  currentUser  = useCurrentUser();
 
   return (
     <View style={styles.container}>
@@ -32,7 +35,7 @@ export default function HomeScreen() {
           style={({ pressed }) => [
             styles.logoutButton,
             pressed &&
-              styles.logoutButtonPressed,
+            styles.logoutButtonPressed,
           ]}
         >
           <Text style={styles.logoutText}>
@@ -42,14 +45,29 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.welcome}>
-          Dobro došli
-        </Text>
+        {currentUser.isPending && (
+          <Text style={styles.description}>
+            Učitavanje korisničkih podataka...
+          </Text>
+        )}
 
-        <Text style={styles.description}>
-          Uspešno ste prijavljeni u
-          Pčelarski eDnevnik.
-        </Text>
+        {currentUser.isError && (
+          <Text style={styles.error}>
+            Nije moguće učitati podatke korisnika.
+          </Text>
+        )}
+
+        {currentUser.data && (
+          <>
+            <Text style={styles.welcome}>
+              Dobro došli
+            </Text>
+
+            <Text style={styles.description}>
+              {currentUser.data.email}
+            </Text>
+          </>
+        )}
 
         <View style={styles.placeholder}>
           <Text style={styles.placeholderTitle}>
@@ -143,4 +161,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
+  error: {
+    marginTop:16,
+    fontSize:15,
+  },
+  
 });
