@@ -4,6 +4,8 @@ using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
 using PcelarskiEDnevnik.Api.Features.Registration;
 using PcelarskiEDnevnik.Api.OpenApi;
+using PcelarskiEDnevnik.Api.Authentication;
+using PcelarskiEDnevnik.SharedKernel.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,11 @@ builder.Services.AddHealthChecks();
 builder.Services.AddAuthorization();
 builder.Services.AddDataProtection();
 builder.Services.AddValidation();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<
+    ICurrentUserContext,
+    HttpCurrentUserContext>();
 
 builder.Services
     .AddIdentityModule(builder.Configuration)
