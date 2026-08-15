@@ -59,6 +59,7 @@ export function AuthProvider({
                 'openid',
                 'profile',
                 'email',
+                'offline_access',
                 environment.oidcApiScope,
             ],
             prompt: AuthSession.Prompt.Login,
@@ -103,10 +104,7 @@ export function AuthProvider({
                 return;
             }
 
-            if (
-                stored.expiresAt &&
-                stored.expiresAt <= Date.now()
-            ) {
+            if (!stored.refreshToken) {
                 await clearAuthSession();
 
                 setStatus('unauthenticated');
@@ -177,6 +175,13 @@ export function AuthProvider({
                         },
                         currentDiscovery,
                     );
+                
+
+                if (!tokenResponse.refreshToken) {
+                    throw new Error(
+                        'Authorization server nije vratio refresh token.',
+                    );
+                }
 
                 const expiresAt =
                     tokenResponse.expiresIn
@@ -188,6 +193,9 @@ export function AuthProvider({
                 const session = {
                     accessToken:
                         tokenResponse.accessToken,
+
+                    refreshToken:
+                        tokenResponse.refreshToken,
 
                     idToken:
                         tokenResponse.idToken,
