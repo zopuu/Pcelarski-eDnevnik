@@ -15,7 +15,7 @@
         <p>Da li želite da se odjavite?</p>
 
         <form method="post"
-              action="/connect/logout">
+              action="@($"{Context.Request.Path}{Context.Request.QueryString}")">
 
             @Html.AntiForgeryToken()
 
