@@ -54,4 +54,15 @@ public sealed class Apiary {
             type,
             status);
     }
+    public void Update(
+    string? identificationNumber,
+    string? name,
+    ApiaryType? type,
+    ApiaryStatus? status) {
+        IdentificationNumber = identificationNumber;
+        Name = name;
+        Type = type;
+        Status = status;
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
 }
