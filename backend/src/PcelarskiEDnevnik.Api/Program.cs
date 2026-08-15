@@ -1,135 +1,36 @@
-﻿using PcelarskiEDnevnik.Modules.Accounts;
-using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
+﻿using PcelarskiEDnevnik.Api.Composition;
 using PcelarskiEDnevnik.Modules.Identity;
-using PcelarskiEDnevnik.Modules.Identity.Web;
-using PcelarskiEDnevnik.Api.Features.Registration;
-using PcelarskiEDnevnik.Api.OpenApi;
-using PcelarskiEDnevnik.Api.Authentication;
-using PcelarskiEDnevnik.SharedKernel.Authentication;
-using PcelarskiEDnevnik.Modules.Apiaries;
-using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
-using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetAll;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddProblemDetails(options => {
-    options.CustomizeProblemDetails = context => {
-        context.ProblemDetails.Extensions["traceId"] =
-            context.HttpContext.TraceIdentifier;
-    };
-});
-
-builder.Services.AddOpenApi(options => {
-    options.AddDocumentTransformer<
-        OAuthSecuritySchemeTransformer>();
-
-    options.AddOperationTransformer<
-        OAuthSecurityRequirementTransformer>();
-});
-
-builder.Services.AddHealthChecks();
-
-builder.Services.AddAuthorization();
-builder.Services.AddDataProtection();
-builder.Services.AddValidation();
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddScoped<
-    ICurrentUserContext,
-    HttpCurrentUserContext>();
+var builder =
+    WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddIdentityModule(builder.Configuration)
-    .AddIdentityWebModule()
-    .AddAccountsModule(builder.Configuration)
-    .AddBeekeeperProfilesModule(builder.Configuration)
-    .AddApiariesModule(builder.Configuration);
-
-var frontendOrigins =
-    builder.Configuration
-        .GetSection("Frontend:AllowedOrigins")
-        .Get<string[]>()
-    ?? [];
-
-builder.Services.AddCors(options => {
-    options.AddPolicy(
-        "Frontend",
-        policy => {
-            policy
-                .WithOrigins(frontendOrigins)
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
-});
+    .AddApiServices(builder.Configuration)
+    .AddApplicationModules(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment()) {
-    app.MapOpenApi();
+    app.ConfigureDevelopmentEnvironment();
 
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint(
-            "/openapi/v1.json",
-            "Pčelarski eDnevnik API v1");
-
-        options.OAuthClientId(
-            "pcelarski-ednevnik-swagger");
-
-        options.OAuthAppName(
-            "Pčelarski eDnevnik Swagger");
-
-        options.OAuthScopes(
-            "openid",
-            "profile",
-            "email",
-            "pcelarski_api");
-
-        options.OAuthUsePkce();
-    });
-
-    await app.Services.InitializeIdentityModuleAsync();
-
-    app.MapGet(
-        "/debug/oauth/callback",
-        (
-            string? code,
-            string? state,
-            string? error,
-            string? error_description) => {
-                return Results.Ok(new {
-                    code,
-                    state,
-                    error,
-                    errorDescription = error_description
-                });
-            })
-        .ExcludeFromDescription();
+    await app.Services
+        .InitializeIdentityModuleAsync();
 }
 
 app.UseHttpsRedirection();
-app.UseCors("Frontend");
+
+app.UseCors(
+    ApiServiceRegistration.FrontendCorsPolicy);
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHealthChecks("/health");
-
-app.MapGet("/", () => Results.Ok(new {
-    name = "Pčelarski eDnevnik API",
-    status = "running"
-}))
-.ExcludeFromDescription();
+app.MapPlatformEndpoints();
 
 app.MapControllers();
 
-app.MapRegistrationEndpoints();
-app.MapCreateApiaryEndpoint();
-app.MapGetApiariesEndpoint();
-
-app.MapIdentityEndpoints();
-app.MapAccountsEndpoints();
-app.MapBeekeeperProfilesEndpoints();
+app.MapApplicationEndpoints();
 
 app.Run();

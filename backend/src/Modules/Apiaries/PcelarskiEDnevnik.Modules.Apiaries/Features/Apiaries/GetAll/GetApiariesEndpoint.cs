@@ -11,7 +11,7 @@ public static class GetApiariesEndpoint {
     public static IEndpointRouteBuilder MapGetApiariesEndpoint(
         this IEndpointRouteBuilder endpoints) {
         endpoints.MapGet(
-                "/api/apiaries",
+                "/",
                 async (
                     ICurrentBeekeeperContext currentBeekeeper,
                     ApiariesDbContext dbContext,
@@ -39,8 +39,7 @@ public static class GetApiariesEndpoint {
                                     cancellationToken);
 
                         return Results.Ok(apiaries);
-                    })
-            .RequireAuthorization();
+                    });
 
         return endpoints;
     }
