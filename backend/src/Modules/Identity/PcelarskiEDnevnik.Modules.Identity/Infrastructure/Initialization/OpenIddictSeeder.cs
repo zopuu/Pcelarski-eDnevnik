@@ -137,11 +137,7 @@ internal sealed class OpenIddictSeeder {
 
     private async Task EnsureMobileClientAsync(
         CancellationToken cancellationToken) {
-        if (await _applicationManager.FindByClientIdAsync(
-                MobileClientId,
-                cancellationToken) is not null) {
-            return;
-        }
+        
 
         var descriptor = new OpenIddictApplicationDescriptor {
             ApplicationType = ApplicationTypes.Native,
