@@ -6,6 +6,8 @@ using PcelarskiEDnevnik.Modules.BeekeeperProfiles
     .Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Application;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Infrastructure.Services;
+using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Infrastructure.Authentication;
 
 namespace PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 
@@ -25,6 +27,9 @@ public static class BeekeeperProfilesModule {
         services.AddScoped<
             IBeekeeperProfileRegistrationService,
             BeekeeperProfileRegistrationService>();
+        services.AddScoped<
+            ICurrentBeekeeperContext,
+            CurrentBeekeeperContext>();
 
         return services;
     }

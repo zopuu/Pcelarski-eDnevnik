@@ -6,6 +6,7 @@ using PcelarskiEDnevnik.Api.Features.Registration;
 using PcelarskiEDnevnik.Api.OpenApi;
 using PcelarskiEDnevnik.Api.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.Modules.Apiaries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,8 @@ builder.Services
     .AddIdentityModule(builder.Configuration)
     .AddIdentityWebModule()
     .AddAccountsModule(builder.Configuration)
-    .AddBeekeeperProfilesModule(builder.Configuration);
+    .AddBeekeeperProfilesModule(builder.Configuration)
+    .AddApiariesModule(builder.Configuration);
 
 var frontendOrigins =
     builder.Configuration

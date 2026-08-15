@@ -116,22 +116,30 @@ public static class IdentityModule {
         endpoints
             .MapGet(
                 "/api/me",
-                (
+                async (
                     ICurrentUserContext currentUser,
-                    ClaimsPrincipal user) =>
-                    Results.Ok(new {
-                        userId =
-                            currentUser.UserId,
+                    ICurrentBeekeeperContext currentBeekeeper,
+                    ClaimsPrincipal user,
+                    CancellationToken cancellationToken) => {
+                        var beekeeperId =
+                            await currentBeekeeper.GetBeekeeperIdAsync(
+                                cancellationToken);
 
-                        email =
-                            user.GetClaim(
-                                OpenIddictConstants.Claims.Email),
+                        return Results.Ok(new {
+                            userId =
+                                currentUser.UserId,
 
-                        username =
-                            user.GetClaim(
-                                OpenIddictConstants.Claims
-                                    .PreferredUsername)
-                    }))
+                            beekeeperId,
+
+                            email =
+                                user.GetClaim(
+                                    OpenIddictConstants.Claims.Email),
+
+                            username =
+                                user.GetClaim(
+                                    OpenIddictConstants.Claims.PreferredUsername)
+                        });
+                    })
             .RequireAuthorization();
 
         return endpoints;
