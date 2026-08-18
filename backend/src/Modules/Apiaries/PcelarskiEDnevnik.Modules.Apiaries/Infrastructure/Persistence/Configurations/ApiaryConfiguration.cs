@@ -25,11 +25,11 @@ internal sealed class ApiaryConfiguration
 
         builder.Property(x => x.IdentificationNumber)
             .HasColumnName("identification_number")
-            .HasMaxLength(14);
+            .HasMaxLength(ApiaryRules.IdentificationNumberMaxLength);
 
         builder.Property(x => x.Name)
             .HasColumnName("name")
-            .HasMaxLength(30);
+            .HasMaxLength(ApiaryRules.NameMaxLength);
 
         builder.Property(x => x.Type)
             .HasColumnName("type")

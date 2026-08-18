@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.SharedKernel.Errors;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Update;
 
@@ -40,8 +41,20 @@ public static class UpdateApiaryEndpoint {
                         request.Type,
                         request.Status);
 
-                    await dbContext.SaveChangesAsync(
-                        cancellationToken);
+                    try {
+                        await dbContext.SaveChangesAsync(
+                            cancellationToken);
+                    }
+                    catch (DbUpdateException exception)
+                        when (
+                            ApiaryPersistenceErrors
+                                .IsIdentificationNumberUniqueViolation(
+                                    exception)) {
+                        throw new ConflictException(
+                            "apiaries.identification_number_already_exists",
+                            "An apiary with this identification number already exists.",
+                            exception);
+                    }
 
                     var response =
                         new UpdateApiaryResponse(

@@ -1,6 +1,7 @@
 ﻿using PcelarskiEDnevnik.Api.Authentication;
 using PcelarskiEDnevnik.Api.OpenApi;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.Api.ErrorHandling;
 
 namespace PcelarskiEDnevnik.Api.Composition;
 
@@ -16,6 +17,7 @@ internal static class ApiServiceRegistration {
                     context.HttpContext.TraceIdentifier;
             };
         });
+        services.AddExceptionHandler<GlobalExceptionHandler>();
 
         services.AddOpenApi(options => {
             options.AddDocumentTransformer<

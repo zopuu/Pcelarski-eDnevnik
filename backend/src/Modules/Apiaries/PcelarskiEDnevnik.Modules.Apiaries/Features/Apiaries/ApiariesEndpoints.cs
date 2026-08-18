@@ -5,6 +5,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetAll;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetById;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Update;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
 
@@ -20,6 +21,8 @@ public static class ApiariesEndpoints {
         group.MapGetApiariesEndpoint();
         group.MapGetApiaryByIdEndpoint();
         group.MapUpdateApiaryEndpoint();
+
+        group.MapApiaryStaysEndpoints();
 
         return endpoints;
     }

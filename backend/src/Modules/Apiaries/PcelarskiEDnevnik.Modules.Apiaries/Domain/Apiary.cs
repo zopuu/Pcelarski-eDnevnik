@@ -1,4 +1,6 @@
-﻿namespace PcelarskiEDnevnik.Modules.Apiaries.Domain;
+﻿using System.Net.NetworkInformation;
+
+namespace PcelarskiEDnevnik.Modules.Apiaries.Domain;
 
 public sealed class Apiary {
     private Apiary() {
@@ -41,7 +43,7 @@ public sealed class Apiary {
 
     public DateTimeOffset? UpdatedAtUtc { get; private set; }
 
-    public static Apiary Create(
+    public static Apiary Create(                    // refractor to use normalization as update does
         Guid ownerBeekeeperId,
         string? identificationNumber = null,
         string? name = null,
@@ -59,10 +61,18 @@ public sealed class Apiary {
     string? name,
     ApiaryType? type,
     ApiaryStatus? status) {
-        IdentificationNumber = identificationNumber;
-        Name = name;
+        IdentificationNumber = NormalizeOptionalText(identificationNumber);
+        Name = NormalizeOptionalText(name);
         Type = type;
         Status = status;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+    private static string? NormalizeOptionalText(
+    string? value) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return null;
+        }
+
+        return value.Trim();
     }
 }

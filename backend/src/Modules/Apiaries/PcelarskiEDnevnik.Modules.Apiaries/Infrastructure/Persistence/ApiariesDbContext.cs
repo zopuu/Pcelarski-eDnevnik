@@ -7,7 +7,13 @@ public sealed class ApiariesDbContext(
     DbContextOptions<ApiariesDbContext> options)
     : DbContext(options) {
     public DbSet<Apiary> Apiaries =>
-        Set<Apiary>();
+    Set<Apiary>();
+
+    public DbSet<ApiaryLocation> Locations =>
+        Set<ApiaryLocation>();
+
+    public DbSet<ApiaryStay> ApiaryStays =>
+        Set<ApiaryStay>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder) {

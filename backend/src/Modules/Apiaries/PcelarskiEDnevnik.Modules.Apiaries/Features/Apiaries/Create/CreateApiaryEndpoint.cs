@@ -5,7 +5,10 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using Microsoft.EntityFrameworkCore;
+using PcelarskiEDnevnik.SharedKernel.Errors;
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
+
 
 public static class CreateApiaryEndpoint {
     public static IEndpointRouteBuilder MapCreateApiaryEndpoint(
@@ -30,8 +33,20 @@ public static class CreateApiaryEndpoint {
 
                     dbContext.Apiaries.Add(apiary);
 
-                    await dbContext.SaveChangesAsync(
-                        cancellationToken);
+                    try {
+                        await dbContext.SaveChangesAsync(
+                            cancellationToken);
+                    }
+                    catch (DbUpdateException exception)
+                        when (
+                            ApiaryPersistenceErrors
+                                .IsIdentificationNumberUniqueViolation(
+                                    exception)) {
+                        throw new ConflictException(
+                            "apiaries.identification_number_already_exists",
+                            "An apiary with this identification number already exists.",
+                            exception);
+                    }
 
                     var response =
                         new CreateApiaryResponse(

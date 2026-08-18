@@ -1,8 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace PcelarskiEDnevnik.SharedKernel.Errors;
 
-namespace PcelarskiEDnevnik.SharedKernel.Errors {
-    internal class ConflictException {
+public sealed class ConflictException : Exception {
+    public ConflictException(
+        string code,
+        string message,
+        Exception? innerException = null)
+        : base(message, innerException) {
+        Code = code;
     }
+
+    public string Code { get; }
 }

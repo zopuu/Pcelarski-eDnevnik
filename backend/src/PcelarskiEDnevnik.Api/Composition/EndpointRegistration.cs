@@ -1,6 +1,7 @@
 ﻿using PcelarskiEDnevnik.Api.Features.Registration;
 using PcelarskiEDnevnik.Modules.Accounts;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
@@ -16,6 +17,7 @@ internal static class EndpointRegistration {
         app.MapAccountsEndpoints();
         app.MapBeekeeperProfilesEndpoints();
         app.MapApiariesEndpoints();
+        app.MapLocationsEndpoints();
 
         return app;
     }
