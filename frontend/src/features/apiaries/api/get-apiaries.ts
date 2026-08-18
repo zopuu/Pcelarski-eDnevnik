@@ -6,8 +6,9 @@ import type {
   ApiaryListItem,
 } from '../types/apiary-list-item';
 
-export async function getApiaries() {
-  return apiClient<ApiaryListItem[]>(
+export function getApiaries():
+  Promise<ApiaryListItem[]> {
+  return apiClient.get<ApiaryListItem[]>(
     '/api/apiaries',
     {
       authenticated: true,
