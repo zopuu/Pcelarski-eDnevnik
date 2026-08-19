@@ -43,6 +43,9 @@ import type {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  HiveColorPicker,
+} from '../components/hive-color-picker';
 
 type CreateHiveScreenProps = {
   apiaryId: string;
@@ -423,16 +426,11 @@ export function CreateHiveScreen({
           render={({
             field,
           }) => (
-            <FormTextInput
-              label="Boja"
-              value={
-                field.value
-              }
-              onChangeText={
+            <HiveColorPicker
+              value={field.value}
+              onChange={
                 field.onChange
               }
-              placeholder="#D9A42A"
-              autoCapitalize="characters"
               error={
                 errors.colorHex
                   ?.message
