@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
@@ -23,15 +22,36 @@ public static class CreateApiaryEndpoint {
                     var beekeeperId =
                         await currentBeekeeper.GetBeekeeperIdAsync(
                             cancellationToken);
+                    var stayRequest = request.InitialStay;
+                    var locationRequest = stayRequest.Location;
 
                     var apiary = Apiary.Create(
                         beekeeperId,
                         request.IdentificationNumber,
                         request.Name,
                         request.Type,
-                        request.Status);
+                        ApiaryStatus.Active);
+
+                    var location = ApiaryLocation.Create(
+                        beekeeperId,
+                        locationRequest.Name,
+                        locationRequest.Latitude!.Value,
+                        locationRequest.Longitude!.Value,
+                        locationRequest.AltitudeMeters,
+                        locationRequest.CadastralParcelNumber,
+                        locationRequest.Description);
+
+                    var stay = ApiaryStay.Create(
+                        apiary.Id,
+                        location.Id,
+                        DateTimeOffset.UtcNow,
+                        null,
+                        orientation: stayRequest.Orientation,
+                        note: stayRequest.Note);
 
                     dbContext.Apiaries.Add(apiary);
+                    dbContext.Locations.Add(location);
+                    dbContext.ApiaryStays.Add(stay);
 
                     try {
                         await dbContext.SaveChangesAsync(

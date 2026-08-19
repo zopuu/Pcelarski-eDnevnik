@@ -7,11 +7,11 @@ public sealed class Apiary {
     }
 
     private Apiary(
-        Guid ownerBeekeeperId,
-        string? identificationNumber,
-        string? name,
-        ApiaryType? type,
-        ApiaryStatus? status) {
+    Guid ownerBeekeeperId,
+    string? identificationNumber,
+    string? name,
+    ApiaryType? type,
+    ApiaryStatus? status) {
         if (ownerBeekeeperId == Guid.Empty) {
             throw new ArgumentException(
                 "Owner beekeeper ID cannot be empty.",
@@ -19,12 +19,21 @@ public sealed class Apiary {
         }
 
         Id = Guid.NewGuid();
+
         OwnerBeekeeperId = ownerBeekeeperId;
-        IdentificationNumber = identificationNumber;
-        Name = name;
+
+        IdentificationNumber =
+            NormalizeOptionalText(
+                identificationNumber);
+
+        Name =
+            NormalizeOptionalText(name);
+
         Type = type;
         Status = status;
-        CreatedAtUtc = DateTimeOffset.UtcNow;
+
+        CreatedAtUtc =
+            DateTimeOffset.UtcNow;
     }
 
     public Guid Id { get; private set; }
@@ -43,12 +52,12 @@ public sealed class Apiary {
 
     public DateTimeOffset? UpdatedAtUtc { get; private set; }
 
-    public static Apiary Create(                    // refractor to use normalization as update does
-        Guid ownerBeekeeperId,
-        string? identificationNumber = null,
-        string? name = null,
-        ApiaryType? type = null,
-        ApiaryStatus? status = null) {
+    public static Apiary Create(
+    Guid ownerBeekeeperId,
+    string? identificationNumber = null,
+    string? name = null,
+    ApiaryType? type = null,
+    ApiaryStatus? status = null) {
         return new Apiary(
             ownerBeekeeperId,
             identificationNumber,

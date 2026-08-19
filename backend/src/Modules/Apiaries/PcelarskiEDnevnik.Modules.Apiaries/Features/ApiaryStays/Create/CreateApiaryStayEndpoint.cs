@@ -6,7 +6,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Domain;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Errors;
-using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.Create;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.Create;
 

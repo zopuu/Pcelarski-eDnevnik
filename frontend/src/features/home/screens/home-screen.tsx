@@ -32,6 +32,9 @@ import {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  router,
+} from 'expo-router';
 
 export function HomeScreen() {
   const {
@@ -199,10 +202,9 @@ export function HomeScreen() {
             <View className="mt-4">
               <AddApiaryCard
                 onPress={() => {
-                  /*
-                   * Create Apiary route
-                   * comes after Details.
-                   */
+                  router.push(
+                    '/apiaries/create',
+                  );
                 }}
               />
             </View>

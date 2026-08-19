@@ -1,5 +1,7 @@
 ﻿using PcelarskiEDnevnik.Api.Composition;
 using PcelarskiEDnevnik.Modules.Identity;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder =
     WebApplication.CreateBuilder(args);
@@ -7,6 +9,14 @@ var builder =
 builder.Services
     .AddApiServices(builder.Configuration)
     .AddApplicationModules(builder.Configuration);
+
+builder.Services.ConfigureHttpJsonOptions(
+    options => {
+        options.SerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(
+                JsonNamingPolicy.CamelCase,
+                allowIntegerValues: false));
+    });
 
 var app = builder.Build();
 

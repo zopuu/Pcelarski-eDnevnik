@@ -11,18 +11,62 @@ public sealed record CreateApiaryRequest {
     public string? IdentificationNumber { get; init; }
 
     [StringLength(
-        ApiaryRules.NameMaxLength,
-        ErrorMessage =
-            "Apiary name cannot exceed 30 characters.")]
+        ApiaryRules.NameMaxLength)]
     public string? Name { get; init; }
 
-    [EnumDataType(
-        typeof(ApiaryType),
-        ErrorMessage = "Invalid apiary type.")]
+    [EnumDataType(typeof(ApiaryType))]
     public ApiaryType? Type { get; init; }
 
+    [Required]
+    public required CreateInitialApiaryStayRequest InitialStay {
+        get;
+        init;
+    }
+}
+public sealed record CreateInitialApiaryStayRequest {
+    [Required]
+    public required CreateApiaryLocationRequest Location {
+        get;
+        init;
+    }
+
     [EnumDataType(
-        typeof(ApiaryStatus),
-        ErrorMessage = "Invalid apiary status.")]
-    public ApiaryStatus? Status { get; init; }
+        typeof(HiveEntranceOrientation))]
+    public HiveEntranceOrientation? Orientation {
+        get;
+        init;
+    }
+
+    [StringLength(
+        ApiaryStayRules.NoteMaxLength)]
+    public string? Note { get; init; }
+}
+public sealed record CreateApiaryLocationRequest {
+    [StringLength(
+        ApiaryLocationRules.NameMaxLength)]
+    public string? Name { get; init; }
+
+    [Required]
+    [Range(
+        typeof(decimal),
+        "-90",
+        "90")]
+    public decimal? Latitude { get; init; }
+
+    [Required]
+    [Range(
+        typeof(decimal),
+        "-180",
+        "180")]
+    public decimal? Longitude { get; init; }
+
+    public int? AltitudeMeters { get; init; }
+
+    [StringLength(
+        ApiaryLocationRules.CadastralParcelNumberMaxLength)]
+    public string? CadastralParcelNumber { get; init; }
+
+    [StringLength(
+        ApiaryLocationRules.DescriptionMaxLength)]
+    public string? Description { get; init; }
 }
