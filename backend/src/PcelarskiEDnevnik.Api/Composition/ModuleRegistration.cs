@@ -1,6 +1,7 @@
 ﻿using PcelarskiEDnevnik.Modules.Accounts;
 using PcelarskiEDnevnik.Modules.Apiaries;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
+using PcelarskiEDnevnik.Modules.Hives;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
 
@@ -15,7 +16,8 @@ internal static class ModuleRegistration {
             .AddIdentityWebModule()
             .AddAccountsModule(configuration)
             .AddBeekeeperProfilesModule(configuration)
-            .AddApiariesModule(configuration);
+            .AddApiariesModule(configuration)
+            .AddHivesModule(configuration);
 
         return services;
     }

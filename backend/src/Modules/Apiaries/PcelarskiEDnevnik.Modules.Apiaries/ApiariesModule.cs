@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
+using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries;
@@ -15,6 +17,9 @@ public static class ApiariesModule {
                     configuration.GetConnectionString(
                         "Database"));
             });
+        services.AddScoped<
+            IApiaryAccessChecker,
+            ApiaryAccessChecker>();
 
         return services;
     }
