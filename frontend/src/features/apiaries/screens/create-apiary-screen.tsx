@@ -12,14 +12,14 @@ import {
 } from 'react-hook-form';
 
 import {
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import {
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
 
 import {
   useCreateApiary,
@@ -78,39 +78,39 @@ const orientationOptions: {
   value: HiveEntranceOrientation;
   label: string;
 }[] = [
-  {
-    value: 'north',
-    label: 'Sever',
-  },
-  {
-    value: 'northEast',
-    label: 'Severoistok',
-  },
-  {
-    value: 'east',
-    label: 'Istok',
-  },
-  {
-    value: 'southEast',
-    label: 'Jugoistok',
-  },
-  {
-    value: 'south',
-    label: 'Jug',
-  },
-  {
-    value: 'southWest',
-    label: 'Jugozapad',
-  },
-  {
-    value: 'west',
-    label: 'Zapad',
-  },
-  {
-    value: 'northWest',
-    label: 'Severozapad',
-  },
-];
+    {
+      value: 'north',
+      label: 'Sever',
+    },
+    {
+      value: 'northEast',
+      label: 'Severoistok',
+    },
+    {
+      value: 'east',
+      label: 'Istok',
+    },
+    {
+      value: 'southEast',
+      label: 'Jugoistok',
+    },
+    {
+      value: 'south',
+      label: 'Jug',
+    },
+    {
+      value: 'southWest',
+      label: 'Jugozapad',
+    },
+    {
+      value: 'west',
+      label: 'Zapad',
+    },
+    {
+      value: 'northWest',
+      label: 'Severozapad',
+    },
+  ];
 
 export function CreateApiaryScreen() {
   const createMutation =
@@ -229,18 +229,14 @@ export function CreateApiaryScreen() {
     };
 
   return (
-    <KeyboardAvoidingView
+    <View
       className="
-        flex-1
-        bg-background
-      "
-      behavior={
-        Platform.OS === 'ios'
-          ? 'padding'
-          : undefined
-      }
+      flex-1
+      bg-background
+    "
     >
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={
           false
@@ -639,19 +635,19 @@ export function CreateApiaryScreen() {
 
               {errors.orientation
                 ?.message && (
-                <Text
-                  className="
+                  <Text
+                    className="
                     mt-2
                     text-sm
                     text-error
                   "
-                >
-                  {
-                    errors.orientation
-                      .message
-                  }
-                </Text>
-              )}
+                  >
+                    {
+                      errors.orientation
+                        .message
+                    }
+                  </Text>
+                )}
             </View>
           )}
         />
@@ -698,9 +694,9 @@ export function CreateApiaryScreen() {
             >
               {createMutation
                 .error instanceof
-              Error
+                Error
                 ? createMutation
-                    .error.message
+                  .error.message
                 : 'Pčelinjak nije moguće sačuvati.'}
             </Text>
           </View>
@@ -723,11 +719,10 @@ export function CreateApiaryScreen() {
             rounded-2xl
             bg-primary
             px-5
-            ${
-              createMutation
-                .isPending
-                ? 'opacity-60'
-                : ''
+            ${createMutation
+              .isPending
+              ? 'opacity-60'
+              : ''
             }
           `}
         >
@@ -744,8 +739,8 @@ export function CreateApiaryScreen() {
               : 'Kreiraj pčelinjak'}
           </Text>
         </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
@@ -754,22 +749,22 @@ type FormTextInputProps = {
   value: string;
 
   onChangeText:
-    (value: string) => void;
+  (value: string) => void;
 
   placeholder?: string;
   error?: string;
   multiline?: boolean;
 
   keyboardType?:
-    | 'default'
-    | 'decimal-pad'
-    | 'numbers-and-punctuation';
+  | 'default'
+  | 'decimal-pad'
+  | 'numbers-and-punctuation';
 
   autoCapitalize?:
-    | 'none'
-    | 'sentences'
-    | 'words'
-    | 'characters';
+  | 'none'
+  | 'sentences'
+  | 'words'
+  | 'characters';
 };
 
 function FormTextInput({
@@ -826,15 +821,13 @@ function FormTextInput({
           px-4
           text-base
           text-foreground
-          ${
-            multiline
-              ? 'min-h-28 py-3'
-              : 'h-14'
+          ${multiline
+            ? 'min-h-28 py-3'
+            : 'h-14'
           }
-          ${
-            error
-              ? 'border-error'
-              : 'border-border'
+          ${error
+            ? 'border-error'
+            : 'border-border'
           }
           bg-surface
         `}
@@ -876,20 +869,18 @@ function Choice({
         border
         px-4
         py-3
-        ${
-          selected
-            ? 'border-primary bg-primary'
-            : 'border-border bg-surface'
+        ${selected
+          ? 'border-primary bg-primary'
+          : 'border-border bg-surface'
         }
       `}
     >
       <Text
         className={`
           font-semibold
-          ${
-            selected
-              ? 'text-background'
-              : 'text-foreground'
+          ${selected
+            ? 'text-background'
+            : 'text-foreground'
           }
         `}
       >
@@ -921,10 +912,9 @@ function OrientationChoice({
         border
         px-3
         py-3
-        ${
-          selected
-            ? 'border-primary bg-primary'
-            : 'border-border bg-surface'
+        ${selected
+          ? 'border-primary bg-primary'
+          : 'border-border bg-surface'
         }
       `}
     >
@@ -932,10 +922,9 @@ function OrientationChoice({
         className={`
           text-sm
           font-semibold
-          ${
-            selected
-              ? 'text-background'
-              : 'text-foreground'
+          ${selected
+            ? 'text-background'
+            : 'text-foreground'
           }
         `}
       >

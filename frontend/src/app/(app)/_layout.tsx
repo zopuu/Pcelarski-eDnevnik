@@ -5,15 +5,20 @@ import {
 import {
   AppDrawerProvider,
 } from '@/providers/app-drawer-provider';
+import {
+  KeyboardProvider,
+} from 'react-native-keyboard-controller';
 
 export default function AppLayout() {
   return (
-    <AppDrawerProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      />
-    </AppDrawerProvider>
+    <KeyboardProvider>
+      <AppDrawerProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+      </AppDrawerProvider>
+    </KeyboardProvider>
   );
 }

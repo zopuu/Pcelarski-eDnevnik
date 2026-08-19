@@ -46,6 +46,9 @@ import {
 import {
   HiveColorPicker,
 } from '../components/hive-color-picker';
+import {
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
 
 type CreateHiveScreenProps = {
   apiaryId: string;
@@ -230,18 +233,14 @@ export function CreateHiveScreen({
     };
 
   return (
-    <KeyboardAvoidingView
+    <View
       className="
-        flex-1
-        bg-background
-      "
-      behavior={
-        Platform.OS === 'ios'
-          ? 'padding'
-          : undefined
-      }
+      flex-1
+      bg-background
+    "
     >
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={
           false
@@ -642,8 +641,8 @@ export function CreateHiveScreen({
               : 'Kreiraj košnicu'}
           </Text>
         </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 
