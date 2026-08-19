@@ -191,10 +191,15 @@ export function HomeScreen() {
                 item.name
               }
               onPress={() => {
-                /*
-                 * Apiary Details route
-                 * comes next.
-                 */
+                router.push({
+                  pathname:
+                    '/apiaries/[apiaryId]',
+
+                  params: {
+                    apiaryId:
+                      item.id,
+                  },
+                });
               }}
             />
           )}

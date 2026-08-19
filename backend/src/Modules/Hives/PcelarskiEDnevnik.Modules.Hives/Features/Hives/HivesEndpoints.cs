@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.Create;
+using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetAll;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 
@@ -14,6 +15,8 @@ public static class HivesEndpoints {
                     "/api/apiaries/{apiaryId:guid}/hives")
                 .WithTags("Hives")
                 .RequireAuthorization();
+        apiaryHivesGroup
+            .MapGetHivesEndpoint();
 
         apiaryHivesGroup
             .MapCreateHiveEndpoint();
