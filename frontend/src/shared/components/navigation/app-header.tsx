@@ -86,18 +86,6 @@ export function AppHeader({
           >
             Pčelarski eDnevnik
           </Text>
-
-          <IconButton
-            icon="qr-code-outline"
-            accessibilityLabel="QR skener"
-            iconColor={
-              colors.foreground
-            }
-            onPress={
-              onQrPress ??
-              (() => {})
-            }
-          />
         </View>
       </SafeAreaView>
     </LinearGradient>
