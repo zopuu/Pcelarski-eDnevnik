@@ -18,6 +18,8 @@ export const colors = {
 
   white: '#FFFFFF',
   black: '#000000',
+
+  onPrimary: '#FFFFFF',
 } as const;
 
 export const gradients = {

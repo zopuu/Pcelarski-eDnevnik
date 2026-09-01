@@ -1,13 +1,10 @@
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Text,
   View,
 } from 'react-native';
-
-import {
-  AddApiaryCard,
-} from '@/features/apiaries/components/add-apiary-card';
 
 import {
   ApiaryCard,
@@ -30,8 +27,17 @@ import {
 } from '@/shared/components/navigation/app-header';
 
 import {
+  ContextualActionBar,
+} from '@/shared/components/contextual-action-bar/contextual-action-bar';
+
+import {
+  useContextualActionBarContentPadding,
+} from '@/shared/components/contextual-action-bar/use-contextual-action-bar-content-padding';
+
+import {
   colors,
 } from '@/shared/theme/colors';
+
 import {
   router,
 } from 'expo-router';
@@ -49,8 +55,12 @@ export function HomeScreen() {
 
   const {
     data: profile,
-    isLoading: isProfileLoading,
+    isLoading:
+      isProfileLoading,
   } = useMyProfile();
+
+  const contentBottomPadding =
+    useContextualActionBarContentPadding();
 
   const greeting =
     isProfileLoading
@@ -59,12 +69,123 @@ export function HomeScreen() {
         ? `Dobro došli, ${profile.firstName}`
         : 'Dobro došli';
 
+  const showComingSoon = (
+    feature: string,
+  ) => {
+    Alert.alert(
+      feature,
+      'Ova funkcionalnost će biti dodata u narednom koraku razvoja.',
+    );
+  };
+
   return (
-    <View className="flex-1 bg-background">
+    <View
+      className="
+        flex-1
+        bg-background
+      "
+    >
       <AppHeader
         onMenuPress={
           openDrawer
         }
+      />
+
+      <ContextualActionBar
+        leftActions={[
+          {
+            key: 'sales',
+            label: 'Prodaja',
+            icon: 'cash-outline',
+
+            accessibilityLabel:
+              'Otvori prodaju',
+
+            onPress: () => {
+              showComingSoon(
+                'Prodaja',
+              );
+            },
+          },
+
+          {
+            key:
+              'forage-observation',
+
+            label:
+              'Zapažanje',
+
+            icon:
+              'leaf-outline',
+
+            accessibilityLabel:
+              'Dodaj zapažanje paše',
+
+            onPress: () => {
+              showComingSoon(
+                'Zapažanje paše',
+              );
+            },
+          },
+        ]}
+        primaryAction={{
+          key:
+            'create-apiary',
+
+          label:
+            'Pčelinjak',
+
+          icon:
+            'add',
+
+          accessibilityLabel:
+            'Dodaj pčelinjak',
+
+          onPress: () => {
+            router.push(
+              '/apiaries/create',
+            );
+          },
+        }}
+        rightActions={[
+          {
+            key: 'scan',
+
+            label:
+              'Skeniraj',
+
+            icon:
+              'scan-outline',
+
+            accessibilityLabel:
+              'Skeniraj QR ili bar kod',
+
+            onPress: () => {
+              showComingSoon(
+                'Skeniranje',
+              );
+            },
+          },
+
+          {
+            key: 'more',
+
+            label:
+              'Više',
+
+            icon:
+              'ellipsis-horizontal',
+
+            accessibilityLabel:
+              'Prikaži više akcija',
+
+            onPress: () => {
+              showComingSoon(
+                'Više akcija',
+              );
+            },
+          },
+        ]}
       />
 
       {areApiariesLoading ? (
@@ -88,7 +209,8 @@ export function HomeScreen() {
               text-muted
             "
           >
-            Učitavanje pčelinjaka...
+            Učitavanje
+            pčelinjaka...
           </Text>
         </View>
       ) : areApiariesError ? (
@@ -124,15 +246,24 @@ export function HomeScreen() {
             false
           }
           contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 20,
-            paddingBottom: 40,
+            paddingHorizontal:
+              16,
+
+            paddingTop:
+              20,
+
+            paddingBottom:
+              contentBottomPadding,
           }}
           ItemSeparatorComponent={() => (
-            <View className="h-4" />
+            <View
+              className="h-4"
+            />
           )}
           ListHeaderComponent={
-            <View className="mb-5">
+            <View
+              className="mb-5"
+            >
               <Text
                 className="
                   text-2xl
@@ -151,9 +282,11 @@ export function HomeScreen() {
                   text-muted
                 "
               >
-                {apiaries.length === 0
+                {apiaries.length ===
+                0
                   ? 'Još nemate pčelinjaka'
-                  : apiaries.length === 1
+                  : apiaries.length ===
+                      1
                     ? '1 pčelinjak'
                     : `${apiaries.length} pčelinjaka`}
               </Text>
@@ -177,9 +310,12 @@ export function HomeScreen() {
                   text-muted
                 "
               >
-                Dodajte prvi pčelinjak
-                kako biste počeli sa
-                vođenjem evidencije.
+                Još nemate
+                evidentiranih
+                pčelinjaka.
+                Dodajte prvi
+                pomoću centralnog
+                dugmeta Pčelinjak.
               </Text>
             </View>
           }
@@ -203,17 +339,6 @@ export function HomeScreen() {
               }}
             />
           )}
-          ListFooterComponent={
-            <View className="mt-4">
-              <AddApiaryCard
-                onPress={() => {
-                  router.push(
-                    '/apiaries/create',
-                  );
-                }}
-              />
-            </View>
-          }
         />
       )}
     </View>
