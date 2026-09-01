@@ -38,8 +38,7 @@ public static class UpdateApiaryEndpoint {
                     apiary.Update(
                         request.IdentificationNumber,
                         request.Name,
-                        request.Type,
-                        request.Status);
+                        request.Type);
 
                     try {
                         await dbContext.SaveChangesAsync(

@@ -83,9 +83,9 @@ export function ApiaryHivesScreen({
   const {
     data: apiary,
     isLoading:
-      isApiaryLoading,
+    isApiaryLoading,
     isError:
-      isApiaryError,
+    isApiaryError,
   } =
     useApiary(
       apiaryId,
@@ -94,9 +94,9 @@ export function ApiaryHivesScreen({
   const {
     data: hives = [],
     isLoading:
-      areHivesLoading,
+    areHivesLoading,
     isError:
-      areHivesError,
+    areHivesError,
   } =
     useHives(
       apiaryId,
@@ -221,10 +221,18 @@ export function ApiaryHivesScreen({
   };
 
   const handleEditPress = () => {
-    Alert.alert(
-      'Izmena pčelinjaka',
-      'Forma za izmenu još nije povezana.',
+    setIsMoreOpen(
+      false,
     );
+
+    router.push({
+      pathname:
+        '/apiaries/[apiaryId]/edit',
+
+      params: {
+        apiaryId,
+      },
+    });
   };
 
   const handleDeletePress = () => {
@@ -443,8 +451,8 @@ export function ApiaryHivesScreen({
 
                 {apiary
                   .identificationNumber && (
-                  <View
-                    className="
+                    <View
+                      className="
                       rounded-full
                       border
                       border-border
@@ -452,21 +460,21 @@ export function ApiaryHivesScreen({
                       px-3
                       py-1.5
                     "
-                  >
-                    <Text
-                      className="
+                    >
+                      <Text
+                        className="
                         text-xs
                         font-semibold
                         text-muted
                       "
-                    >
-                      {
-                        apiary
-                          .identificationNumber
-                      }
-                    </Text>
-                  </View>
-                )}
+                      >
+                        {
+                          apiary
+                            .identificationNumber
+                        }
+                      </Text>
+                    </View>
+                  )}
               </View>
 
               <View
@@ -497,10 +505,10 @@ export function ApiaryHivesScreen({
                     "
                   >
                     {hives.length ===
-                    0
+                      0
                       ? 'Nema košnica'
                       : hives.length ===
-                          1
+                        1
                         ? '1 košnica'
                         : `${hives.length} košnica`}
                   </Text>

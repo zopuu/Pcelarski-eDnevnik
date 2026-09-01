@@ -1,10 +1,7 @@
 import type {
-  ApiaryType,
-} from './create-apiary';
-
-export type ApiaryStatus =
-  | 'active'
-  | 'inactive';
+  ApiaryStatus,
+  ApiaryType
+} from './apiary';
 
 export type ApiaryDetails = {
   id: string;

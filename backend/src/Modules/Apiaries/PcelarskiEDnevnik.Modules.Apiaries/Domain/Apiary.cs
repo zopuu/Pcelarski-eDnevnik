@@ -68,12 +68,10 @@ public sealed class Apiary {
     public void Update(
     string? identificationNumber,
     string? name,
-    ApiaryType? type,
-    ApiaryStatus? status) {
+    ApiaryType? type) {
         IdentificationNumber = NormalizeOptionalText(identificationNumber);
         Name = NormalizeOptionalText(name);
         Type = type;
-        Status = status;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
     private static string? NormalizeOptionalText(

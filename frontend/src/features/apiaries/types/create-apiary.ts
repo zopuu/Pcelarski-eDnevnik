@@ -1,7 +1,7 @@
-export type ApiaryType =
-  | 'stationary'
-  | 'migratory';
-
+import type {
+  ApiaryType,
+  ApiaryStatus
+} from './apiary';
 export type HiveEntranceOrientation =
   | 'north'
   | 'northEast'

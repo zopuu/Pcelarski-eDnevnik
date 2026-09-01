@@ -20,9 +20,4 @@ public sealed record UpdateApiaryRequest {
         typeof(ApiaryType),
         ErrorMessage = "Invalid apiary type.")]
     public ApiaryType? Type { get; init; }
-
-    [EnumDataType(
-        typeof(ApiaryStatus),
-        ErrorMessage = "Invalid apiary status.")]
-    public ApiaryStatus? Status { get; init; }
 }
