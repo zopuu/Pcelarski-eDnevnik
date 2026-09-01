@@ -24,14 +24,6 @@ export function useUpdateApiary() {
       request:
         UpdateApiaryFormRequest,
     ) => {
-      /*
-       * Keep these sequential.
-       *
-       * If the Apiary update fails
-       * with e.g. 409 duplicate
-       * identification number,
-       * the stay is not modified.
-       */
       const apiary =
         await updateApiary(
           request.apiaryId,

@@ -5,16 +5,17 @@ import {
 import {
   getCurrentApiaryStay,
 } from '@/features/apiaries/api/get-current-apiary-stay';
+import { apiaryQueryKeys } from '../apiary-query-keys';
 
 export function useCurrentApiaryStay(
   apiaryId: string,
 ) {
   return useQuery({
-    queryKey: [
-      'apiary-stays',
-      apiaryId,
-      'current',
-    ],
+    queryKey:
+      apiaryQueryKeys
+        .currentStay(
+          apiaryId,
+        ),
 
     queryFn: () =>
       getCurrentApiaryStay(
@@ -23,5 +24,6 @@ export function useCurrentApiaryStay(
 
     enabled:
       Boolean(apiaryId),
+      
   });
 }
