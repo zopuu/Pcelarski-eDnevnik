@@ -1,8 +1,10 @@
 import type {
+  HiveEntranceOrientation,
+} from './apiary-stay';
+import type {
   ApiaryType,
-    ApiaryStatus
+  ApiaryStatus,
 } from './apiary';
-
 export type UpdateApiaryRequest = {
   identificationNumber:
     | string
@@ -41,4 +43,21 @@ export type UpdateApiaryResponse = {
   updatedAtUtc:
     | string
     | null;
+};
+
+export type UpdateApiaryStayRequest = {
+  orientation:
+    | HiveEntranceOrientation
+    | null;
+};
+
+export type UpdateApiaryFormRequest = {
+  apiaryId: string;
+  stayId: string;
+
+  apiary:
+    UpdateApiaryRequest;
+
+  stay:
+    UpdateApiaryStayRequest;
 };

@@ -18,28 +18,38 @@ import {
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
 
 import {
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
+
+import {
   useApiary,
-} from '../hooks/use-apiary';
+} from '@/features/apiaries/hooks/use-apiary';
+
+import {
+  useCurrentApiaryStay,
+} from '@/features/apiaries/hooks/use-current-apiary-stay';
 
 import {
   useUpdateApiary,
-} from '../hooks/use-update-apiary';
+} from '@/features/apiaries/hooks/use-update-apiary';
 
 import {
   updateApiarySchema,
-  type UpdateApiaryFormValues,
-} from '../schemas/update-apiary-schema';
+} from '@/features/apiaries/schemas/update-apiary-schema';
 
 import type {
-  UpdateApiaryRequest,
-} from '../types/update-apiary';
+  UpdateApiaryFormValues,
+} from '@/features/apiaries/schemas/update-apiary-schema';
+
+import type {
+  HiveEntranceOrientation,
+} from '@/features/apiaries/types/apiary-stay';
 
 import {
   colors,
@@ -60,22 +70,71 @@ function optionalText(
     : null;
 }
 
+const orientationOptions: {
+  value: HiveEntranceOrientation;
+  label: string;
+}[] = [
+  {
+    value: 'north',
+    label: 'Sever',
+  },
+  {
+    value: 'northEast',
+    label: 'Severoistok',
+  },
+  {
+    value: 'east',
+    label: 'Istok',
+  },
+  {
+    value: 'southEast',
+    label: 'Jugoistok',
+  },
+  {
+    value: 'south',
+    label: 'Jug',
+  },
+  {
+    value: 'southWest',
+    label: 'Jugozapad',
+  },
+  {
+    value: 'west',
+    label: 'Zapad',
+  },
+  {
+    value: 'northWest',
+    label: 'Severozapad',
+  },
+];
+
 export function EditApiaryScreen({
   apiaryId,
 }: EditApiaryScreenProps) {
   const {
     data: apiary,
-    isLoading,
-    isError,
+    isLoading:
+      isApiaryLoading,
+    isError:
+      isApiaryError,
   } =
     useApiary(
       apiaryId,
     );
 
-  const updateMutation =
-    useUpdateApiary(
+  const {
+    data: currentStay,
+    isLoading:
+      isStayLoading,
+    isError:
+      isStayError,
+  } =
+    useCurrentApiaryStay(
       apiaryId,
     );
+
+  const updateMutation =
+    useUpdateApiary();
 
   const {
     control,
@@ -94,14 +153,22 @@ export function EditApiaryScreen({
 
       defaultValues: {
         name: '',
+
         identificationNumber:
           '',
+
         type: null,
+
+        orientation:
+          null,
       },
     });
 
   useEffect(() => {
-    if (!apiary) {
+    if (
+      !apiary ||
+      !currentStay
+    ) {
       return;
     }
 
@@ -116,9 +183,14 @@ export function EditApiaryScreen({
 
       type:
         apiary.type,
+
+      orientation:
+        currentStay
+          .orientation,
     });
   }, [
     apiary,
+    currentStay,
     reset,
   ]);
 
@@ -127,37 +199,52 @@ export function EditApiaryScreen({
       values:
         UpdateApiaryFormValues,
     ) => {
-      const request:
-        UpdateApiaryRequest = {
-        name:
-          optionalText(
-            values.name,
-          ),
-
-        identificationNumber:
-          optionalText(
-            values
-              .identificationNumber,
-          ),
-
-        type:
-          values.type,
-      };
+      if (!currentStay) {
+        return;
+      }
 
       try {
         await updateMutation
-          .mutateAsync(
-            request,
-          );
+          .mutateAsync({
+            apiaryId,
+
+            stayId:
+              currentStay.id,
+
+            apiary: {
+              name:
+                optionalText(
+                  values.name,
+                ),
+
+              identificationNumber:
+                optionalText(
+                  values
+                    .identificationNumber,
+                ),
+
+              type:
+                values.type,
+            },
+
+            stay: {
+              orientation:
+                values.orientation,
+            },
+          });
 
         router.back();
       } catch {
         /*
-         * Mutation error is rendered
-         * below the form.
+         * Mutation error is
+         * displayed below.
          */
       }
     };
+
+  const isLoading =
+    isApiaryLoading ||
+    isStayLoading;
 
   if (isLoading) {
     return (
@@ -189,53 +276,30 @@ export function EditApiaryScreen({
   }
 
   if (
-    isError ||
+    isApiaryError ||
     !apiary
   ) {
     return (
-      <View
-        className="
-          flex-1
-          items-center
-          justify-center
-          bg-background
-          px-8
-        "
-      >
-        <Text
-          className="
-            text-center
-            text-base
-            font-semibold
-            text-error
-          "
-        >
+      <LoadError
+        message="
           Nije moguće učitati
           podatke o pčelinjaku.
-        </Text>
+        "
+      />
+    );
+  }
 
-        <Pressable
-          onPress={() => {
-            router.back();
-          }}
-          className="
-            mt-5
-            rounded-2xl
-            bg-primary
-            px-5
-            py-3
-          "
-        >
-          <Text
-            className="
-              font-bold
-              text-background
-            "
-          >
-            Nazad
-          </Text>
-        </Pressable>
-      </View>
+  if (
+    isStayError ||
+    !currentStay
+  ) {
+    return (
+      <LoadError
+        message="
+          Trenutni boravak
+          pčelinjaka nije pronađen.
+        "
+      />
     );
   }
 
@@ -246,7 +310,8 @@ export function EditApiaryScreen({
         bg-background
       "
     >
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={
           false
@@ -298,134 +363,208 @@ export function EditApiaryScreen({
           o pčelinjaku.
         </Text>
 
-        <View
+        <Text
           className="
+            mb-3
             mt-8
+            text-lg
+            font-bold
+            text-foreground
           "
         >
-          <Controller
-            control={control}
-            name="name"
-            render={({
-              field,
-            }) => (
-              <FormTextInput
-                label="Naziv"
-                value={
-                  field.value
-                }
-                onChangeText={
-                  field.onChange
-                }
-                placeholder="npr. Glavni pčelinjak"
-                error={
-                  errors.name
-                    ?.message
-                }
-              />
-            )}
-          />
+          Podaci o pčelinjaku
+        </Text>
 
-          <Controller
-            control={control}
-            name="identificationNumber"
-            render={({
-              field,
-            }) => (
-              <FormTextInput
-                label="Identifikacioni broj"
-                value={
-                  field.value
-                }
-                onChangeText={
-                  field.onChange
-                }
-                placeholder="RS123456789012"
-                autoCapitalize="characters"
-                error={
-                  errors
-                    .identificationNumber
-                    ?.message
-                }
-              />
-            )}
-          />
+        <Controller
+          control={control}
+          name="name"
+          render={({
+            field,
+          }) => (
+            <FormTextInput
+              label="Naziv"
+              value={
+                field.value
+              }
+              onChangeText={
+                field.onChange
+              }
+              placeholder="npr. Glavni pčelinjak"
+              error={
+                errors.name
+                  ?.message
+              }
+            />
+          )}
+        />
 
-          <Controller
-            control={control}
-            name="type"
-            render={({
-              field,
-            }) => (
-              <View
+        <Controller
+          control={control}
+          name="identificationNumber"
+          render={({
+            field,
+          }) => (
+            <FormTextInput
+              label="Identifikacioni broj"
+              value={
+                field.value
+              }
+              onChangeText={
+                field.onChange
+              }
+              placeholder="RS123456789012"
+              autoCapitalize="characters"
+              error={
+                errors
+                  .identificationNumber
+                  ?.message
+              }
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="type"
+          render={({
+            field,
+          }) => (
+            <View className="mb-4">
+              <Text
                 className="
-                  mb-4
+                  mb-2
+                  text-sm
+                  font-semibold
+                  text-foreground
                 "
               >
-                <Text
-                  className="
-                    mb-2
-                    text-sm
-                    font-semibold
-                    text-foreground
-                  "
-                >
-                  Tip pčelinjaka
-                </Text>
+                Tip pčelinjaka
+              </Text>
 
-                <View
-                  className="
-                    flex-row
-                    flex-wrap
-                    gap-2
-                  "
-                >
-                  <Choice
-                    label="Stacionarni"
-                    selected={
+              <View
+                className="
+                  flex-row
+                  gap-2
+                "
+              >
+                <Choice
+                  label="Stacionarni"
+                  selected={
+                    field.value ===
+                    'stationary'
+                  }
+                  onPress={() => {
+                    field.onChange(
                       field.value ===
-                      'stationary'
-                    }
-                    onPress={() => {
-                      field.onChange(
-                        'stationary',
-                      );
-                    }}
-                  />
+                        'stationary'
+                        ? null
+                        : 'stationary',
+                    );
+                  }}
+                />
 
-                  <Choice
-                    label="Seleći"
-                    selected={
+                <Choice
+                  label="Seleći"
+                  selected={
+                    field.value ===
+                    'migratory'
+                  }
+                  onPress={() => {
+                    field.onChange(
                       field.value ===
-                      'migratory'
-                    }
-                    onPress={() => {
-                      field.onChange(
-                        'migratory',
-                      );
-                    }}
-                  />
-                </View>
+                        'migratory'
+                        ? null
+                        : 'migratory',
+                    );
+                  }}
+                />
+              </View>
+            </View>
+          )}
+        />
 
-                {errors.type
-                  ?.message && (
-                  <Text
-                    className="
-                      mt-2
-                      text-sm
-                      text-error
-                    "
-                  >
-                    {
-                      errors.type
-                        .message
-                    }
-                  </Text>
+        <Text
+          className="
+            mb-1
+            mt-6
+            text-lg
+            font-bold
+            text-foreground
+          "
+        >
+          Položaj pčelinjaka
+        </Text>
+
+        <Text
+          className="
+            mb-4
+            text-sm
+            text-muted
+          "
+        >
+          Odaberite smer prema kome
+          su okrenuta leta košnica.
+        </Text>
+
+        <Controller
+          control={control}
+          name="orientation"
+          render={({
+            field,
+          }) => (
+            <View className="mb-4">
+              <View
+                className="
+                  flex-row
+                  flex-wrap
+                  gap-2
+                "
+              >
+                {orientationOptions.map(
+                  (option) => (
+                    <OrientationChoice
+                      key={
+                        option.value
+                      }
+                      label={
+                        option.label
+                      }
+                      selected={
+                        field.value ===
+                        option.value
+                      }
+                      onPress={() => {
+                        field.onChange(
+                          field.value ===
+                            option.value
+                            ? null
+                            : option.value,
+                        );
+                      }}
+                    />
+                  ),
                 )}
               </View>
-            )}
-          />
-        </View>
+
+              {errors.orientation
+                ?.message && (
+                <Text
+                  className="
+                    mt-2
+                    text-sm
+                    text-error
+                  "
+                >
+                  {
+                    errors
+                      .orientation
+                      .message
+                  }
+                </Text>
+              )}
+            </View>
+          )}
+        />
 
         {updateMutation
           .isError && (
@@ -496,21 +635,72 @@ export function EditApiaryScreen({
               : 'Sačuvaj izmene'}
           </Text>
         </Pressable>
-      </ScrollView>
+      </KeyboardAwareScrollView>
+    </View>
+  );
+}
+
+type LoadErrorProps = {
+  message: string;
+};
+
+function LoadError({
+  message,
+}: LoadErrorProps) {
+  return (
+    <View
+      className="
+        flex-1
+        items-center
+        justify-center
+        bg-background
+        px-8
+      "
+    >
+      <Text
+        className="
+          text-center
+          text-base
+          font-semibold
+          text-error
+        "
+      >
+        {message}
+      </Text>
+
+      <Pressable
+        onPress={() => {
+          router.back();
+        }}
+        className="
+          mt-5
+          rounded-2xl
+          bg-primary
+          px-5
+          py-3
+        "
+      >
+        <Text
+          className="
+            font-bold
+            text-background
+          "
+        >
+          Nazad
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 type FormTextInputProps = {
   label: string;
-
   value: string;
 
   onChangeText:
     (value: string) => void;
 
   placeholder?: string;
-
   error?: string;
 
   autoCapitalize?:
@@ -529,11 +719,7 @@ function FormTextInput({
   autoCapitalize = 'sentences',
 }: FormTextInputProps) {
   return (
-    <View
-      className="
-        mb-4
-      "
-    >
+    <View className="mb-4">
       <Text
         className="
           mb-2
@@ -593,7 +779,9 @@ function FormTextInput({
 type ChoiceProps = {
   label: string;
   selected: boolean;
-  onPress: () => void;
+
+  onPress:
+    () => void;
 };
 
 function Choice({
@@ -601,6 +789,52 @@ function Choice({
   selected,
   onPress,
 }: ChoiceProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={`
+        flex-1
+        items-center
+        rounded-2xl
+        border
+        px-4
+        py-3
+        ${
+          selected
+            ? 'border-primary bg-primary'
+            : 'border-border bg-surface'
+        }
+      `}
+    >
+      <Text
+        className={`
+          font-semibold
+          ${
+            selected
+              ? 'text-background'
+              : 'text-foreground'
+          }
+        `}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+type OrientationChoiceProps = {
+  label: string;
+  selected: boolean;
+
+  onPress:
+    () => void;
+};
+
+function OrientationChoice({
+  label,
+  selected,
+  onPress,
+}: OrientationChoiceProps) {
   return (
     <Pressable
       onPress={onPress}

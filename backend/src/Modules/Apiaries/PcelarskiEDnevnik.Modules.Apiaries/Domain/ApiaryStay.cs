@@ -115,4 +115,11 @@ public sealed class ApiaryStay {
             ? null
             : value.Trim();
     }
+    public void UpdateOrientation(
+    HiveEntranceOrientation? orientation) {
+        Orientation = orientation;
+
+        UpdatedAtUtc =
+            DateTimeOffset.UtcNow;
+    }
 }

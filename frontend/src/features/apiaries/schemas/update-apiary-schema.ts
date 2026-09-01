@@ -36,6 +36,20 @@ export const updateApiarySchema =
           'migratory',
         ])
         .nullable(),
+
+    orientation:
+      z
+        .enum([
+          'north',
+          'northEast',
+          'east',
+          'southEast',
+          'south',
+          'southWest',
+          'west',
+          'northWest',
+        ])
+        .nullable(),
   });
 
 export type UpdateApiaryFormValues =

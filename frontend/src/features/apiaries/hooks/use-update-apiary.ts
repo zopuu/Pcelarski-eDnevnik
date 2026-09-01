@@ -5,29 +5,56 @@ import {
 
 import {
   updateApiary,
-} from '../api/update-apiary';
+} from '@/features/apiaries/api/update-apiary';
+
+import {
+  updateApiaryStay,
+} from '@/features/apiaries/api/update-apiary-stay';
 
 import type {
-  UpdateApiaryRequest,
-} from '../types/update-apiary';
+  UpdateApiaryFormRequest,
+} from '@/features/apiaries/types/update-apiary';
 
-export function useUpdateApiary(
-  apiaryId: string,
-) {
+export function useUpdateApiary() {
   const queryClient =
     useQueryClient();
 
   return useMutation({
-    mutationFn: (
+    mutationFn: async (
       request:
-        UpdateApiaryRequest,
-    ) =>
-      updateApiary(
-        apiaryId,
-        request,
-      ),
+        UpdateApiaryFormRequest,
+    ) => {
+      /*
+       * Keep these sequential.
+       *
+       * If the Apiary update fails
+       * with e.g. 409 duplicate
+       * identification number,
+       * the stay is not modified.
+       */
+      const apiary =
+        await updateApiary(
+          request.apiaryId,
+          request.apiary,
+        );
 
-    onSuccess: async () => {
+      const stay =
+        await updateApiaryStay(
+          request.apiaryId,
+          request.stayId,
+          request.stay,
+        );
+
+      return {
+        apiary,
+        stay,
+      };
+    },
+
+    onSuccess: async (
+      _data,
+      variables,
+    ) => {
       await Promise.all([
         queryClient
           .invalidateQueries({
@@ -40,7 +67,16 @@ export function useUpdateApiary(
           .invalidateQueries({
             queryKey: [
               'apiary',
-              apiaryId,
+              variables.apiaryId,
+            ],
+          }),
+
+        queryClient
+          .invalidateQueries({
+            queryKey: [
+              'apiary-stays',
+              variables.apiaryId,
+              'current',
             ],
           }),
       ]);

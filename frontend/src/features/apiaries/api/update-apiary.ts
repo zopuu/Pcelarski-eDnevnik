@@ -7,7 +7,7 @@ import type {
   UpdateApiaryResponse,
 } from '../types/update-apiary';
 
-export async function updateApiary(
+export function updateApiary(
   apiaryId: string,
   request: UpdateApiaryRequest,
 ): Promise<UpdateApiaryResponse> {

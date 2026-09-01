@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
-using PcelarskiEDnevnik.SharedKernel.Errors;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.Update;
 
@@ -25,116 +24,30 @@ public static class UpdateApiaryStayEndpoint {
                             .GetBeekeeperIdAsync(
                                 cancellationToken);
 
-                    var apiaryExists =
-                        await dbContext.Apiaries
-                            .AsNoTracking()
-                            .AnyAsync(
-                                x =>
-                                    x.Id == apiaryId &&
-                                    x.OwnerBeekeeperId ==
-                                    beekeeperId,
-                                cancellationToken);
-
-                    if (!apiaryExists) {
-                        return Results.NotFound();
-                    }
-
-                    var locationId =
-                        request.LocationId!.Value;
-
-                    var locationExists =
-                        await dbContext.Locations
-                            .AsNoTracking()
-                            .AnyAsync(
-                                x =>
-                                    x.Id == locationId &&
-                                    x.OwnerBeekeeperId ==
-                                    beekeeperId,
-                                cancellationToken);
-
-                    if (!locationExists) {
-                        return Results.NotFound();
-                    }
-
                     var stay =
                         await dbContext.ApiaryStays
                             .SingleOrDefaultAsync(
                                 x =>
                                     x.Id == stayId &&
-                                    x.ApiaryId == apiaryId,
+                                    x.ApiaryId == apiaryId &&
+                                    x.EndedAtUtc == null &&
+                                    dbContext.Apiaries.Any(
+                                        apiary =>
+                                            apiary.Id ==
+                                                x.ApiaryId &&
+                                            apiary.OwnerBeekeeperId ==
+                                                beekeeperId),
                                 cancellationToken);
 
                     if (stay is null) {
                         return Results.NotFound();
                     }
 
-                    var startedAtUtc =
-                        request.StartedAtUtc!.Value;
+                    stay.UpdateOrientation(
+                        request.Orientation);
 
-                    var overlapQuery =
-                        dbContext.ApiaryStays
-                            .AsNoTracking()
-                            .Where(
-                                x =>
-                                    x.ApiaryId == apiaryId &&
-                                    x.Id != stayId);
-
-                    bool overlappingStayExists;
-
-                    if (request.EndedAtUtc.HasValue) {
-                        var endedAtUtc =
-                            request.EndedAtUtc.Value;
-
-                        overlappingStayExists =
-                            await overlapQuery.AnyAsync(
-                                x =>
-                                    x.StartedAtUtc <
-                                        endedAtUtc
-                                    &&
-                                    (
-                                        x.EndedAtUtc == null ||
-                                        x.EndedAtUtc >
-                                            startedAtUtc
-                                    ),
-                                cancellationToken);
-                    }
-                    else {
-                        overlappingStayExists =
-                            await overlapQuery.AnyAsync(
-                                x =>
-                                    x.EndedAtUtc == null ||
-                                    x.EndedAtUtc >
-                                        startedAtUtc,
-                                cancellationToken);
-                    }
-
-                    if (overlappingStayExists) {
-                        throw new ConflictException(
-                            "apiary_stays.overlapping_stay",
-                            "The apiary already has another stay that overlaps the requested period.");
-                    }
-
-                    stay.Update(
-                        locationId,
-                        startedAtUtc,
-                        request.EndedAtUtc,
-                        request.Orientation,
-                        request.Note);
-
-                    try {
-                        await dbContext.SaveChangesAsync(
-                            cancellationToken);
-                    }
-                    catch (DbUpdateException exception)
-                        when (
-                            ApiaryStayPersistenceErrors
-                                .IsActiveStayUniqueViolation(
-                                    exception)) {
-                        throw new ConflictException(
-                            "apiary_stays.overlapping_stay",
-                            "The apiary already has another stay that overlaps the requested period.",
-                            exception);
-                    }
+                    await dbContext.SaveChangesAsync(
+                        cancellationToken);
 
                     var response =
                         new UpdateApiaryStayResponse(
@@ -149,7 +62,8 @@ public static class UpdateApiaryStayEndpoint {
                             stay.CreatedAtUtc,
                             stay.UpdatedAtUtc);
 
-                    return Results.Ok(response);
+                    return Results.Ok(
+                        response);
                 });
 
         return endpoints;

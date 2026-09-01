@@ -2,15 +2,9 @@ import type {
   ApiaryType,
   ApiaryStatus
 } from './apiary';
-export type HiveEntranceOrientation =
-  | 'north'
-  | 'northEast'
-  | 'east'
-  | 'southEast'
-  | 'south'
-  | 'southWest'
-  | 'west'
-  | 'northWest';
+import type {
+  HiveEntranceOrientation
+} from './apiary-stay';
 
 export interface CreateApiaryRequest {
   identificationNumber:
