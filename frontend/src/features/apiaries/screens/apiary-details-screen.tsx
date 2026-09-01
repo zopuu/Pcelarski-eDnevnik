@@ -6,17 +6,14 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  Alert,
   Text,
   View,
 } from 'react-native';
-
+import { useState } from 'react';
 import {
   useApiary,
 } from '@/features/apiaries/hooks/use-apiary';
-
-import {
-  AddHiveCard,
-} from '@/features/hives/components/add-hive-card';
 
 import {
   HiveCard,
@@ -37,6 +34,17 @@ import {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  ActionOverflowSheet,
+} from '@/shared/components/contextual-action-bar/action-overflow-sheet';
+
+import {
+  ContextualActionBar,
+} from '@/shared/components/contextual-action-bar/contextual-action-bar';
+
+import {
+  Screen,
+} from '@/shared/components/screen/screen';
 
 type ApiaryHivesScreenProps = {
   apiaryId: string;
@@ -67,6 +75,11 @@ export function ApiaryHivesScreen({
     openDrawer,
   } = useAppDrawer();
 
+  const [
+    isMoreOpen,
+    setIsMoreOpen,
+  ] = useState(false);
+
   const {
     data: apiary,
     isLoading:
@@ -89,18 +102,22 @@ export function ApiaryHivesScreen({
       apiaryId,
     );
 
+  const header = (
+    <AppHeader
+      onMenuPress={
+        openDrawer
+      }
+    />
+  );
+
   if (
     isApiaryLoading ||
     areHivesLoading
   ) {
     return (
-      <View className="flex-1 bg-background">
-        <AppHeader
-          onMenuPress={
-            openDrawer
-          }
-        />
-
+      <Screen
+        header={header}
+      >
         <View
           className="
             flex-1
@@ -124,7 +141,7 @@ export function ApiaryHivesScreen({
             Učitavanje košnica...
           </Text>
         </View>
-      </View>
+      </Screen>
     );
   }
 
@@ -134,13 +151,9 @@ export function ApiaryHivesScreen({
     !apiary
   ) {
     return (
-      <View className="flex-1 bg-background">
-        <AppHeader
-          onMenuPress={
-            openDrawer
-          }
-        />
-
+      <Screen
+        header={header}
+      >
         <View
           className="
             flex-1
@@ -161,7 +174,7 @@ export function ApiaryHivesScreen({
             podatke o pčelinjaku.
           </Text>
         </View>
-      </View>
+      </Screen>
     );
   }
 
@@ -174,255 +187,437 @@ export function ApiaryHivesScreen({
       apiary.type,
     );
 
-  return (
-    <View className="flex-1 bg-background">
-      <AppHeader
-        onMenuPress={
-          openDrawer
-        }
-      />
+  const handleAddHive = () => {
+    router.push({
+      pathname:
+        '/apiaries/[apiaryId]/hives/create',
 
-      <FlatList
-        data={hives}
-        keyExtractor={(
-          hive,
-        ) => hive.id}
-        showsVerticalScrollIndicator={
-          false
+      params: {
+        apiaryId,
+      },
+    });
+  };
+
+  const handleForagePress = () => {
+    Alert.alert(
+      'Profil paše',
+      'Prikaz profila paše biće povezan kada implementiramo rutu za pašu.',
+    );
+  };
+
+  const handleRelocationsPress =
+    () => {
+      Alert.alert(
+        'Istorija selidbi',
+        'Istorija selidbi biće povezana kada implementiramo odgovarajući ekran.',
+      );
+    };
+
+  const handleScanPress = () => {
+    Alert.alert(
+      'Skeniranje',
+      'Skeniranje QR ili bar koda biće dodato kasnije.',
+    );
+  };
+
+  const handleEditPress = () => {
+    Alert.alert(
+      'Izmena pčelinjaka',
+      'Forma za izmenu još nije povezana.',
+    );
+  };
+
+  const handleDeletePress = () => {
+    Alert.alert(
+      'Obriši pčelinjak',
+      'Da li sigurno želite da obrišete ovaj pčelinjak?',
+      [
+        {
+          text: 'Otkaži',
+          style: 'cancel',
+        },
+        {
+          text: 'Obriši',
+          style:
+            'destructive',
+
+          onPress: () => {
+            Alert.alert(
+              'Brisanje',
+              'Backend brisanje ćemo povezati kada implementiramo Delete funkcionalnost.',
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  return (
+    <>
+      <Screen
+        header={header}
+        contextualActionBar={
+          <ContextualActionBar
+            leftActions={[
+              {
+                key: 'forage',
+                label: 'Paša',
+                icon:
+                  'leaf-outline',
+
+                accessibilityLabel:
+                  'Otvori profil paše',
+
+                onPress:
+                  handleForagePress,
+              },
+
+              {
+                key:
+                  'relocations',
+
+                label:
+                  'Selidbe',
+
+                icon:
+                  'swap-horizontal-outline',
+
+                accessibilityLabel:
+                  'Prikaži istoriju selidbi pčelinjaka',
+
+                onPress:
+                  handleRelocationsPress,
+              },
+            ]}
+            primaryAction={{
+              key:
+                'add-hive',
+
+              label:
+                'Košnica',
+
+              icon: 'add',
+
+              accessibilityLabel:
+                'Dodaj košnicu',
+
+              onPress:
+                handleAddHive,
+            }}
+            rightActions={[
+              {
+                key: 'scan',
+
+                label:
+                  'Skeniraj',
+
+                icon:
+                  'scan-outline',
+
+                accessibilityLabel:
+                  'Skeniraj QR ili bar kod',
+
+                onPress:
+                  handleScanPress,
+              },
+
+              {
+                key: 'more',
+
+                label:
+                  'Više',
+
+                icon:
+                  'ellipsis-horizontal',
+
+                accessibilityLabel:
+                  'Prikaži više opcija za pčelinjak',
+
+                onPress: () => {
+                  setIsMoreOpen(
+                    true,
+                  );
+                },
+              },
+            ]}
+          />
         }
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 40,
-        }}
-        ItemSeparatorComponent={() => (
-          <View className="h-3" />
-        )}
-        ListHeaderComponent={
-          <View>
-            <Pressable
-              onPress={() => {
-                router.back();
-              }}
+      >
+        <FlatList
+          data={hives}
+          keyExtractor={(
+            hive,
+          ) => hive.id}
+          showsVerticalScrollIndicator={
+            false
+          }
+          contentContainerStyle={{
+            paddingHorizontal:
+              16,
+
+            paddingBottom:
+              24,
+          }}
+          ItemSeparatorComponent={() => (
+            <View
+              className="h-3"
+            />
+          )}
+          ListHeaderComponent={
+            <View>
+              <Pressable
+                onPress={() => {
+                  router.back();
+                }}
+                className="
+                  mb-3
+                  mt-3
+                  self-start
+                  py-2
+                "
+              >
+                <Text
+                  className="
+                    text-sm
+                    font-semibold
+                    text-primary
+                  "
+                >
+                  ← Pčelinjaci
+                </Text>
+              </Pressable>
+
+              <Text
+                className="
+                  text-xs
+                  font-bold
+                  uppercase
+                  tracking-widest
+                  text-muted
+                "
+              >
+                Pčelinjak
+              </Text>
+
+              <Text
+                numberOfLines={2}
+                className="
+                  mt-1
+                  text-3xl
+                  font-bold
+                  tracking-tight
+                  text-foreground
+                "
+              >
+                {displayName}
+              </Text>
+
+              <View
+                className="
+                  mt-3
+                  flex-row
+                  flex-wrap
+                  gap-2
+                "
+              >
+                {typeLabel && (
+                  <View
+                    className="
+                      rounded-full
+                      bg-primary/10
+                      px-3
+                      py-1.5
+                    "
+                  >
+                    <Text
+                      className="
+                        text-xs
+                        font-bold
+                        text-primary
+                      "
+                    >
+                      {typeLabel}
+                    </Text>
+                  </View>
+                )}
+
+                {apiary
+                  .identificationNumber && (
+                  <View
+                    className="
+                      rounded-full
+                      border
+                      border-border
+                      bg-surface
+                      px-3
+                      py-1.5
+                    "
+                  >
+                    <Text
+                      className="
+                        text-xs
+                        font-semibold
+                        text-muted
+                      "
+                    >
+                      {
+                        apiary
+                          .identificationNumber
+                      }
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View
+                className="
+                  mb-4
+                  mt-8
+                  flex-row
+                  items-end
+                  justify-between
+                "
+              >
+                <View>
+                  <Text
+                    className="
+                      text-xl
+                      font-bold
+                      text-foreground
+                    "
+                  >
+                    Košnice
+                  </Text>
+
+                  <Text
+                    className="
+                      mt-1
+                      text-sm
+                      text-muted
+                    "
+                  >
+                    {hives.length ===
+                    0
+                      ? 'Nema košnica'
+                      : hives.length ===
+                          1
+                        ? '1 košnica'
+                        : `${hives.length} košnica`}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          }
+          ListEmptyComponent={
+            <View
               className="
-                mb-3
-                mt-3
-                self-start
-                py-2
+                rounded-3xl
+                border
+                border-border
+                bg-surface
+                px-6
+                py-8
               "
             >
               <Text
                 className="
-                  text-sm
+                  text-center
+                  text-base
                   font-semibold
-                  text-primary
+                  text-foreground
                 "
               >
-                ← Pčelinjaci
+                Pčelinjak još nema
+                košnica.
               </Text>
-            </Pressable>
 
-            <Text
-              className="
-                text-xs
-                font-bold
-                uppercase
-                tracking-widest
-                text-muted
-              "
-            >
-              Pčelinjak
-            </Text>
-
-            <Text
-              numberOfLines={2}
-              className="
-                mt-1
-                text-3xl
-                font-bold
-                tracking-tight
-                text-foreground
-              "
-            >
-              {displayName}
-            </Text>
-
-            <View
-              className="
-                mt-3
-                flex-row
-                flex-wrap
-                gap-2
-              "
-            >
-              {typeLabel && (
-                <View
-                  className="
-                    rounded-full
-                    bg-primary/10
-                    px-3
-                    py-1.5
-                  "
-                >
-                  <Text
-                    className="
-                      text-xs
-                      font-bold
-                      text-primary
-                    "
-                  >
-                    {
-                      typeLabel
-                    }
-                  </Text>
-                </View>
-              )}
-
-              {apiary
-                .identificationNumber && (
-                <View
-                  className="
-                    rounded-full
-                    border
-                    border-border
-                    bg-surface
-                    px-3
-                    py-1.5
-                  "
-                >
-                  <Text
-                    className="
-                      text-xs
-                      font-semibold
-                      text-muted
-                    "
-                  >
-                    {
-                      apiary
-                        .identificationNumber
-                    }
-                  </Text>
-                </View>
-              )}
+              <Text
+                className="
+                  mt-2
+                  text-center
+                  text-sm
+                  text-muted
+                "
+              >
+                Dodajte prvu košnicu
+                pomoću centralnog
+                dugmeta Košnica.
+              </Text>
             </View>
-
-            <View
-              className="
-                mb-4
-                mt-8
-                flex-row
-                items-end
-                justify-between
-              "
-            >
-              <View>
-                <Text
-                  className="
-                    text-xl
-                    font-bold
-                    text-foreground
-                  "
-                >
-                  Košnice
-                </Text>
-
-                <Text
-                  className="
-                    mt-1
-                    text-sm
-                    text-muted
-                  "
-                >
-                  {hives.length ===
-                  0
-                    ? 'Nema košnica'
-                    : hives.length ===
-                        1
-                      ? '1 košnica'
-                      : `${hives.length} košnica`}
-                </Text>
-              </View>
-            </View>
-          </View>
-        }
-        ListEmptyComponent={
-          <View
-            className="
-              rounded-3xl
-              border
-              border-border
-              bg-surface
-              px-6
-              py-8
-            "
-          >
-            <Text
-              className="
-                text-center
-                text-base
-                font-semibold
-                text-foreground
-              "
-            >
-              Pčelinjak još nema
-              košnica.
-            </Text>
-
-            <Text
-              className="
-                mt-2
-                text-center
-                text-sm
-                text-muted
-              "
-            >
-              Dodajte prvu košnicu
-              da biste počeli sa
-              evidencijom.
-            </Text>
-          </View>
-        }
-        renderItem={({
-          item,
-        }) => (
-          <HiveCard
-            label={
-              item.label
-            }
-            identificationNumber={
-              item
-                .identificationNumber
-            }
-            type={
-              item.type
-            }
-            status={
-              item.status
-            }
-            onPress={() => {
-              /*
-               * Hive details
-               * comes later.
-               */
-            }}
-          />
-        )}
-        ListFooterComponent={
-          <View className="mt-4">
-            <AddHiveCard
+          }
+          renderItem={({
+            item,
+          }) => (
+            <HiveCard
+              label={
+                item.label
+              }
+              identificationNumber={
+                item
+                  .identificationNumber
+              }
+              type={
+                item.type
+              }
+              status={
+                item.status
+              }
               onPress={() => {
-                router.push({
-                  pathname:
-                    '/apiaries/[apiaryId]/hives/create',
-
-                  params: {
-                    apiaryId,
-                  },
-                });
+                /*
+                 * Hive details
+                 * comes later.
+                 */
               }}
             />
-          </View>
+          )}
+        />
+      </Screen>
+
+      <ActionOverflowSheet
+        visible={
+          isMoreOpen
         }
+        onClose={() => {
+          setIsMoreOpen(
+            false,
+          );
+        }}
+        title="Pčelinjak"
+        actions={[
+          {
+            key: 'edit',
+
+            label: 'Izmeni',
+
+            icon:
+              'create-outline',
+
+            accessibilityLabel:
+              'Izmeni podatke o pčelinjaku',
+
+            onPress:
+              handleEditPress,
+          },
+
+          {
+            key: 'delete',
+
+            label: 'Obriši',
+
+            icon:
+              'trash-outline',
+
+            accessibilityLabel:
+              'Obriši pčelinjak',
+
+            variant:
+              'danger',
+
+            onPress:
+              handleDeletePress,
+          },
+        ]}
       />
-    </View>
+    </>
   );
 }
