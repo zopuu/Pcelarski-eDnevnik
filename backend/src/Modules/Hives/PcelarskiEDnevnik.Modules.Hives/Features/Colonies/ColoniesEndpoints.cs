@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.Create;
+using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.CreateWithQueen;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.GetCurrentByHive;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.Update;
 
@@ -25,6 +26,7 @@ public static class ColoniesEndpoints {
 
         hiveColoniesGroup
             .MapGetCurrentColonyByHiveEndpoint();
+        hiveColoniesGroup.MapCreateColonyWithQueenEndpoint();
 
         var coloniesGroup =
             endpoints

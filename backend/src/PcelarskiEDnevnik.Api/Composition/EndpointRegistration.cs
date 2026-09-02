@@ -23,10 +23,8 @@ internal static class EndpointRegistration {
         app.MapApiariesEndpoints();
         app.MapLocationsEndpoints();
         app.MapProfileEndpoints();
-        app.MapHivesEndpoints();
         app.MapColoniesEndpoints();
         app.MapHivesEndpoints();
-        app.MapColoniesEndpoints();
         app.MapQueensEndpoints();
 
         return app;

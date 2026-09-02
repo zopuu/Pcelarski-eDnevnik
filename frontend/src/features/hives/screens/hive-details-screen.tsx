@@ -44,6 +44,13 @@ import {
 import {
     colors,
 } from '@/shared/theme/colors';
+import {
+    useCurrentColony,
+} from '@/features/colonies/hooks/use-current-colony';
+
+import {
+    useCurrentQueen,
+} from '@/features/queens/hooks/use-current-queen';
 
 type HiveDetailsScreenProps = {
     hiveId: string;
@@ -195,6 +202,24 @@ export function HiveDetailsScreen({
         useHive(
             hiveId,
         );
+    const currentColonyQuery =
+        useCurrentColony(
+            hiveId,
+        );
+
+    const currentColony =
+        currentColonyQuery.data ??
+        null;
+
+    const currentQueenQuery =
+        useCurrentQueen(
+            currentColony?.id ??
+            null,
+        );
+
+    const currentQueen =
+        currentQueenQuery.data ??
+        null;
 
     const header = (
         <AppHeader
@@ -849,25 +874,223 @@ export function HiveDetailsScreen({
                         Društvo i matica
                     </SectionTitle>
 
-                    <DetailsCard>
-                        <PlaceholderEntity
-                            title="Pčelinje društvo"
-                            description="Trenutno društvo u košnici biće prikazano kada implementiramo modul društava."
-                        />
+                    {currentColonyQuery.isLoading ? (
+                        <DetailsCard>
+                            <View
+                                className="
+        items-center
+        py-4
+      "
+                            >
+                                <ActivityIndicator
+                                    color={
+                                        colors.primary
+                                    }
+                                />
 
+                                <Text
+                                    className="
+          mt-2
+          text-sm
+          text-muted
+        "
+                                >
+                                    Učitavanje društva...
+                                </Text>
+                            </View>
+                        </DetailsCard>
+                    ) : !currentColony ? (
+                        <DetailsCard>
+                            <Text
+                                className="
+        text-base
+        font-bold
+        text-foreground
+      "
+                            >
+                                Košnica nema evidentirano
+                                društvo i maticu
+                            </Text>
+
+                            <Text
+                                className="
+        mt-2
+        text-sm
+        leading-5
+        text-muted
+      "
+                            >
+                                Dodajte trenutno pčelinje
+                                društvo i njegovu maticu.
+                            </Text>
+
+                            <Pressable
+                                onPress={() => {
+                                    router.push({
+                                        pathname:
+                                            '/hives/[hiveId]/colony-queen/create',
+
+                                        params: {
+                                            hiveId,
+                                        },
+                                    });
+                                }}
+                                className="
+        mt-5
+        min-h-12
+        items-center
+        justify-center
+        rounded-2xl
+        bg-primary
+        px-4
+      "
+                            >
+                                <Text
+                                    className="
+          font-bold
+          text-background
+        "
+                                >
+                                    Dodaj društvo i maticu
+                                </Text>
+                            </Pressable>
+                        </DetailsCard>
+                    ) : (
                         <View
                             className="
-                my-4
-                h-px
-                bg-border
-              "
-                        />
+      gap-3
+    "
+                        >
+                            <EntitySummaryCard
+                                title="Pčelinje društvo"
+                                onPress={() => {
+                                    Alert.alert(
+                                        'Pčelinje društvo',
+                                        'Detaljan prikaz društva biće implementiran sledeće.',
+                                    );
+                                }}
+                            >
+                                <InfoRow
+                                    label="Status"
+                                    value={
+                                        getColonyStatusLabel(
+                                            currentColony.status,
+                                        )
+                                    }
+                                />
 
-                        <PlaceholderEntity
-                            title="Matica"
-                            description="Podaci o trenutnoj matici biće prikazani nakon povezivanja društava i matica."
-                        />
-                    </DetailsCard>
+                                <InfoRow
+                                    label="Poreklo"
+                                    value={
+                                        getColonyOriginLabel(
+                                            currentColony.origin,
+                                        )
+                                    }
+                                />
+
+                                <InfoRow
+                                    label="Formirano"
+                                    value={
+                                        formatDate(
+                                            currentColony
+                                                .formedOn,
+                                        )
+                                    }
+                                />
+
+                                <InfoRow
+                                    label="U košnici od"
+                                    value={
+                                        formatDate(
+                                            currentColony
+                                                .startedOn,
+                                        )
+                                    }
+                                    last
+                                />
+                            </EntitySummaryCard>
+
+                            {currentQueenQuery.isLoading ? (
+                                <DetailsCard>
+                                    <ActivityIndicator
+                                        color={
+                                            colors.primary
+                                        }
+                                    />
+                                </DetailsCard>
+                            ) : currentQueen ? (
+                                <EntitySummaryCard
+                                    title="Matica"
+                                    onPress={() => {
+                                        Alert.alert(
+                                            'Matica',
+                                            'Detaljan prikaz matice biće implementiran sledeće.',
+                                        );
+                                    }}
+                                >
+                                    <InfoRow
+                                        label="Status"
+                                        value={
+                                            getQueenStatusLabel(
+                                                currentQueen.status,
+                                            )
+                                        }
+                                    />
+
+                                    <InfoRow
+                                        label="Poreklo"
+                                        value={
+                                            getQueenOriginLabel(
+                                                currentQueen.origin,
+                                            )
+                                        }
+                                    />
+
+                                    <InfoRow
+                                        label="Rasa"
+                                        value={
+                                            currentQueen.breed ??
+                                            '—'
+                                        }
+                                    />
+
+                                    <InfoRow
+                                        label="Izlegla se"
+                                        value={
+                                            formatDate(
+                                                currentQueen
+                                                    .emergedOn,
+                                            )
+                                        }
+                                    />
+
+                                    <InfoRow
+                                        label="U društvu od"
+                                        value={
+                                            formatDate(
+                                                currentQueen
+                                                    .startedOn,
+                                            )
+                                        }
+                                        last
+                                    />
+                                </EntitySummaryCard>
+                            ) : (
+                                <DetailsCard>
+                                    <Text
+                                        className="
+            font-semibold
+            text-warning
+          "
+                                    >
+                                        Društvo postoji, ali
+                                        trenutna matica nije
+                                        evidentirana.
+                                    </Text>
+                                </DetailsCard>
+                            )}
+                        </View>
+                    )}
 
                     {hive.note && (
                         <>
@@ -1113,4 +1336,145 @@ function PlaceholderEntity({
             </Text>
         </View>
     );
+}
+function getColonyStatusLabel(
+  status: string,
+) {
+  switch (status) {
+    case 'active':
+      return 'Aktivno';
+
+    case 'dead':
+      return 'Uginulo';
+
+    case 'split':
+      return 'Podeljeno';
+
+    case 'merged':
+      return 'Spojeno';
+
+    case 'sold':
+      return 'Prodato';
+
+    case 'lost':
+      return 'Izgubljeno';
+
+    default:
+      return status;
+  }
+}
+
+function getColonyOriginLabel(
+  origin:
+    | string
+    | null,
+) {
+  switch (origin) {
+    case 'swarm':
+      return 'Roj';
+
+    case 'purchased':
+      return 'Kupljeno';
+
+    case 'split':
+      return 'Podelom';
+
+    default:
+      return '—';
+  }
+}
+
+function getQueenStatusLabel(
+  status: string,
+) {
+  switch (status) {
+    case 'active':
+      return 'Aktivna';
+
+    case 'dead':
+      return 'Uginula';
+
+    case 'killed':
+      return 'Ubijena';
+
+    case 'missing':
+      return 'Nestala';
+
+    default:
+      return status;
+  }
+}
+
+function getQueenOriginLabel(
+  origin:
+    | string
+    | null,
+) {
+  switch (origin) {
+    case 'purchased':
+      return 'Kupljena';
+
+    case 'produced':
+      return 'Odgojena';
+
+    default:
+      return '—';
+  }
+}
+type EntitySummaryCardProps = {
+  title: string;
+  children:
+    React.ReactNode;
+  onPress: () => void;
+};
+
+function EntitySummaryCard({
+  title,
+  children,
+  onPress,
+}: EntitySummaryCardProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className="
+        rounded-3xl
+        border
+        border-border
+        bg-surface
+        px-5
+        py-4
+      "
+    >
+      <View
+        className="
+          mb-2
+          flex-row
+          items-center
+          justify-between
+        "
+      >
+        <Text
+          className="
+            text-base
+            font-bold
+            text-foreground
+          "
+        >
+          {title}
+        </Text>
+
+        <Text
+          className="
+            text-xl
+            font-semibold
+            text-primary
+          "
+        >
+          ›
+        </Text>
+      </View>
+
+      {children}
+    </Pressable>
+  );
 }
