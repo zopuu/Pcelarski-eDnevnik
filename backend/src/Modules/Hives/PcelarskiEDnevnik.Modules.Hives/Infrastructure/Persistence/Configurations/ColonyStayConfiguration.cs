@@ -12,6 +12,7 @@ internal sealed class ColonyStayConfiguration
         EntityTypeBuilder<ColonyStay> builder) {
         builder.ToTable(
             "colony_stays",
+            "hives",
             table => {
                 table.HasCheckConstraint(
                     "ck_colony_stays_dates",

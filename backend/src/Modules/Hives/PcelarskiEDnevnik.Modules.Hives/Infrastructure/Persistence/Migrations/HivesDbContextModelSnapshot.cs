@@ -22,7 +22,119 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hive", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Colonies.Colony", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateOnly?>("FormedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("formed_on");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Origin")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("origin");
+
+                    b.Property<Guid>("OwnerBeekeeperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_beekeeper_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerBeekeeperId")
+                        .HasDatabaseName("ix_colonies_owner_beekeeper_id");
+
+                    b.ToTable("colonies", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_colonies_origin", "\"origin\" IS NULL\r\nOR \"origin\" IN (\r\n    'Swarm',\r\n    'Purchased',\r\n    'Split'\r\n)");
+
+                            t.HasCheckConstraint("ck_colonies_status", "\"status\" IN (\r\n    'Active',\r\n    'Dead',\r\n    'Split',\r\n    'Merged',\r\n    'Sold',\r\n    'Lost'\r\n)");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Colonies.ColonyStay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ColonyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("colony_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateOnly?>("EndedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("ended_on");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateOnly>("StartedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("started_on");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColonyId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_colony_stays_active_colony")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("HiveId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_colony_stays_active_hive")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("ColonyId", "StartedOn")
+                        .HasDatabaseName("ix_colony_stays_colony_started_on");
+
+                    b.HasIndex("HiveId", "StartedOn")
+                        .HasDatabaseName("ix_colony_stays_hive_started_on");
+
+                    b.ToTable("colony_stays", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_colony_stays_dates", "\"ended_on\" IS NULL\r\nOR \"ended_on\" >= \"started_on\"");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -110,7 +222,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                     b.ToTable("hives", "hives");
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveStay", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.HiveStay", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -152,11 +264,193 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveStay", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Queens.Queen", b =>
                 {
-                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hive", null)
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly?>("AcquiredOn")
+                        .HasColumnType("date")
+                        .HasColumnName("acquired_on");
+
+                    b.Property<string>("Breed")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("breed");
+
+                    b.Property<string>("Breeder")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("breeder");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateOnly?>("EmergedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("emerged_on");
+
+                    b.Property<string>("MarkingColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("marking_color_hex");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Origin")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("origin");
+
+                    b.Property<Guid>("OwnerBeekeeperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_beekeeper_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerBeekeeperId")
+                        .HasDatabaseName("ix_queens_owner_beekeeper_id");
+
+                    b.ToTable("queens", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_queens_origin", "\"origin\" IS NULL\r\nOR \"origin\" IN (\r\n    'Purchased',\r\n    'Produced'\r\n)");
+
+                            t.HasCheckConstraint("ck_queens_status", "\"status\" IN (\r\n    'Active',\r\n    'Dead',\r\n    'Killed',\r\n    'Missing'\r\n)");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Queens.QueenStay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ColonyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("colony_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("EndReason")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("end_reason");
+
+                    b.Property<DateOnly?>("EndedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("ended_on");
+
+                    b.Property<string>("IntroductionMethod")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("introduction_method");
+
+                    b.Property<string>("IntroductionOutcome")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("introduction_outcome");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("QueenId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("queen_id");
+
+                    b.Property<DateOnly>("StartedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("started_on");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColonyId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_queen_stays_active_colony")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("QueenId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_queen_stays_active_queen")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("ColonyId", "StartedOn")
+                        .HasDatabaseName("ix_queen_stays_colony_started_on");
+
+                    b.HasIndex("QueenId", "StartedOn")
+                        .HasDatabaseName("ix_queen_stays_queen_started_on");
+
+                    b.ToTable("queen_stays", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_queen_stays_dates", "\"ended_on\" IS NULL\r\nOR \"ended_on\" >= \"started_on\"");
+
+                            t.HasCheckConstraint("ck_queen_stays_end_reason", "\"end_reason\" IS NULL\r\nOR \"end_reason\" IN (\r\n    'Replaced',\r\n    'Dead',\r\n    'Killed',\r\n    'Missing',\r\n    'Removed',\r\n    'Swarmed',\r\n    'ColonyEnded',\r\n    'Other'\r\n)");
+
+                            t.HasCheckConstraint("ck_queen_stays_introduction_method", "\"introduction_method\" IS NULL\r\nOR \"introduction_method\" IN (\r\n    'Placement',\r\n    'Caged',\r\n    'Direct',\r\n    'Unknown',\r\n    'Other'\r\n)");
+
+                            t.HasCheckConstraint("ck_queen_stays_introduction_outcome", "\"introduction_outcome\" IS NULL\r\nOR \"introduction_outcome\" IN (\r\n    'Accepted',\r\n    'Killed',\r\n    'Missing',\r\n    'Unverified',\r\n    'Other'\r\n)");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Colonies.ColonyStay", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Colonies.Colony", null)
+                        .WithMany()
+                        .HasForeignKey("ColonyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
                         .WithMany()
                         .HasForeignKey("HiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.HiveStay", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
+                        .WithMany()
+                        .HasForeignKey("HiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Queens.QueenStay", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Colonies.Colony", null)
+                        .WithMany()
+                        .HasForeignKey("ColonyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Queens.Queen", null)
+                        .WithMany()
+                        .HasForeignKey("QueenId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

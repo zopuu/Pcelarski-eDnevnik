@@ -12,6 +12,7 @@ internal sealed class QueenStayConfiguration
         EntityTypeBuilder<QueenStay> builder) {
         builder.ToTable(
             "queen_stays",
+            "hives",
             table => {
                 table.HasCheckConstraint(
                     "ck_queen_stays_dates",

@@ -11,6 +11,7 @@ internal sealed class ColonyConfiguration
         EntityTypeBuilder<Colony> builder) {
         builder.ToTable(
             "colonies",
+            "hives",
             table => {
                 table.HasCheckConstraint(
                     "ck_colonies_origin",

@@ -11,6 +11,7 @@ internal sealed class QueenConfiguration
         EntityTypeBuilder<Queen> builder) {
         builder.ToTable(
             "queens",
+            "hives",
             table => {
                 table.HasCheckConstraint(
                     "ck_queens_origin",
