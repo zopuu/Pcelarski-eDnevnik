@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using PcelarskiEDnevnik.Modules.Hives.Domain;
+using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.Hives.Create;
 

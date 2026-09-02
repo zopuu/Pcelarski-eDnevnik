@@ -1,4 +1,4 @@
-﻿namespace PcelarskiEDnevnik.Modules.Hives.Domain;
+﻿namespace PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 public enum HiveMaterial {
     Wood = 1,

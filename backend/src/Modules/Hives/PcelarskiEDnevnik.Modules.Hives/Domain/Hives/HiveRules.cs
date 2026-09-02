@@ -1,4 +1,4 @@
-﻿namespace PcelarskiEDnevnik.Modules.Hives.Domain;
+﻿namespace PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 public static class HiveRules {
     public const int IdentificationNumberLength = 10;

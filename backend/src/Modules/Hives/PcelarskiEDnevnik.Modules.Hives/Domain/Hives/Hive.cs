@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace PcelarskiEDnevnik.Modules.Hives.Domain;
+namespace PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 public sealed class Hive {
     private Hive() {

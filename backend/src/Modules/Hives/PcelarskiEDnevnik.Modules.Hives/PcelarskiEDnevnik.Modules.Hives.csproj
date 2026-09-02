@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Folder Include="Features\HiveStays\" />
+    <Folder Include="Features\Queens\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
   </ItemGroup>
 

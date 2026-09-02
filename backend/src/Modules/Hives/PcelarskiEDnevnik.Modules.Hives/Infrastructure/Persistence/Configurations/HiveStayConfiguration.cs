@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PcelarskiEDnevnik.Modules.Hives.Domain;
+using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Configurations;
 
