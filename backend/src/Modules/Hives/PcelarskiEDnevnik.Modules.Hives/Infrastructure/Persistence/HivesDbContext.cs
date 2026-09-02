@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
+using PcelarskiEDnevnik.Modules.Hives.Domain.Queens;
 using System.Reflection.Emit;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
@@ -18,6 +19,10 @@ public sealed class HivesDbContext(
 
     public DbSet<ColonyStay> ColonyStays =>
         Set<ColonyStay>();
+    public DbSet<Queen> Queens =>
+        Set<Queen>();
+    public DbSet<QueenStay> QueenStays =>
+        Set<QueenStay>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder) {

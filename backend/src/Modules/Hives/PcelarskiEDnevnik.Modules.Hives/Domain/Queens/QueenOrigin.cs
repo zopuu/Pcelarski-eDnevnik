@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace PcelarskiEDnevnik.Modules.Hives.Domain.Queens;
 
-namespace PcelarskiEDnevnik.Modules.Hives.Domain.Queens {
-    internal class QueenOrigin {
-    }
+public enum QueenOrigin {
+    Purchased = 1,
+    Produced = 2
 }
