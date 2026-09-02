@@ -571,10 +571,15 @@ export function ApiaryHivesScreen({
                 item.status
               }
               onPress={() => {
-                /*
-                 * Hive details
-                 * comes later.
-                 */
+                router.push({
+                  pathname:
+                    '/hives/[hiveId]',
+
+                  params: {
+                    hiveId:
+                      item.id,
+                  },
+                });
               }}
             />
           )}
