@@ -35,8 +35,10 @@ import type {
 
 import type {
   CreateApiaryRequest,
-  HiveEntranceOrientation,
 } from '@/features/apiaries/types/create-apiary';
+import type {
+  HiveEntranceOrientation,
+} from '@/features/apiaries/types/apiary-stay';
 
 import {
   colors,

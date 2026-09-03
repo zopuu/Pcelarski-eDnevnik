@@ -38,6 +38,57 @@ public static class CreateHiveEndpoint {
                         return Results.NotFound();
                     }
 
+                    var today =
+                        DateOnly.FromDateTime(
+                            DateTime.UtcNow);
+
+                    if (request.ManufactureDate > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.ManufactureDate)
+                                ] =
+                                [
+                                    "Manufacture date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.PurchaseDate > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.PurchaseDate)
+                                ] =
+                                [
+                                    "Purchase date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (
+                        request.ManufactureDate >
+                        request.PurchaseDate) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.ManufactureDate)
+                                ] =
+                                [
+                                    "Manufacture date cannot be after purchase date."
+                                ]
+                            });
+                    }
+
                     var hive =
                         Hive.Create(
                             beekeeperId,

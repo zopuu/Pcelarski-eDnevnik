@@ -3,6 +3,7 @@ import {
 } from 'zod';
 
 import {
+  getCurrentUtcDateOnly,
   isDateOnly,
 } from '@/shared/utils/date-only';
 
@@ -132,7 +133,53 @@ export const createHiveSchema =
               'Izaberite ispravan datum nabavke.',
           },
         ),
-  });
+  }).superRefine(
+    (
+      values,
+      context,
+    ) => {
+      const today =
+        getCurrentUtcDateOnly();
+
+      if (
+        values.manufactureDate &&
+        values.manufactureDate > today
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['manufactureDate'],
+          message:
+            'Datum proizvodnje ne može biti u budućnosti.',
+        });
+      }
+
+      if (
+        values.purchaseDate &&
+        values.purchaseDate > today
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['purchaseDate'],
+          message:
+            'Datum nabavke ne može biti u budućnosti.',
+        });
+      }
+
+      if (
+        values.manufactureDate &&
+        values.purchaseDate &&
+        values.manufactureDate >
+          values.purchaseDate
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['manufactureDate'],
+          message:
+            'Datum proizvodnje ne može biti posle datuma nabavke.',
+        });
+      }
+    },
+  );
 
 export type CreateHiveFormInput =
   z.input<

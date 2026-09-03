@@ -9,6 +9,7 @@ import {
 import {
   Controller,
   useForm,
+  useWatch,
 } from 'react-hook-form';
 
 import {
@@ -46,6 +47,9 @@ import {
 import {
   DatePickerField,
 } from '@/shared/components/date-picker-field';
+import {
+  getCurrentUtcDateOnly,
+} from '@/shared/utils/date-only';
 import {
   HiveColorPicker,
 } from '../components/hive-color-picker';
@@ -167,6 +171,21 @@ export function CreateHiveScreen({
         purchaseDate: '',
       },
     });
+
+  const manufactureDate =
+    useWatch({
+      control,
+      name: 'manufactureDate',
+    });
+
+  const purchaseDate =
+    useWatch({
+      control,
+      name: 'purchaseDate',
+    });
+
+  const today =
+    getCurrentUtcDateOnly();
 
   const onSubmit =
     async (
@@ -545,6 +564,12 @@ export function CreateHiveScreen({
               onChange={
                 field.onChange
               }
+              maximumDate={
+                purchaseDate &&
+                purchaseDate < today
+                  ? purchaseDate
+                  : today
+              }
               error={
                 errors
                   .manufactureDate
@@ -568,6 +593,11 @@ export function CreateHiveScreen({
               onChange={
                 field.onChange
               }
+              minimumDate={
+                manufactureDate ||
+                undefined
+              }
+              maximumDate={today}
               error={
                 errors
                   .purchaseDate

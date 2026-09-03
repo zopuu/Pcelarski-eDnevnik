@@ -39,6 +39,15 @@ export function formatDateOnly(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
+export function getCurrentUtcDateOnly() {
+  const now = new Date();
+  const year = String(now.getUTCFullYear()).padStart(4, '0');
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
 export function formatDateOnlyForDisplay(value: string) {
   const [year, month, day] = value.split('-');
 

@@ -42,6 +42,10 @@ public sealed class Hive {
         ColorHex =
             NormalizeColorHex(colorHex);
 
+        ValidateDates(
+            manufactureDate,
+            purchaseDate);
+
         ManufactureDate =
             manufactureDate;
 
@@ -185,5 +189,31 @@ public sealed class Hive {
         }
 
         return normalized.ToUpperInvariant();
+    }
+
+    private static void ValidateDates(
+        DateOnly? manufactureDate,
+        DateOnly? purchaseDate) {
+        var today =
+            DateOnly.FromDateTime(
+                DateTime.UtcNow);
+
+        if (manufactureDate > today) {
+            throw new ArgumentException(
+                "Manufacture date cannot be in the future.",
+                nameof(manufactureDate));
+        }
+
+        if (purchaseDate > today) {
+            throw new ArgumentException(
+                "Purchase date cannot be in the future.",
+                nameof(purchaseDate));
+        }
+
+        if (manufactureDate > purchaseDate) {
+            throw new ArgumentException(
+                "Manufacture date cannot be after purchase date.",
+                nameof(manufactureDate));
+        }
     }
 }
