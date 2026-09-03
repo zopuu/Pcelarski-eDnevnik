@@ -52,6 +52,9 @@ import {
     useCurrentQueen,
 } from '@/features/queens/hooks/use-current-queen';
 import {
+    HiveHeaderIllustration,
+} from '@/features/hives/components/hive-header-illustration';
+import {
     QueenMarkingColorSwatch,
 } from '@/features/queens/components/queen-marking-color-swatch';
 
@@ -694,44 +697,11 @@ export function HiveDetailsScreen({
                             </View>
                         </View>
 
-                        {hive.colorHex ? (
-                            <View
-                                accessibilityLabel={`Boja košnice ${hive.colorHex}`}
-                                className="
-                  h-14
-                  w-14
-                  rounded-2xl
-                  border
-                  border-border
-                "
-                                style={{
-                                    backgroundColor:
-                                        hive.colorHex,
-                                }}
-                            />
-                        ) : (
-                            <View
-                                className="
-                  h-14
-                  w-14
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  border
-                  border-border
-                  bg-surface
-                "
-                            >
-                                <Text
-                                    className="
-                    text-xs
-                    text-muted
-                  "
-                                >
-                                    Bez boje
-                                </Text>
-                            </View>
-                        )}
+                        <HiveHeaderIllustration
+                            colorHex={
+                                hive.colorHex
+                            }
+                        />
                     </View>
 
                     <SectionTitle>
