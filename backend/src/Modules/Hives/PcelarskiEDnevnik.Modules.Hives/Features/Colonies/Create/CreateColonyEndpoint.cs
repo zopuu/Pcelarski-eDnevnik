@@ -62,6 +62,34 @@ public static class CreateColonyEndpoint {
                             "The hive already has an active colony.");
                     }
 
+                    var today =
+                        DateOnly.FromDateTime(
+                            DateTime.UtcNow);
+
+                    if (request.FormedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.FormedOn)] =
+                                [
+                                    "Colony formation date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.StartedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.StartedOn)] =
+                                [
+                                    "Colony stay start date cannot be in the future."
+                                ]
+                            });
+                    }
+
                     if (
                         request.FormedOn is not null &&
                         request.StartedOn <

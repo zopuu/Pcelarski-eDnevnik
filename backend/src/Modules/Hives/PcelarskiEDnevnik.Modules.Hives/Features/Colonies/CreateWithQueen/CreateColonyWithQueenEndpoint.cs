@@ -79,6 +79,85 @@ public static class CreateColonyWithQueenEndpoint {
                     var queenStartedOn =
                         request.QueenStartedOn!.Value;
 
+                    var today =
+                        DateOnly.FromDateTime(
+                            DateTime.UtcNow);
+
+                    if (request.ColonyFormedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.ColonyFormedOn)
+                                ] =
+                                [
+                                    "Colony formation date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (colonyStartedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.ColonyStartedOn)
+                                ] =
+                                [
+                                    "Colony stay start date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.QueenEmergedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.QueenEmergedOn)
+                                ] =
+                                [
+                                    "Queen emergence date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.QueenAcquiredOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.QueenAcquiredOn)
+                                ] =
+                                [
+                                    "Queen acquisition date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (queenStartedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.QueenStartedOn)
+                                ] =
+                                [
+                                    "Queen stay start date cannot be in the future."
+                                ]
+                            });
+                    }
+
                     if (
                         request.ColonyFormedOn
                             is DateOnly formedOn &&
@@ -116,11 +195,31 @@ public static class CreateColonyWithQueenEndpoint {
                     }
 
                     if (
+                        request.QueenAcquiredOn
+                            is DateOnly queenAcquiredDate &&
+                        request.ColonyFormedOn
+                            is DateOnly colonyFormedDate &&
+                        queenAcquiredDate > colonyFormedDate) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [
+                                    nameof(
+                                        request.QueenAcquiredOn)
+                                ] =
+                                [
+                                    "Queen acquisition date cannot be after the colony formation date."
+                                ]
+                            });
+                    }
+
+                    if (
                         request.QueenEmergedOn
                             is DateOnly queenEmergedOn &&
                         request.QueenAcquiredOn
-                            is DateOnly acquiredOn &&
-                        acquiredOn < queenEmergedOn) {
+                            is DateOnly queenAcquiredOn &&
+                        queenAcquiredOn < queenEmergedOn) {
                         return Results.ValidationProblem(
                             new Dictionary<
                                 string,

@@ -39,7 +39,8 @@ public static class CreateQueenEndpoint {
                             .Select(
                                 x => new {
                                     x.Id,
-                                    x.Status
+                                    x.Status,
+                                    x.FormedOn
                                 })
                             .SingleOrDefaultAsync(
                                 cancellationToken);
@@ -72,10 +73,85 @@ public static class CreateQueenEndpoint {
                             "The colony already has an active queen.");
                     }
 
+                    var colonyStayStartedOn =
+                        await dbContext.ColonyStays
+                            .AsNoTracking()
+                            .Where(
+                                x =>
+                                    x.ColonyId ==
+                                    colonyId &&
+                                    x.EndedOn == null)
+                            .Select(
+                                x =>
+                                    (DateOnly?)x.StartedOn)
+                            .SingleOrDefaultAsync(
+                                cancellationToken);
+
+                    if (colonyStayStartedOn is null) {
+                        throw new ConflictException(
+                            "queens.colony_has_no_active_stay",
+                            "A queen cannot be assigned to a colony without an active stay.");
+                    }
+
+                    var today =
+                        DateOnly.FromDateTime(
+                            DateTime.UtcNow);
+
+                    if (request.EmergedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.EmergedOn)] =
+                                [
+                                    "Queen emergence date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.AcquiredOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.AcquiredOn)] =
+                                [
+                                    "Queen acquisition date cannot be in the future."
+                                ]
+                            });
+                    }
+
+                    if (request.StartedOn > today) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.StartedOn)] =
+                                [
+                                    "Queen stay start date cannot be in the future."
+                                ]
+                            });
+                    }
+
                     if (
-                        request.EmergedOn is DateOnly emergedOn &&
+                        request.EmergedOn is DateOnly emergedDate &&
+                        request.AcquiredOn is DateOnly acquisitionDate &&
+                        emergedDate > acquisitionDate) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.AcquiredOn)] =
+                                [
+                                    "Queen acquisition date cannot be before emergence date."
+                                ]
+                            });
+                    }
+
+                    if (
+                        request.EmergedOn is DateOnly queenEmergedDate &&
                         request.StartedOn is DateOnly startedOn &&
-                        startedOn < emergedOn) {
+                        startedOn < queenEmergedDate) {
                         return Results.ValidationProblem(
                             new Dictionary<
                                 string,
@@ -86,6 +162,20 @@ public static class CreateQueenEndpoint {
                                 ] =
                                 [
                                     "Queen stay cannot start before the queen emerged."
+                                ]
+                            });
+                    }
+
+                    if (
+                        request.StartedOn <
+                        colonyStayStartedOn) {
+                        return Results.ValidationProblem(
+                            new Dictionary<
+                                string,
+                                string[]> {
+                                [nameof(request.StartedOn)] =
+                                [
+                                    "Queen stay cannot start before the colony stay."
                                 ]
                             });
                     }

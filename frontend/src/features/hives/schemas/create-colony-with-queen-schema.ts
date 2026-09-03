@@ -3,6 +3,7 @@ import {
 } from 'zod';
 
 import {
+  getCurrentUtcDateOnly,
   isDateOnly,
 } from '@/shared/utils/date-only';
 
@@ -130,6 +131,54 @@ export const createColonyWithQueenSchema =
         values,
         context,
       ) => {
+        const today =
+          getCurrentUtcDateOnly();
+
+        const dateFields = [
+          {
+            name: 'colonyFormedOn',
+            value: values.colonyFormedOn,
+            label: 'Datum formiranja društva',
+          },
+          {
+            name: 'colonyStartedOn',
+            value: values.colonyStartedOn,
+            label: 'Datum početka boravka društva',
+          },
+          {
+            name: 'queenEmergedOn',
+            value: values.queenEmergedOn,
+            label: 'Datum izleganja matice',
+          },
+          {
+            name: 'queenAcquiredOn',
+            value: values.queenAcquiredOn,
+            label: 'Datum nabavke matice',
+          },
+          {
+            name: 'queenStartedOn',
+            value: values.queenStartedOn,
+            label: 'Datum početka boravka matice',
+          },
+        ] as const;
+
+        dateFields.forEach(
+          (field) => {
+            if (
+              field.value &&
+              field.value > today
+            ) {
+              context.addIssue({
+                code:
+                  z.ZodIssueCode.custom,
+                path: [field.name],
+                message:
+                  `${field.label} ne može biti u budućnosti.`,
+              });
+            }
+          },
+        );
+
         if (
           values.colonyFormedOn &&
           values.colonyStartedOn <
@@ -145,6 +194,25 @@ export const createColonyWithQueenSchema =
 
             message:
               'Boravak ne može početi pre formiranja društva.',
+          });
+        }
+
+        if (
+          values.queenAcquiredOn &&
+          values.colonyFormedOn &&
+          values.queenAcquiredOn >
+            values.colonyFormedOn
+        ) {
+          context.addIssue({
+            code:
+              z.ZodIssueCode.custom,
+
+            path: [
+              'queenAcquiredOn',
+            ],
+
+            message:
+              'Datum nabavke matice ne može biti posle datuma formiranja društva.',
           });
         }
 

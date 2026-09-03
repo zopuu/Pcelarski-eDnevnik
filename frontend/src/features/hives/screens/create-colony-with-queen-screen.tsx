@@ -43,6 +43,9 @@ import {
   DatePickerField,
 } from '@/shared/components/date-picker-field';
 import {
+  getCurrentUtcDateOnly,
+} from '@/shared/utils/date-only';
+import {
   QueenMarkingColorPicker,
 } from '@/features/queens/components/queen-marking-color-picker';
 
@@ -61,30 +64,27 @@ function optionalText(
     : null;
 }
 
-function localToday() {
-  const now =
-    new Date();
+function earliestDate(
+  ...dates: (string | undefined)[]
+) {
+  return dates
+    .filter(
+      (date): date is string =>
+        Boolean(date),
+    )
+    .sort()[0];
+}
 
-  const year =
-    now.getFullYear();
-
-  const month =
-    String(
-      now.getMonth() + 1,
-    ).padStart(
-      2,
-      '0',
-    );
-
-  const day =
-    String(
-      now.getDate(),
-    ).padStart(
-      2,
-      '0',
-    );
-
-  return `${year}-${month}-${day}`;
+function latestDate(
+  ...dates: (string | undefined)[]
+) {
+  return dates
+    .filter(
+      (date): date is string =>
+        Boolean(date),
+    )
+    .sort()
+    .at(-1);
 }
 
 export function CreateColonyWithQueenScreen({
@@ -96,7 +96,7 @@ export function CreateColonyWithQueenScreen({
     );
 
   const today =
-    localToday();
+    getCurrentUtcDateOnly();
 
   const {
     control,
@@ -186,6 +186,12 @@ export function CreateColonyWithQueenScreen({
     useWatch({
       control,
       name: 'queenAcquiredOn',
+    });
+
+  const queenStartedOn =
+    useWatch({
+      control,
+      name: 'queenStartedOn',
     });
 
   const onSubmit =
@@ -408,7 +414,14 @@ export function CreateColonyWithQueenScreen({
                 field.onChange
               }
               maximumDate={
-                colonyStartedOn ||
+                earliestDate(
+                  colonyStartedOn ||
+                    undefined,
+                  today,
+                )
+              }
+              minimumDate={
+                queenAcquiredOn ||
                 undefined
               }
               error={
@@ -438,6 +451,7 @@ export function CreateColonyWithQueenScreen({
                 colonyFormedOn ||
                 undefined
               }
+              maximumDate={today}
               required
               error={
                 errors
@@ -575,8 +589,13 @@ export function CreateColonyWithQueenScreen({
                 field.onChange
               }
               maximumDate={
-                queenAcquiredOn ||
-                undefined
+                earliestDate(
+                  queenAcquiredOn ||
+                    undefined,
+                  queenStartedOn ||
+                    undefined,
+                  today,
+                )
               }
               error={
                 errors
@@ -605,6 +624,11 @@ export function CreateColonyWithQueenScreen({
                 queenEmergedOn ||
                 undefined
               }
+              maximumDate={
+                earliestDate(
+                  today,
+                )
+              }
               error={
                 errors
                   .queenAcquiredOn
@@ -629,12 +653,12 @@ export function CreateColonyWithQueenScreen({
                 field.onChange
               }
               minimumDate={
-                colonyStartedOn >
-                  queenEmergedOn
-                  ? colonyStartedOn
-                  : queenEmergedOn ||
-                    colonyStartedOn
+                latestDate(
+                  queenEmergedOn ||
+                    undefined,
+                )
               }
+              maximumDate={today}
               required
               error={
                 errors
