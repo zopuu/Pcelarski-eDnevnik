@@ -391,10 +391,15 @@ export function ColonyDetailsScreen({
               accessibilityRole="button"
               accessibilityLabel="Otvori detalje matice"
               onPress={() => {
-                showPlaceholder(
-                  'Detalji matice',
-                  'Stranica sa detaljima matice biće povezana kada je implementiramo.',
-                );
+                router.push({
+                  pathname:
+                    '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
+                  params: {
+                    hiveId,
+                    colonyId,
+                    queenId: queen.id,
+                  },
+                } as never);
               }}
               className="rounded-3xl border border-border bg-surface px-5 py-4"
             >

@@ -1032,10 +1032,20 @@ export function HiveDetailsScreen({
                                 <EntitySummaryCard
                                     title="Matica"
                                     onPress={() => {
-                                        Alert.alert(
-                                            'Matica',
-                                            'Detaljan prikaz matice biće implementiran sledeće.',
-                                        );
+                                        router.push({
+                                            pathname:
+                                                '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
+
+                                            params: {
+                                                hiveId,
+
+                                                colonyId:
+                                                    currentColony.id,
+
+                                                queenId:
+                                                    currentQueen.id,
+                                            },
+                                        } as never);
                                     }}
                                 >
                                     <InfoRow
