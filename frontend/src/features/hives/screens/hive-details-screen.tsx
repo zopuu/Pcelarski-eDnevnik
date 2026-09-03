@@ -51,6 +51,9 @@ import {
 import {
     useCurrentQueen,
 } from '@/features/queens/hooks/use-current-queen';
+import {
+    QueenMarkingColorSwatch,
+} from '@/features/queens/components/queen-marking-color-swatch';
 
 type HiveDetailsScreenProps = {
     hiveId: string;
@@ -964,10 +967,17 @@ export function HiveDetailsScreen({
                             <EntitySummaryCard
                                 title="Pčelinje društvo"
                                 onPress={() => {
-                                    Alert.alert(
-                                        'Pčelinje društvo',
-                                        'Detaljan prikaz društva biće implementiran sledeće.',
-                                    );
+                                    router.push({
+                                        pathname:
+                                            '/hives/[hiveId]/colonies/[colonyId]',
+
+                                        params: {
+                                            hiveId,
+
+                                            colonyId:
+                                                currentColony.id,
+                                        },
+                                    } as never);
                                 }}
                             >
                                 <InfoRow
@@ -1043,6 +1053,18 @@ export function HiveDetailsScreen({
                                             getQueenOriginLabel(
                                                 currentQueen.origin,
                                             )
+                                        }
+                                    />
+
+                                    <InfoRow
+                                        label="Boja"
+                                        value={
+                                            <QueenMarkingColorSwatch
+                                                colorHex={
+                                                    currentQueen
+                                                        .markingColorHex
+                                                }
+                                            />
                                         }
                                     />
 
@@ -1181,7 +1203,8 @@ function DetailsCard({
 
 type InfoRowProps = {
     label: string;
-    value: string;
+    value:
+    React.ReactNode;
     last?: boolean;
 };
 
@@ -1214,17 +1237,29 @@ function InfoRow({
                 {label}
             </Text>
 
-            <Text
-                className="
+            {typeof value ===
+            'string' ? (
+                <Text
+                    className="
           flex-1
           text-right
           text-sm
           font-semibold
           text-foreground
         "
-            >
-                {value}
-            </Text>
+                >
+                    {value}
+                </Text>
+            ) : (
+                <View
+                    className="
+          flex-1
+          items-end
+        "
+                >
+                    {value}
+                </View>
+            )}
         </View>
     );
 }
