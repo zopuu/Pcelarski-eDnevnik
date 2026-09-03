@@ -10,6 +10,13 @@ import {
   useState,
 } from 'react';
 
+import {
+  ColorHexagon,
+} from '@/shared/components/color-hexagon/color-hexagon';
+import {
+  colors,
+} from '@/shared/theme/colors';
+
 type HiveColorPickerProps = {
   value: string;
   onChange: (value: string) => void;
@@ -211,47 +218,33 @@ export function HiveColorPicker({
               w-12
               items-center
               justify-center
-              rounded-full
-              border-2
-              bg-surface
-              ${
-                value &&
-                !basicColors.some(
-                  (color) =>
-                    color.hex ===
-                    value,
-                )
-                  ? 'border-primary'
-                  : 'border-border'
-              }
             `}
           >
-            {value &&
-            !basicColors.some(
-              (color) =>
-                color.hex === value,
-            ) ? (
-              <View
-                style={{
-                  backgroundColor:
-                    value,
-                }}
-                className="
-                  h-8
-                  w-8
-                  rounded-full
-                  border
-                  border-border
-                "
-              />
-            ) : (
-              <Text
-                className="
-                  text-2xl
-                  font-semibold
-                  text-foreground
-                "
-              >
+            <ColorHexagon
+              colorHex={
+                value &&
+                !basicColors.some(
+                  (color) => color.hex === value,
+                )
+                  ? value
+                  : colors.surface
+              }
+              size={48}
+              borderColor={
+                value &&
+                !basicColors.some(
+                  (color) => color.hex === value,
+                )
+                  ? colors.primary
+                  : colors.border
+              }
+            />
+
+            {(!value ||
+              basicColors.some(
+                (color) => color.hex === value,
+              )) && (
+              <Text className="absolute text-2xl font-semibold text-foreground">
                 +
               </Text>
             )}
@@ -266,20 +259,13 @@ export function HiveColorPicker({
               items-center
             "
           >
-            <View
-              style={{
-                backgroundColor:
-                  value,
-              }}
-              className="
-                mr-2
-                h-5
-                w-5
-                rounded-full
-                border
-                border-border
-              "
-            />
+            <View className="mr-2">
+              <ColorHexagon
+                colorHex={value}
+                size={20}
+                borderColor={colors.primary}
+              />
+            </View>
 
             <Text
               className="
@@ -500,33 +486,21 @@ function ColorButton({
       className={`
         items-center
         justify-center
-        rounded-full
-        border-2
         ${
           large
             ? 'h-16 w-16'
             : 'h-12 w-12'
         }
-        ${
-          selected
-            ? 'border-primary'
-            : 'border-border'
-        }
       `}
     >
-      <View
-        style={{
-          backgroundColor:
-            color,
-        }}
-        className={`
-          rounded-full
-          ${
-            large
-              ? 'h-12 w-12'
-              : 'h-9 w-9'
-          }
-        `}
+      <ColorHexagon
+        colorHex={color}
+        size={large ? 64 : 48}
+        borderColor={
+          selected
+            ? colors.primary
+            : colors.border
+        }
       />
 
       {selected && (

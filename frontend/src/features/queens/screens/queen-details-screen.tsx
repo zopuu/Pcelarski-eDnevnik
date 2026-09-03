@@ -41,6 +41,9 @@ import {
 } from '@/providers/app-drawer-provider';
 
 import {
+  QueenHeaderIllustration,
+} from '../components/queen-header-illustration';
+import {
   QueenMarkingColorSwatch,
 } from '../components/queen-marking-color-swatch';
 import {
@@ -267,10 +270,15 @@ export function QueenDetailsScreen({
                 icon: 'create-outline',
                 accessibilityLabel: 'Izmeni podatke o matici',
                 onPress: () => {
-                  showPlaceholder(
-                    'Izmena matice',
-                    'Ekran za izmenu matice još nije implementiran.',
-                  );
+                  router.push({
+                    pathname:
+                      '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]/edit',
+                    params: {
+                      hiveId,
+                      colonyId,
+                      queenId,
+                    },
+                  } as never);
                 },
               },
               {
@@ -321,7 +329,9 @@ export function QueenDetailsScreen({
               </View>
             </View>
 
-            <QueenMarkingColorSwatch colorHex={queen.markingColorHex} />
+            <QueenHeaderIllustration
+              markingColorHex={queen.markingColorHex}
+            />
           </View>
 
           <SectionTitle>Osnovni podaci</SectionTitle>
@@ -329,7 +339,6 @@ export function QueenDetailsScreen({
             <InfoRow label="Poreklo" value={getQueenOriginLabel(queen.origin)} />
             <InfoRow label="Odgajivač" value={queen.breeder ?? '—'} />
             <InfoRow label="Rasa" value={queen.breed ?? '—'} />
-            <InfoRow label="Boja oznake" value={<QueenMarkingColorSwatch colorHex={queen.markingColorHex} />} />
             <InfoRow label="Izlegla se" value={formatDate(queen.emergedOn)} />
             <InfoRow label="Nabavljena" value={formatDate(queen.acquiredOn)} />
             <InfoRow label="Status" value={getQueenStatusLabel(queen.status)} last />

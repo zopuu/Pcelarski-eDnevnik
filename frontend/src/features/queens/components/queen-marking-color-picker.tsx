@@ -4,6 +4,13 @@ import {
   View,
 } from 'react-native';
 
+import {
+  ColorHexagon,
+} from '@/shared/components/color-hexagon/color-hexagon';
+import {
+  colors,
+} from '@/shared/theme/colors';
+
 type QueenMarkingColorPickerProps = {
   value: string;
 
@@ -93,34 +100,15 @@ export function QueenMarkingColorPicker({
                   width: '18%',
                 }}
               >
-                <View
-                  className={`
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-                    rounded-full
-                    border-2
-                    ${selected
-                      ? 'border-primary'
-                      : 'border-border'
-                    }
-                  `}
-                >
-                  <View
-                    className="
-                      h-9
-                      w-9
-                      rounded-full
-                      border
-                      border-border
-                    "
-                    style={{
-                      backgroundColor:
-                        color.value,
-                    }}
-                  />
-                </View>
+                <ColorHexagon
+                  colorHex={color.value}
+                  size={48}
+                  borderColor={
+                    selected
+                      ? colors.primary
+                      : colors.border
+                  }
+                />
 
                 <Text
                   className="
