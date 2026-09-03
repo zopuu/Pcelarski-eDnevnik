@@ -1,5 +1,6 @@
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -164,6 +165,63 @@ export function HiveColorPicker({
     pickerVisible,
     setPickerVisible,
   ] = useState(false);
+
+  const colorVariantsContent = (
+    <>
+      <View
+        className="
+          flex-row
+          flex-wrap
+          gap-4
+        "
+      >
+        {colorVariants.map(
+          (color) => (
+            <ColorButton
+              key={color.hex}
+              color={color.hex}
+              selected={value === color.hex}
+              onPress={() => {
+                onChange(color.hex);
+
+                setPickerVisible(false);
+              }}
+              large
+            />
+          ),
+        )}
+      </View>
+
+      {value && (
+        <Pressable
+          onPress={() => {
+            onChange('');
+
+            setPickerVisible(false);
+          }}
+          className="
+            mt-6
+            items-center
+            rounded-2xl
+            border
+            border-border
+            bg-surface
+            px-4
+            py-4
+          "
+        >
+          <Text
+            className="
+              font-semibold
+              text-foreground
+            "
+          >
+            Ukloni boju
+          </Text>
+        </Pressable>
+      )}
+    </>
+  );
 
   return (
     <>
@@ -385,77 +443,20 @@ export function HiveColorPicker({
               </Pressable>
             </View>
 
-            <ScrollView
-              showsVerticalScrollIndicator={
-                false
-              }
-            >
+            {Platform.OS === 'web' ? (
               <View
-                className="
-                  flex-row
-                  flex-wrap
-                  gap-4
-                "
+                className="max-h-[420px]"
+                style={{ overflow: 'scroll' }}
               >
-                {colorVariants.map(
-                  (color) => (
-                    <ColorButton
-                      key={
-                        color.hex
-                      }
-                      color={
-                        color.hex
-                      }
-                      selected={
-                        value ===
-                        color.hex
-                      }
-                      onPress={() => {
-                        onChange(
-                          color.hex,
-                        );
-
-                        setPickerVisible(
-                          false,
-                        );
-                      }}
-                      large
-                    />
-                  ),
-                )}
+                {colorVariantsContent}
               </View>
-
-              {value && (
-                <Pressable
-                  onPress={() => {
-                    onChange('');
-
-                    setPickerVisible(
-                      false,
-                    );
-                  }}
-                  className="
-                    mt-6
-                    items-center
-                    rounded-2xl
-                    border
-                    border-border
-                    bg-surface
-                    px-4
-                    py-4
-                  "
-                >
-                  <Text
-                    className="
-                      font-semibold
-                      text-foreground
-                    "
-                  >
-                    Ukloni boju
-                  </Text>
-                </Pressable>
-              )}
-            </ScrollView>
+            ) : (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+              >
+                {colorVariantsContent}
+              </ScrollView>
+            )}
           </Pressable>
         </Pressable>
       </Modal>
