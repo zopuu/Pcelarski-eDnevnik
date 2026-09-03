@@ -7,4 +7,5 @@ public sealed record HiveListItemResponse(
     string? IdentificationNumber,
     string Label,
     HiveType Type,
+    string? ColorHex,
     HiveStatus Status);

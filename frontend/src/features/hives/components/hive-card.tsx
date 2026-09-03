@@ -1,10 +1,6 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 
 import {
-  MaterialDesignIcons,
-} from '@react-native-vector-icons/material-design-icons';
-
-import {
   Pressable,
   Text,
   View,
@@ -14,6 +10,12 @@ import type {
   HiveStatus,
   HiveType,
 } from '../types/hive';
+import {
+  HiveHeaderIllustration,
+} from './hive-header-illustration';
+import {
+  colors,
+} from '@/shared/theme/colors';
 
 type HiveCardProps = {
   label: string;
@@ -22,6 +24,8 @@ type HiveCardProps = {
     string | null;
 
   type: HiveType;
+
+  colorHex: string | null;
 
   status: HiveStatus;
 
@@ -50,6 +54,7 @@ export function HiveCard({
   label,
   identificationNumber,
   type,
+  colorHex,
   status,
   onPress,
 }: HiveCardProps) {
@@ -72,8 +77,11 @@ export function HiveCard({
         className="
           h-full
           w-2
-          bg-primary
         "
+        style={{
+          backgroundColor:
+            colors.primary,
+        }}
       />
 
       <View
@@ -83,14 +91,12 @@ export function HiveCard({
           w-14
           items-center
           justify-center
-          rounded-2xl
-          bg-primary/10
         "
       >
-        <MaterialDesignIcons
-          name="beehive-outline"
-          size={32}
-          color="#B77908"
+        <HiveHeaderIllustration
+          colorHex={colorHex}
+          size={56}
+          accessible={false}
         />
       </View>
 

@@ -13,5 +13,7 @@ export type HiveListItem = {
 
   type: HiveType;
 
+  colorHex: string | null;
+
   status: HiveStatus;
 };

@@ -56,6 +56,7 @@ public static class GetHivesEndpoint {
                                 hive.IdentificationNumber,
                                 hive.Label,
                                 hive.Type,
+                                hive.ColorHex,
                                 hive.Status)
                         )
                         .ToListAsync(

@@ -14,6 +14,10 @@ type HiveHeaderIllustrationProps = {
   colorHex:
     | string
     | null;
+
+  size?: number;
+
+  accessible?: boolean;
 };
 
 const ILLUSTRATION_SIZE = 128;
@@ -21,19 +25,28 @@ const ILLUSTRATION_HEIGHT = 116;
 
 export function HiveHeaderIllustration({
   colorHex,
+  size = ILLUSTRATION_SIZE,
+  accessible = true,
 }: HiveHeaderIllustrationProps) {
+  const scale =
+    size / ILLUSTRATION_SIZE;
+
   return (
     <View
-      accessible
+      accessible={accessible}
       accessibilityLabel={
-        colorHex
+        accessible && colorHex
           ? `Košnica boje ${colorHex}`
-          : 'Košnica bez odabrane boje'
+          : accessible
+            ? 'Košnica bez odabrane boje'
+            : undefined
       }
       className="items-center justify-center"
       style={{
-        width: ILLUSTRATION_SIZE,
-        height: ILLUSTRATION_HEIGHT,
+        width: size,
+        height:
+          ILLUSTRATION_HEIGHT *
+          scale,
       }}
     >
       <Image
@@ -49,11 +62,11 @@ export function HiveHeaderIllustration({
         }
         style={{
           position: 'absolute',
-          width: ILLUSTRATION_SIZE,
-          height: ILLUSTRATION_SIZE,
+          width: size,
+          height: size,
           transform: [
             {
-              translateY: -6,
+              translateY: -6 * scale,
             },
           ],
         }}
@@ -67,11 +80,11 @@ export function HiveHeaderIllustration({
         }
         contentFit="contain"
         style={{
-          width: ILLUSTRATION_SIZE,
-          height: ILLUSTRATION_SIZE,
+          width: size,
+          height: size,
           transform: [
             {
-              translateY: -8,
+              translateY: -8 * scale,
             },
           ],
         }}

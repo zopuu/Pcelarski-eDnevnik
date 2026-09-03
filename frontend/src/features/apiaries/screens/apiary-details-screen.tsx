@@ -567,6 +567,9 @@ export function ApiaryHivesScreen({
               type={
                 item.type
               }
+              colorHex={
+                item.colorHex
+              }
               status={
                 item.status
               }
