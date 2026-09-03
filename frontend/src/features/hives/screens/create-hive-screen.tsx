@@ -44,6 +44,9 @@ import {
   colors,
 } from '@/shared/theme/colors';
 import {
+  DatePickerField,
+} from '@/shared/components/date-picker-field';
+import {
   HiveColorPicker,
 } from '../components/hive-color-picker';
 import {
@@ -534,16 +537,14 @@ export function CreateHiveScreen({
           render={({
             field,
           }) => (
-            <FormTextInput
+            <DatePickerField
               label="Datum proizvodnje"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
-              autoCapitalize="none"
               error={
                 errors
                   .manufactureDate
@@ -559,16 +560,14 @@ export function CreateHiveScreen({
           render={({
             field,
           }) => (
-            <FormTextInput
+            <DatePickerField
               label="Datum nabavke"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
-              autoCapitalize="none"
               error={
                 errors
                   .purchaseDate

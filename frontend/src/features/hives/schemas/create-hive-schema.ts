@@ -2,6 +2,10 @@ import {
   z,
 } from 'zod';
 
+import {
+  isDateOnly,
+} from '@/shared/utils/date-only';
+
 const hiveTypes = [
   'dadantBlatt',
   'langstrothRoot',
@@ -18,9 +22,6 @@ const hiveMaterials = [
   'plastic',
   'other',
 ] as const;
-
-const datePattern =
-  /^\d{4}-\d{2}-\d{2}$/;
 
 export const createHiveSchema =
   z.object({
@@ -95,12 +96,10 @@ export const createHiveSchema =
         .refine(
           (value) =>
             value.length === 0 ||
-            datePattern.test(
-              value,
-            ),
+            isDateOnly(value),
           {
             message:
-              'Datum mora biti u formatu YYYY-MM-DD.',
+              'Izaberite ispravan datum proizvodnje.',
           },
         ),
 
@@ -127,12 +126,10 @@ export const createHiveSchema =
         .refine(
           (value) =>
             value.length === 0 ||
-            datePattern.test(
-              value,
-            ),
+            isDateOnly(value),
           {
             message:
-              'Datum mora biti u formatu YYYY-MM-DD.',
+              'Izaberite ispravan datum nabavke.',
           },
         ),
   });

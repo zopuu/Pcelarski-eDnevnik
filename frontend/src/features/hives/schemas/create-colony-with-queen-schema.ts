@@ -2,6 +2,10 @@ import {
   z,
 } from 'zod';
 
+import {
+  isDateOnly,
+} from '@/shared/utils/date-only';
+
 const optionalDate =
   z
     .string()
@@ -9,18 +13,17 @@ const optionalDate =
     .refine(
       (value) =>
         value === '' ||
-        /^\d{4}-\d{2}-\d{2}$/
-          .test(value),
-      'Datum mora biti u formatu YYYY-MM-DD.',
+        isDateOnly(value),
+      'Izaberite ispravan datum.',
     );
 
 const requiredDate =
   z
     .string()
     .trim()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      'Datum mora biti u formatu YYYY-MM-DD.',
+    .refine(
+      isDateOnly,
+      'Datum boravka je obavezan.',
     );
 
 export const createColonyWithQueenSchema =

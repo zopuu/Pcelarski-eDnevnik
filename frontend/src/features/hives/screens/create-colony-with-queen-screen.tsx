@@ -9,6 +9,7 @@ import {
 import {
   Controller,
   useForm,
+  useWatch,
 } from 'react-hook-form';
 
 import {
@@ -38,6 +39,9 @@ import type {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  DatePickerField,
+} from '@/shared/components/date-picker-field';
 import {
   QueenMarkingColorPicker,
 } from '@/features/queens/components/queen-marking-color-picker';
@@ -158,6 +162,30 @@ export function CreateColonyWithQueenScreen({
         queenStayNotes:
           '',
       },
+    });
+
+  const colonyFormedOn =
+    useWatch({
+      control,
+      name: 'colonyFormedOn',
+    });
+
+  const colonyStartedOn =
+    useWatch({
+      control,
+      name: 'colonyStartedOn',
+    });
+
+  const queenEmergedOn =
+    useWatch({
+      control,
+      name: 'queenEmergedOn',
+    });
+
+  const queenAcquiredOn =
+    useWatch({
+      control,
+      name: 'queenAcquiredOn',
     });
 
   const onSubmit =
@@ -371,15 +399,18 @@ export function CreateColonyWithQueenScreen({
           render={({
             field,
           }) => (
-            <FormInput
+            <DatePickerField
               label="Datum formiranja"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
+              maximumDate={
+                colonyStartedOn ||
+                undefined
+              }
               error={
                 errors
                   .colonyFormedOn
@@ -395,15 +426,19 @@ export function CreateColonyWithQueenScreen({
           render={({
             field,
           }) => (
-            <FormInput
+            <DatePickerField
               label="U košnici od *"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
+              minimumDate={
+                colonyFormedOn ||
+                undefined
+              }
+              required
               error={
                 errors
                   .colonyStartedOn
@@ -531,15 +566,18 @@ export function CreateColonyWithQueenScreen({
           render={({
             field,
           }) => (
-            <FormInput
+            <DatePickerField
               label="Datum izleganja"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
+              maximumDate={
+                queenAcquiredOn ||
+                undefined
+              }
               error={
                 errors
                   .queenEmergedOn
@@ -555,15 +593,18 @@ export function CreateColonyWithQueenScreen({
           render={({
             field,
           }) => (
-            <FormInput
+            <DatePickerField
               label="Datum nabavke"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
+              minimumDate={
+                queenEmergedOn ||
+                undefined
+              }
               error={
                 errors
                   .queenAcquiredOn
@@ -579,15 +620,22 @@ export function CreateColonyWithQueenScreen({
           render={({
             field,
           }) => (
-            <FormInput
+            <DatePickerField
               label="U društvu od *"
               value={
                 field.value
               }
-              onChangeText={
+              onChange={
                 field.onChange
               }
-              placeholder="YYYY-MM-DD"
+              minimumDate={
+                colonyStartedOn >
+                  queenEmergedOn
+                  ? colonyStartedOn
+                  : queenEmergedOn ||
+                    colonyStartedOn
+              }
+              required
               error={
                 errors
                   .queenStartedOn
