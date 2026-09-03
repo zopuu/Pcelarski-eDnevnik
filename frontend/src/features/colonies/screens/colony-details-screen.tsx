@@ -295,10 +295,14 @@ export function ColonyDetailsScreen({
                 icon: 'create-outline',
                 accessibilityLabel: 'Izmeni podatke o društvu',
                 onPress: () => {
-                  showPlaceholder(
-                    'Izmena društva',
-                    'Ekran za izmenu društva još nije implementiran.',
-                  );
+                  router.push({
+                    pathname:
+                      '/hives/[hiveId]/colonies/[colonyId]/edit',
+                    params: {
+                      hiveId,
+                      colonyId,
+                    },
+                  } as never);
                 },
               },
               {
