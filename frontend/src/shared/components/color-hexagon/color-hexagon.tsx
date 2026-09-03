@@ -21,7 +21,11 @@ export function ColorHexagon({
 }: ColorHexagonProps) {
   return (
     <Svg
-      accessible={Boolean(accessibilityLabel)}
+      accessible={
+        accessibilityLabel
+          ? true
+          : undefined
+      }
       accessibilityLabel={accessibilityLabel}
       width={size}
       height={size * 0.9}
