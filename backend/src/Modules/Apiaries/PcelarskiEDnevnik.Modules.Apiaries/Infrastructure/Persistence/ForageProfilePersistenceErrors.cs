@@ -4,10 +4,10 @@ using Npgsql;
 namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 
 internal static class ForageProfilePersistenceErrors {
-    private const string ApiaryStayUniqueIndex =
-        "ux_forage_profiles_apiary_stay_id";
+    private const string ApiaryStayYearUniqueIndex =
+        "ux_forage_profiles_apiary_stay_id_year";
 
-    public static bool IsApiaryStayUniqueViolation(
+    public static bool IsApiaryStayYearUniqueViolation(
         DbUpdateException exception) {
         return exception.InnerException
             is PostgresException postgresException
@@ -16,6 +16,6 @@ internal static class ForageProfilePersistenceErrors {
                 PostgresErrorCodes.UniqueViolation
             &&
             postgresException.ConstraintName ==
-                ApiaryStayUniqueIndex;
+                ApiaryStayYearUniqueIndex;
     }
 }

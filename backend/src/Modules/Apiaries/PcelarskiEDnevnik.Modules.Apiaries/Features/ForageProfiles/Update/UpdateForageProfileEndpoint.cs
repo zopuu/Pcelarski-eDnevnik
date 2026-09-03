@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.SharedKernel.Errors;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.ForageProfiles.Update;
 
@@ -12,9 +13,10 @@ public static class UpdateForageProfileEndpoint {
     public static IEndpointRouteBuilder MapUpdateForageProfileEndpoint(
         this IEndpointRouteBuilder endpoints) {
         endpoints.MapPut(
-            "/",
+            "/{forageProfileId:guid}",
             async (
                 Guid apiaryId,
+                Guid forageProfileId,
                 UpdateForageProfileRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
@@ -38,7 +40,9 @@ public static class UpdateForageProfileEndpoint {
                         await dbContext.ForageProfiles
                             .Include(x => x.Items)
                             .SingleOrDefaultAsync(
-                                x => x.ApiaryStayId == currentStayId.Value,
+                                x =>
+                                    x.Id == forageProfileId &&
+                                    x.ApiaryStayId == currentStayId.Value,
                                 cancellationToken);
 
                     if (profile is null) {
@@ -67,7 +71,18 @@ public static class UpdateForageProfileEndpoint {
                     dbContext.ForageProfileItems.RemoveRange(existingItems);
                     dbContext.ForageProfileItems.AddRange(profile.Items);
 
-                    await dbContext.SaveChangesAsync(cancellationToken);
+                    try {
+                        await dbContext.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateException exception)
+                        when (ForageProfilePersistenceErrors
+                            .IsApiaryStayYearUniqueViolation(exception)) {
+                        throw new ConflictException(
+                            "forage_profiles.current_stay_year_already_has_profile",
+                            "The current apiary stay already has a forage profile for this year.",
+                            exception);
+                    }
+
                     await transaction.CommitAsync(cancellationToken);
 
                     return Results.Ok(

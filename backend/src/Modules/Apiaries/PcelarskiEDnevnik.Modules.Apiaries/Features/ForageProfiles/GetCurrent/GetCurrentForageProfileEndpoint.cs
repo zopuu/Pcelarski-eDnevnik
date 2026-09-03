@@ -36,6 +36,8 @@ public static class GetCurrentForageProfileEndpoint {
                                 stay.EndedAtUtc == null &&
                                 apiary.OwnerBeekeeperId == beekeeperId
 
+                            orderby profile.Year descending
+
                             select new ForageProfileResponse(
                                 profile.Id,
                                 profile.Year,
@@ -55,7 +57,7 @@ public static class GetCurrentForageProfileEndpoint {
                                             x.Notes))
                                     .ToList())
                         )
-                        .SingleOrDefaultAsync(cancellationToken);
+                        .FirstOrDefaultAsync(cancellationToken);
 
                     if (currentProfile is null) {
                         return Results.NotFound();

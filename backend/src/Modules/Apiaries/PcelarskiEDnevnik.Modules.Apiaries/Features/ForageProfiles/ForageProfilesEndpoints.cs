@@ -12,7 +12,7 @@ public static class ForageProfilesEndpoints {
     public static IEndpointRouteBuilder MapForageProfilesEndpoints(
         this IEndpointRouteBuilder endpoints) {
         var group = endpoints
-            .MapGroup("/{apiaryId:guid}/forage-profile")
+            .MapGroup("/{apiaryId:guid}/forage-profiles")
             .WithTags("Forage Profiles");
 
         group.MapCreateForageProfileEndpoint();

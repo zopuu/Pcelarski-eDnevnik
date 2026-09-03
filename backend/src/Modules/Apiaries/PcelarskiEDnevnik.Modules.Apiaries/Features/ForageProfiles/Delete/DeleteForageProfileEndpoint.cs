@@ -11,9 +11,10 @@ public static class DeleteForageProfileEndpoint {
     public static IEndpointRouteBuilder MapDeleteForageProfileEndpoint(
         this IEndpointRouteBuilder endpoints) {
         endpoints.MapDelete(
-            "/",
+            "/{forageProfileId:guid}",
             async (
                 Guid apiaryId,
+                Guid forageProfileId,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
                 CancellationToken cancellationToken) => {
@@ -32,6 +33,7 @@ public static class DeleteForageProfileEndpoint {
                                 on stay.ApiaryId equals apiary.Id
 
                             where
+                                forageProfile.Id == forageProfileId &&
                                 stay.ApiaryId == apiaryId &&
                                 stay.EndedAtUtc == null &&
                                 apiary.OwnerBeekeeperId == beekeeperId

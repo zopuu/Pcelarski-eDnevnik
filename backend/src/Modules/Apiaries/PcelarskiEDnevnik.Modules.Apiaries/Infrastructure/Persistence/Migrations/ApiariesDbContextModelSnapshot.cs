@@ -230,9 +230,9 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                     b.HasKey("Id")
                         .HasName("pk_forage_profiles");
 
-                    b.HasIndex("ApiaryStayId")
+                    b.HasIndex("ApiaryStayId", "Year")
                         .IsUnique()
-                        .HasDatabaseName("ux_forage_profiles_apiary_stay_id");
+                        .HasDatabaseName("ux_forage_profiles_apiary_stay_id_year");
 
                     b.ToTable("forage_profiles", "apiaries", t =>
                         {

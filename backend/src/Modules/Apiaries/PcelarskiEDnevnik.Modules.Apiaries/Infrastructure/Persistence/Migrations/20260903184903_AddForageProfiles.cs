@@ -72,10 +72,10 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ux_forage_profiles_apiary_stay_id",
+                name: "ux_forage_profiles_apiary_stay_id_year",
                 schema: "apiaries",
                 table: "forage_profiles",
-                column: "apiary_stay_id",
+                columns: new[] { "apiary_stay_id", "year" },
                 unique: true);
 
             migrationBuilder.Sql(

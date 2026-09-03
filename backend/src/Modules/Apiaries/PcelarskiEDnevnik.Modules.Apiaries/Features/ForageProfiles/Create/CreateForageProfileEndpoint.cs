@@ -39,13 +39,15 @@ public static class CreateForageProfileEndpoint {
                         await dbContext.ForageProfiles
                             .AsNoTracking()
                             .AnyAsync(
-                                x => x.ApiaryStayId == currentStayId.Value,
+                                x =>
+                                    x.ApiaryStayId == currentStayId.Value &&
+                                    x.Year == request.Year!.Value,
                                 cancellationToken);
 
                     if (profileExists) {
                         throw new ConflictException(
-                            "forage_profiles.current_stay_already_has_profile",
-                            "The current apiary stay already has a forage profile.");
+                            "forage_profiles.current_stay_year_already_has_profile",
+                            "The current apiary stay already has a forage profile for this year.");
                     }
 
                     await using var transaction =
@@ -74,17 +76,17 @@ public static class CreateForageProfileEndpoint {
                     }
                     catch (DbUpdateException exception)
                         when (ForageProfilePersistenceErrors
-                            .IsApiaryStayUniqueViolation(exception)) {
+                            .IsApiaryStayYearUniqueViolation(exception)) {
                         throw new ConflictException(
-                            "forage_profiles.current_stay_already_has_profile",
-                            "The current apiary stay already has a forage profile.",
+                            "forage_profiles.current_stay_year_already_has_profile",
+                            "The current apiary stay already has a forage profile for this year.",
                             exception);
                     }
 
                     await transaction.CommitAsync(cancellationToken);
 
                     return Results.Created(
-                        $"/api/apiaries/{apiaryId}/forage-profile",
+                        $"/api/apiaries/{apiaryId}/forage-profiles/{profile.Id}",
                         ForageProfileResponseMapper.Map(profile));
                 });
 

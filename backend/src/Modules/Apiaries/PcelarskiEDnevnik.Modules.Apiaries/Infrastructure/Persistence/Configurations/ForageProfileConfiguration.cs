@@ -69,9 +69,13 @@ internal sealed class ForageProfileConfiguration
             .UsePropertyAccessMode(
                 PropertyAccessMode.Field);
 
-        builder.HasIndex(x => x.ApiaryStayId)
+        builder.HasIndex(
+                x => new {
+                    x.ApiaryStayId,
+                    x.Year
+                })
             .IsUnique()
             .HasDatabaseName(
-                "ux_forage_profiles_apiary_stay_id");
+                "ux_forage_profiles_apiary_stay_id_year");
     }
 }
