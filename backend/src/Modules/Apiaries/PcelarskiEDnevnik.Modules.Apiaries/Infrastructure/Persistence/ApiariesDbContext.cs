@@ -15,6 +15,12 @@ public sealed class ApiariesDbContext(
     public DbSet<ApiaryStay> ApiaryStays =>
         Set<ApiaryStay>();
 
+    public DbSet<ForageProfile> ForageProfiles =>
+        Set<ForageProfile>();
+
+    public DbSet<ForageProfileItem> ForageProfileItems =>
+        Set<ForageProfileItem>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);

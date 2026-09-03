@@ -192,6 +192,101 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApiaryStayId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("apiary_stay_id");
+
+                    b.Property<bool>("IsLocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_locked");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<short?>("RadiusKm")
+                        .HasColumnType("smallint")
+                        .HasColumnName("radius_km");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer")
+                        .HasColumnName("year");
+
+                    b.HasKey("Id")
+                        .HasName("pk_forage_profiles");
+
+                    b.HasIndex("ApiaryStayId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_forage_profiles_apiary_stay_id");
+
+                    b.ToTable("forage_profiles", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_forage_profiles_radius_km", "\"radius_km\" IS NULL OR \"radius_km\" BETWEEN 1 AND 4");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfileItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ForageProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("forage_profile_id");
+
+                    b.Property<string>("ForageType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("forage_type");
+
+                    b.Property<short>("Intensity")
+                        .HasColumnType("smallint")
+                        .HasColumnName("intensity");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<decimal>("Percentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("percentage");
+
+                    b.HasKey("Id")
+                        .HasName("pk_forage_profile_items");
+
+                    b.HasIndex("ForageProfileId", "ForageType")
+                        .IsUnique()
+                        .HasDatabaseName("ux_forage_profile_items_profile_id_forage_type");
+
+                    b.ToTable("forage_profile_items", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_forage_profile_items_forage_type", "\"forage_type\" IN ('Meadow', 'Forest', 'Sunflower', 'Acacia', 'Linden', 'OilseedRape', 'Clover', 'FruitTrees', 'Chestnut', 'Buckwheat', 'Other')");
+
+                            t.HasCheckConstraint("ck_forage_profile_items_intensity", "\"intensity\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_forage_profile_items_percentage", "\"percentage\" > 0 AND \"percentage\" <= 100");
+                        });
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStay", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.Apiary", null)
@@ -207,6 +302,31 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_apiary_stays_locations_location_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStay", null)
+                        .WithMany()
+                        .HasForeignKey("ApiaryStayId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_forage_profiles_apiary_stays_apiary_stay_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfileItem", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ForageProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_forage_profile_items_forage_profiles_forage_profile_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
