@@ -8,4 +8,9 @@ public sealed record ForageProfileResponse(
     string? Notes,
     bool IsLocked,
     Guid ApiaryStayId,
-    IReadOnlyCollection<ForageProfileItemResponse> Items);
+    IReadOnlyCollection<ForageProfileItemResponse> Items) {
+    public IReadOnlyCollection<int> AvailableYears {
+        get;
+        init;
+    } = [];
+}

@@ -199,10 +199,14 @@ export function ApiaryHivesScreen({
   };
 
   const handleForagePress = () => {
-    Alert.alert(
-      'Profil paše',
-      'Prikaz profila paše biće povezan kada implementiramo rutu za pašu.',
-    );
+    router.push({
+      pathname:
+        '/apiaries/[apiaryId]/forage-profiles',
+
+      params: {
+        apiaryId,
+      },
+    } as never);
   };
 
   const handleRelocationsPress =
