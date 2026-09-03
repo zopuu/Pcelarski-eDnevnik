@@ -104,12 +104,38 @@ function WebDatePickerField({
   error,
   required = false,
 }: DatePickerFieldProps) {
-  return (
-    <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
+  const inputId =
+    `date-${label
+      .toLocaleLowerCase('sr-Latn-RS')
+      .replace(/[^a-z0-9]+/g, '-')}`;
 
-      <View className="flex-row gap-2">
+  return (
+    <div
+      style={{
+        marginBottom: 16,
+      }}
+    >
+      <label
+        htmlFor={inputId}
+        style={{
+          display: 'block',
+          marginBottom: 8,
+          color: colors.foreground,
+          fontSize: 14,
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </label>
+
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+        }}
+      >
         <input
+          id={inputId}
           aria-label={`Izaberite ${label.toLowerCase()}`}
           type="date"
           value={value}
@@ -134,16 +160,48 @@ function WebDatePickerField({
         />
 
         {!required && value && (
-          <ClearDateButton label={label} onPress={() => {
-            onChange('');
-          }} />
+          <button
+            type="button"
+            aria-label={`Obriši ${label.toLowerCase()}`}
+            onClick={() => {
+              onChange('');
+            }}
+            style={{
+              minHeight: 56,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderStyle: 'solid',
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+              paddingLeft: 16,
+              paddingRight: 16,
+              color: colors.muted,
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Obriši
+          </button>
         )}
-      </View>
+      </div>
 
-      {!value && <Text className="mt-1 text-sm text-muted">Izaberite datum</Text>}
-      {value && <Text className="mt-1 text-sm text-muted">{formatDateOnlyForDisplay(value)}</Text>}
-      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
-    </View>
+      <p
+        style={{
+          marginBottom: 0,
+          marginTop: 4,
+          color: error
+            ? colors.error
+            : colors.muted,
+          fontSize: 14,
+        }}
+      >
+        {error ??
+          (value
+            ? formatDateOnlyForDisplay(value)
+            : 'Izaberite datum')}
+      </p>
+    </div>
   );
 }
 
