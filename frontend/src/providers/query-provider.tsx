@@ -15,6 +15,9 @@ import {
 } from 'react-native';
 
 import { configureOnlineManager } from '@/providers/query-online-manager';
+import {
+  MissingAccessTokenError,
+} from '@/shared/api/api-error';
 
 export function QueryProvider({
   children,
@@ -26,7 +29,19 @@ export function QueryProvider({
           queries: {
             staleTime: 30_000,
             gcTime: 5 * 60_000,
-            retry: 2,
+            retry: (
+              failureCount,
+              error,
+            ) => {
+              if (
+                error instanceof
+                MissingAccessTokenError
+              ) {
+                return false;
+              }
+
+              return failureCount < 2;
+            },
             refetchOnReconnect: true,
           },
           mutations: {

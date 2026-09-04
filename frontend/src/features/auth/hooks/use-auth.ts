@@ -12,6 +12,7 @@ export interface AuthContextValue {
   status: AuthStatus;
   isAuthenticated: boolean;
   isSigningIn: boolean;
+  isRefreshingSession: boolean;
   error: string | null;
 
   signIn: () => Promise<void>;

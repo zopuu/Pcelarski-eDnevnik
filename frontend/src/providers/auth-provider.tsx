@@ -26,6 +26,47 @@ import type { AuthSession as StoredAuthSession } from '@/features/auth/types/aut
 
 const ACCESS_TOKEN_REFRESH_SKEW_MS =
     60_000;
+const SESSION_REFRESH_TIMEOUT_MS =
+    15_000;
+
+class SessionRefreshTimeoutError extends Error {
+    constructor() {
+        super(
+            'Refreshing the session timed out.',
+        );
+
+        this.name =
+            'SessionRefreshTimeoutError';
+    }
+}
+
+function withSessionRefreshTimeout<T>(
+    operation: Promise<T>,
+): Promise<T> {
+    return new Promise<T>(
+        (resolve, reject) => {
+            const timeoutId = setTimeout(
+                () => {
+                    reject(
+                        new SessionRefreshTimeoutError(),
+                    );
+                },
+                SESSION_REFRESH_TIMEOUT_MS,
+            );
+
+            operation.then(
+                (value) => {
+                    clearTimeout(timeoutId);
+                    resolve(value);
+                },
+                (cause: unknown) => {
+                    clearTimeout(timeoutId);
+                    reject(cause);
+                },
+            );
+        },
+    );
+}
 
 const redirectUri =
     AuthSession.makeRedirectUri({
@@ -85,6 +126,11 @@ export function AuthProvider({
 
     const [isSigningIn, setIsSigningIn] =
         useState(false);
+
+    const [
+        isRefreshingSession,
+        setIsRefreshingSession,
+    ] = useState(false);
 
     const [error, setError] =
         useState<string | null>(null);
@@ -255,29 +301,56 @@ export function AuthProvider({
                 const currentSession =
                     sessionRef.current;
 
-                if (
-                    !currentSession?.refreshToken ||
-                    !discovery?.tokenEndpoint
-                ) {
+                if (!currentSession?.refreshToken) {
                     return null;
                 }
 
                 const refreshPromise =
                     (async () => {
-                        try {
-                            const tokenResponse =
-                                await AuthSession.refreshAsync(
-                                    {
-                                        clientId:
-                                            environment
-                                                .oidcClientId,
+                        setIsRefreshingSession(true);
 
-                                        refreshToken:
-                                            currentSession
-                                                .refreshToken,
-                                    },
-                                    discovery,
+                        try {
+                            const refreshDiscovery =
+                                discovery?.tokenEndpoint
+                                    ? discovery
+                                    : await withSessionRefreshTimeout(
+                                        AuthSession
+                                            .fetchDiscoveryAsync(
+                                                environment.apiUrl,
+                                            ),
+                                    );
+
+                            if (
+                                !refreshDiscovery
+                                    .tokenEndpoint
+                            ) {
+                                throw new Error(
+                                    'Authorization server does not provide a token endpoint.',
                                 );
+                            }
+
+                            const tokenResponse =
+                                await withSessionRefreshTimeout(
+                                    AuthSession.refreshAsync(
+                                        {
+                                            clientId:
+                                                environment
+                                                    .oidcClientId,
+
+                                            refreshToken:
+                                                currentSession
+                                                    .refreshToken,
+                                        },
+                                        refreshDiscovery,
+                                    ),
+                                );
+
+                            if (
+                                sessionRef.current !==
+                                currentSession
+                            ) {
+                                return null;
+                            }
 
                             const expiresAt =
                                 tokenResponse.expiresIn
@@ -326,6 +399,8 @@ export function AuthProvider({
                             );
 
                             return null;
+                        } finally {
+                            setIsRefreshingSession(false);
                         }
                     })();
 
@@ -516,6 +591,7 @@ export function AuthProvider({
                 isAuthenticated:
                     status === 'authenticated',
                 isSigningIn,
+                isRefreshingSession,
                 error,
                 signIn,
                 signOut,

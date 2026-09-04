@@ -26,6 +26,9 @@ import {
 import {
   useAppDrawer,
 } from '@/providers/app-drawer-provider';
+import {
+  useAuth,
+} from '@/features/auth/hooks/use-auth';
 
 import {
   AppHeader,
@@ -74,6 +77,9 @@ export function ApiaryHivesScreen({
   const {
     openDrawer,
   } = useAppDrawer();
+  const {
+    isRefreshingSession,
+  } = useAuth();
 
   const [
     isMoreOpen,
@@ -86,21 +92,40 @@ export function ApiaryHivesScreen({
     isApiaryLoading,
     isError:
     isApiaryError,
+    fetchStatus:
+    apiaryFetchStatus,
+    refetch:
+    refetchApiary,
   } =
     useApiary(
       apiaryId,
     );
 
   const {
-    data: hives = [],
+    data: hives,
     isLoading:
     areHivesLoading,
     isError:
     areHivesError,
+    fetchStatus:
+    hivesFetchStatus,
+    refetch:
+    refetchHives,
   } =
     useHives(
       apiaryId,
     );
+
+  const isQueryPaused =
+    apiaryFetchStatus === 'paused' ||
+    hivesFetchStatus === 'paused';
+
+  const retryLoading = () => {
+    void Promise.all([
+      refetchApiary(),
+      refetchHives(),
+    ]);
+  };
 
   const header = (
     <AppHeader
@@ -138,7 +163,9 @@ export function ApiaryHivesScreen({
               text-muted
             "
           >
-            Učitavanje košnica...
+            {isRefreshingSession
+              ? 'Obnavljanje sesije...'
+              : 'Učitavanje košnica...'}
           </Text>
         </View>
       </Screen>
@@ -146,34 +173,35 @@ export function ApiaryHivesScreen({
   }
 
   if (
-    isApiaryError ||
-    areHivesError ||
-    !apiary
+    isQueryPaused &&
+    (!apiary || !hives)
   ) {
     return (
       <Screen
         header={header}
       >
-        <View
-          className="
-            flex-1
-            items-center
-            justify-center
-            px-8
-          "
-        >
-          <Text
-            className="
-              text-center
-              text-base
-              font-semibold
-              text-error
-            "
-          >
-            Nije moguće učitati
-            podatke o pčelinjaku.
-          </Text>
-        </View>
+        <LoadError
+          message="Nema mrežne veze. Proverite vezu i pokušajte ponovo."
+          onRetry={retryLoading}
+        />
+      </Screen>
+    );
+  }
+
+  if (
+    isApiaryError ||
+    areHivesError ||
+    !apiary ||
+    !hives
+  ) {
+    return (
+      <Screen
+        header={header}
+      >
+        <LoadError
+          message="Nije moguće učitati podatke o pčelinjaku."
+          onRetry={retryLoading}
+        />
       </Screen>
     );
   }
@@ -639,5 +667,57 @@ export function ApiaryHivesScreen({
         ]}
       />
     </>
+  );
+}
+
+type LoadErrorProps = {
+  message: string;
+  onRetry: () => void;
+};
+
+function LoadError({
+  message,
+  onRetry,
+}: LoadErrorProps) {
+  return (
+    <View
+      className="
+        flex-1
+        items-center
+        justify-center
+        px-8
+      "
+    >
+      <Text
+        className="
+          text-center
+          text-base
+          font-semibold
+          text-error
+        "
+      >
+        {message}
+      </Text>
+
+      <Pressable
+        onPress={onRetry}
+        className="
+          mt-5
+          rounded-2xl
+          bg-primary
+          px-5
+          py-3
+        "
+      >
+        <Text
+          className="
+            font-bold
+            text-background
+          "
+        >
+          Pokušaj ponovo
+        </Text>
+      </Pressable>
+    </View>
   );
 }
