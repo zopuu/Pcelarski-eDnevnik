@@ -22,6 +22,8 @@ import {
 } from 'react-native-keyboard-controller';
 
 import {
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -35,6 +37,12 @@ import {
   useCreateForageObservation,
 } from '../hooks/use-create-forage-observation';
 import {
+  useForageObservation,
+} from '../hooks/use-forage-observation';
+import {
+  useUpdateForageObservation,
+} from '../hooks/use-update-forage-observation';
+import {
   createForageObservationSchema,
 } from '../schemas/create-forage-observation-schema';
 import type {
@@ -46,6 +54,8 @@ import type {
   CreateForageObservationRequest,
 } from '../types/forage-observation';
 import {
+  deleteForageObservationPhoto,
+  getForageObservationPhotoUri,
   saveForageObservationPhoto,
 } from '../storage/forage-observation-photo';
 
@@ -113,14 +123,32 @@ function getCreateErrorMessage(error: unknown) {
   return 'Zapažanje nije moguće sačuvati. Pokušajte ponovo.';
 }
 
-export function CreateForageObservationScreen() {
+type CreateForageObservationScreenProps = {
+  observationId?: string;
+};
+
+export function CreateForageObservationScreen({
+  observationId,
+}: CreateForageObservationScreenProps) {
+  const isEditing = Boolean(observationId);
   const createMutation =
     useCreateForageObservation();
+  const observationQuery =
+    useForageObservation(observationId);
+  const updateMutation =
+    useUpdateForageObservation(
+      observationId ?? '',
+    );
   const [photo, setPhoto] =
     useState<ObservationPhotoDraft | null>(null);
+  const [hasPhotoChanged, setHasPhotoChanged] =
+    useState(false);
+  const hydratedPhotoObservationId =
+    useRef<string | null>(null);
   const {
     control,
     handleSubmit,
+    reset,
     setValue,
     formState: {
       errors,
@@ -184,6 +212,57 @@ export function CreateForageObservationScreen() {
     );
   };
 
+  useEffect(() => {
+    if (!observationQuery.data) {
+      return;
+    }
+
+    reset({
+      forageType:
+        observationQuery.data.forageType,
+      intensity:
+        observationQuery.data.intensity,
+      notes:
+        observationQuery.data.notes ?? '',
+      latitude:
+        observationQuery.data.latitude.toFixed(6),
+      longitude:
+        observationQuery.data.longitude.toFixed(6),
+    });
+  }, [observationQuery.data, reset]);
+
+  useEffect(() => {
+    if (
+      !isEditing ||
+      !observationQuery.data ||
+      hydratedPhotoObservationId.current ===
+      observationQuery.data.id
+    ) {
+      return;
+    }
+
+    const photoUri =
+      getForageObservationPhotoUri(
+        observationQuery.data.id,
+      );
+
+    setPhoto(
+      photoUri
+        ? {
+          uri: photoUri,
+          width: 0,
+          height: 0,
+        }
+        : null,
+    );
+    hydratedPhotoObservationId.current =
+      observationQuery.data.id;
+    setHasPhotoChanged(false);
+  }, [
+    isEditing,
+    observationQuery.data,
+  ]);
+
   const onSubmit = async (
     values: CreateForageObservationFormValues,
   ) => {
@@ -198,9 +277,21 @@ export function CreateForageObservationScreen() {
 
     try {
       const response =
-        await createMutation.mutateAsync(request);
+        isEditing
+          ? await updateMutation.mutateAsync({
+            ...request,
+            observedAt:
+              observationQuery.data?.observedAt ??
+              request.observedAt,
+          })
+          : await createMutation.mutateAsync(request);
 
-      if (photo) {
+      const shouldPersistPhoto =
+        isEditing
+          ? hasPhotoChanged
+          : photo !== null;
+
+      if (shouldPersistPhoto && photo) {
         try {
           await saveForageObservationPhoto(
             response.id,
@@ -213,14 +304,64 @@ export function CreateForageObservationScreen() {
           );
         }
       }
+      else if (
+        shouldPersistPhoto &&
+        !photo
+      ) {
+        deleteForageObservationPhoto(
+          response.id,
+        );
+      }
 
       router.replace(
-        '/forage-observations' as never,
+        isEditing
+          ? `/forage-observations/${response.id}` as never
+          : '/forage-observations' as never,
       );
     } catch {
       // The recoverable server error remains visible beneath the form.
     }
   };
+
+  const isSaving =
+    isEditing
+      ? updateMutation.isPending
+      : createMutation.isPending;
+  const mutationError =
+    isEditing
+      ? updateMutation.error
+      : createMutation.error;
+
+  if (
+    isEditing &&
+    observationQuery.isLoading
+  ) {
+    return (
+      <Screen>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-muted">
+            Učitavanje zapažanja...
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
+
+  if (
+    isEditing &&
+    (observationQuery.isError ||
+      !observationQuery.data)
+  ) {
+    return (
+      <Screen>
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-center text-error">
+            Zapažanje nije moguće učitati.
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -244,7 +385,9 @@ export function CreateForageObservationScreen() {
         </Pressable>
 
         <Text className="text-2xl font-bold tracking-tight text-foreground">
-          Novo zapažanje
+          {isEditing
+            ? 'Izmeni zapažanje'
+            : 'Novo zapažanje'}
         </Text>
         <Text className="mt-1 text-sm text-muted">
           Izaberite vrstu paše i označite mesto na kom ste je primetili.
@@ -273,10 +416,6 @@ export function CreateForageObservationScreen() {
           )}
         />
 
-        <SectionTitle>Lokacija</SectionTitle>
-        <Text className="mb-3 text-sm text-muted">
-          Dodirnite mapu da biste označili mesto na kom ste uočili pašu.
-        </Text>
         <MapLocationPicker
           value={selectedLocation}
           onLocationChange={handleLocationChange}
@@ -306,13 +445,16 @@ export function CreateForageObservationScreen() {
 
         <ObservationPhotoPicker
           value={photo}
-          onChange={setPhoto}
+          onChange={(nextPhoto) => {
+            setPhoto(nextPhoto);
+            setHasPhotoChanged(true);
+          }}
         />
 
-        {createMutation.isError && (
+        {mutationError && (
           <View className="mb-4 rounded-2xl border border-error/30 bg-error/10 px-4 py-3">
             <Text className="text-sm text-error">
-              {getCreateErrorMessage(createMutation.error)}
+              {getCreateErrorMessage(mutationError)}
             </Text>
           </View>
         )}
@@ -320,16 +462,18 @@ export function CreateForageObservationScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Sačuvaj zapažanje"
-          disabled={createMutation.isPending}
+          disabled={isSaving}
           onPress={() => {
             void handleSubmit(onSubmit)();
           }}
-          className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${createMutation.isPending ? 'opacity-60' : ''}`}
+          className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${isSaving ? 'opacity-60' : ''}`}
         >
           <Text className="text-base font-bold text-background">
-            {createMutation.isPending
+            {isSaving
               ? 'Čuvanje...'
-              : 'Sačuvaj zapažanje'}
+              : isEditing
+                ? 'Sačuvaj izmene'
+                : 'Sačuvaj zapažanje'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>

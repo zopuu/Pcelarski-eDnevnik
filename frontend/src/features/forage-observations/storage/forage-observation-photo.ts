@@ -34,6 +34,25 @@ export function getForageObservationPhotoUri(
   }
 }
 
+export function deleteForageObservationPhoto(
+  observationId: string,
+): void {
+  try {
+    const photo = new File(
+      Paths.document,
+      'forage-observations',
+      observationId,
+      'photo.jpg',
+    );
+
+    if (photo.exists) {
+      photo.delete();
+    }
+  } catch {
+    // The API deletion remains successful even when this device has no local photo.
+  }
+}
+
 export async function saveForageObservationPhoto(
   observationId: string,
   photo: ObservationPhotoDraft,
@@ -89,9 +108,11 @@ export async function saveForageObservationPhoto(
   const source =
     new File(compressedPhoto.uri);
 
-  await source.copy(destination, {
-    overwrite: true,
-  });
+  if (destination.exists) {
+    destination.delete();
+  }
+
+  await source.copy(destination);
 
   return destination.uri;
 }

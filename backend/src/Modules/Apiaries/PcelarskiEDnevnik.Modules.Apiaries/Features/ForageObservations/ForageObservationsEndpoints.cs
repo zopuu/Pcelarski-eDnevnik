@@ -6,6 +6,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.GetAll;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.GetByProfile;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.Create;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.Update;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.Delete;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries
     .Features.ForageObservations;
@@ -37,6 +38,9 @@ public static class
 
         group
             .MapGetForageObservationByIdEndpoint();
+
+        group
+            .MapDeleteForageObservationEndpoint();
 
         return endpoints;
     }

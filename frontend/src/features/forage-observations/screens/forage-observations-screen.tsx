@@ -176,6 +176,15 @@ export function ForageObservationsScreen({
               observation={item}
               isFirst={index === 0}
               isLast={index === observations.length - 1}
+              onPress={() => {
+                router.push({
+                  pathname:
+                    '/forage-observations/[observationId]',
+                  params: {
+                    observationId: item.id,
+                  },
+                } as never);
+              }}
             />
           )}
           onEndReached={() => {
@@ -205,10 +214,12 @@ function ObservationTimelineItem({
   observation,
   isFirst,
   isLast,
+  onPress,
 }: {
   observation: ForageObservation;
   isFirst: boolean;
   isLast: boolean;
+  onPress: () => void;
 }) {
   const photoUri =
     getForageObservationPhotoUri(
@@ -246,7 +257,15 @@ function ObservationTimelineItem({
         <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
       </View>
 
-      <View className="mb-5 flex-1 overflow-hidden rounded-3xl border border-border bg-surface">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Otvori zapažanje: ${forageTypeLabels[observation.forageType]}`}
+        onPress={onPress}
+        className="mb-5 flex-1 overflow-hidden rounded-3xl border border-border bg-surface"
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
         <View className="flex-row">
           <View className="flex-1 px-4 py-4">
             <View className="flex-row flex-wrap items-center gap-2">
@@ -290,7 +309,7 @@ function ObservationTimelineItem({
 
           <ObservationPhoto photoUri={photoUri} />
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 }

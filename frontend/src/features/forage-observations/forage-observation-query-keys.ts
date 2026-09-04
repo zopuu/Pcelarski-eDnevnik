@@ -10,4 +10,11 @@ export const forageObservationQueryKeys = {
     'profile',
     forageProfileId,
   ] as const,
+
+  detail: (
+    observationId: string,
+  ) => [
+    'forage-observation',
+    observationId,
+  ] as const,
 };

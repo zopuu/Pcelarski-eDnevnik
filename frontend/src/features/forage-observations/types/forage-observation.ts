@@ -36,3 +36,9 @@ export type CreateForageObservationResponse = {
   id: string;
   forageProfileId: string | null;
 };
+
+export type UpdateForageObservationResponse = {
+  id: string;
+  forageProfileId: string | null;
+  updatedAtUtc: string;
+};
