@@ -1,50 +1,26 @@
-import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  router,
-} from 'expo-router';
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import Ionicons from "@react-native-vector-icons/ionicons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { router } from "expo-router";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
+import { useCreateForageProfile } from "../hooks/use-create-forage-profile";
 import {
-  useCreateForageProfile,
-} from '../hooks/use-create-forage-profile';
-import {
+  createForageProfileItemSchema,
   createForageProfileSchema,
   type CreateForageProfileFormInput,
   type CreateForageProfileFormValues,
+  type CreateForageProfileItemFormInput,
+  type CreateForageProfileItemFormValues,
   type SelectableForageType,
-} from '../schemas/create-forage-profile-schema';
-import type {
-  CreateForageProfileRequest,
-} from '../types/forage-profile';
+} from "../schemas/create-forage-profile-schema";
+import type { CreateForageProfileRequest } from "../types/forage-profile";
 
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { ApiError } from "@/shared/api/api-error";
+import { colors } from "@/shared/theme/colors";
 
-type CreateForageProfileScreenProps = {
-  apiaryId: string;
-};
+type CreateForageProfileScreenProps = { apiaryId: string };
 
 type ForageTypeOption = {
   value: SelectableForageType;
@@ -52,173 +28,106 @@ type ForageTypeOption = {
 };
 
 const forageTypeOptions: ForageTypeOption[] = [
-  { value: 'meadow', label: 'Livada' },
-  { value: 'forest', label: 'Šuma' },
-  { value: 'sunflower', label: 'Suncokret' },
-  { value: 'acacia', label: 'Bagrem' },
-  { value: 'linden', label: 'Lipa' },
-  { value: 'oilseedRape', label: 'Uljana repica' },
-  { value: 'clover', label: 'Detelina' },
-  { value: 'fruitTrees', label: 'Voćke' },
-  { value: 'chestnut', label: 'Kesten' },
-  { value: 'buckwheat', label: 'Heljda' },
+  { value: "meadow", label: "Livada" },
+  { value: "forest", label: "Šuma" },
+  { value: "sunflower", label: "Suncokret" },
+  { value: "acacia", label: "Bagrem" },
+  { value: "linden", label: "Lipa" },
+  { value: "oilseedRape", label: "Uljana repica" },
+  { value: "clover", label: "Detelina" },
+  { value: "fruitTrees", label: "Voćke" },
+  { value: "chestnut", label: "Kesten" },
+  { value: "buckwheat", label: "Heljda" },
 ];
 
-function optionalText(
-  value: string,
-): string | null {
-  const trimmed = value.trim();
+const forageTypeLabels = Object.fromEntries(
+  forageTypeOptions.map((option) => [option.value, option.label]),
+) as Record<SelectableForageType, string>;
 
-  return trimmed || null;
+const emptyItemDraft: CreateForageProfileItemFormInput = {
+  forageType: null,
+  percentage: "",
+  intensity: 3,
+  notes: "",
+};
+
+function optionalText(value: string): string | null {
+  return value.trim() || null;
 }
 
-function getInitialYear() {
-  return String(
-    new Date().getFullYear(),
-  );
+function getTotalPercentage(items: CreateForageProfileFormInput["items"]) {
+  const total = items.reduce((sum, item) => {
+    const percentage = Number(item.percentage.replace(",", "."));
+    return Number.isFinite(percentage) ? sum + percentage : sum;
+  }, 0);
+
+  return Math.round((total + Number.EPSILON) * 100) / 100;
 }
 
-function getTotalPercentage(
-  items: CreateForageProfileFormInput['items'],
-) {
-  const total = items.reduce(
-    (sum, item) => {
-      const percentage = Number(
-        item.percentage.replace(',', '.'),
-      );
-
-      return Number.isFinite(percentage)
-        ? sum + percentage
-        : sum;
-    },
-    0,
-  );
-
-  return Math.round(
-    (total + Number.EPSILON) * 100,
-  ) / 100;
-}
-
-function getCreateErrorMessage(
-  error: unknown,
-) {
+function getCreateErrorMessage(error: unknown) {
   if (
     error instanceof ApiError &&
     error.problem?.code ===
-      'forage_profiles.current_stay_year_already_has_profile'
+      "forage_profiles.current_stay_year_already_has_profile"
   ) {
-    return 'Profil paše za izabranu godinu već postoji.';
+    return "Profil paše za izabranu godinu već postoji.";
   }
 
-  return 'Profil paše nije moguće sačuvati. Pokušajte ponovo.';
+  return "Profil paše nije moguće sačuvati. Pokušajte ponovo.";
 }
 
 export function CreateForageProfileScreen({
   apiaryId,
 }: CreateForageProfileScreenProps) {
-  const createMutation =
-    useCreateForageProfile(
-      apiaryId,
-    );
-
+  const createMutation = useCreateForageProfile(apiaryId);
   const {
     control,
     handleSubmit,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<
     CreateForageProfileFormInput,
     unknown,
     CreateForageProfileFormValues
   >({
-    resolver:
-      zodResolver(
-        createForageProfileSchema,
-      ),
-
+    resolver: zodResolver(createForageProfileSchema),
     defaultValues: {
-      year: getInitialYear(),
-      radiusKm: '',
-      name: '',
-      notes: '',
-      items: [
-        {
-          forageType: null,
-          percentage: '',
-          intensity: 3,
-          notes: '',
-        },
-      ],
+      year: String(new Date().getFullYear()),
+      radiusKm: "",
+      name: "",
+      notes: "",
+      items: [],
     },
   });
+  const { fields, append, remove } = useFieldArray({ control, name: "items" });
+  const items = useWatch({ control, name: "items" });
+  const selectedForageTypes = new Set(
+    items
+      .map((item) => item.forageType)
+      .filter((value): value is SelectableForageType => value !== null),
+  );
+  const totalPercentage = getTotalPercentage(items);
+  const isTotalOverLimit = totalPercentage > 100;
+  const missingPercentage = Math.max(0, 100 - totalPercentage);
 
-  const {
-    fields,
-    append,
-    remove,
-  } = useFieldArray({
-    control,
-    name: 'items',
-  });
-
-  const items = useWatch({
-    control,
-    name: 'items',
-  });
-
-  const selectedForageTypes =
-    new Set(
-      items
-        .map(
-          (item) => item.forageType,
-        )
-        .filter(
-          (
-            forageType,
-          ): forageType is SelectableForageType =>
-            forageType !== null,
-        ),
-    );
-
-  const totalPercentage =
-    getTotalPercentage(items);
-
-  const missingPercentage =
-    Math.max(
-      0,
-      100 - totalPercentage,
-    );
-
-  const onSubmit = async (
-    values: CreateForageProfileFormValues,
-  ) => {
+  const onSubmit = async (values: CreateForageProfileFormValues) => {
     const request: CreateForageProfileRequest = {
       year: values.year,
       radiusKm: values.radiusKm,
       name: values.name,
       notes: optionalText(values.notes),
-      items: values.items.map(
-        (item) => ({
-          forageType: item.forageType,
-          percentage: item.percentage,
-          intensity: item.intensity,
-          notes: optionalText(item.notes),
-        }),
-      ),
+      items: values.items.map((item) => ({
+        forageType: item.forageType,
+        percentage: item.percentage,
+        intensity: item.intensity,
+        notes: optionalText(item.notes),
+      })),
     };
 
     try {
-      await createMutation.mutateAsync(
-        request,
-      );
-
+      await createMutation.mutateAsync(request);
       router.replace({
-        pathname:
-          '/apiaries/[apiaryId]/forage-profiles',
-        params: {
-          apiaryId,
-        },
+        pathname: "/apiaries/[apiaryId]/forage-profiles",
+        params: { apiaryId },
       } as never);
     } catch {
       // The recoverable mutation error is shown below the form.
@@ -231,32 +140,24 @@ export function CreateForageProfileScreen({
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          padding: 16,
-          paddingBottom: 48,
-        }}
+        stickyHeaderIndices={[9]}
+        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       >
         <Pressable
-          onPress={() => {
-            router.back();
-          }}
+          onPress={() => router.back()}
           className="mb-5 self-start py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Nazad
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
         <Text className="text-2xl font-bold text-foreground">
           Novi profil paše
         </Text>
-
         <Text className="mt-1 text-sm text-muted">
           Unesite zastupljenost paše u okolini pčelinjaka.
         </Text>
 
         <SectionTitle>Osnovni podaci</SectionTitle>
-
         <Controller
           control={control}
           name="year"
@@ -271,7 +172,6 @@ export function CreateForageProfileScreen({
             />
           )}
         />
-
         <Controller
           control={control}
           name="name"
@@ -285,7 +185,6 @@ export function CreateForageProfileScreen({
             />
           )}
         />
-
         <Controller
           control={control}
           name="radiusKm"
@@ -301,7 +200,6 @@ export function CreateForageProfileScreen({
             />
           )}
         />
-
         <Controller
           control={control}
           name="notes"
@@ -323,90 +221,103 @@ export function CreateForageProfileScreen({
               Vrste paše
             </Text>
             <Text className="mt-1 text-sm text-muted">
-              Ostalo se automatski dodaje do 100%.
+              Dodajte vrste jednu po jednu. Ostalo se automatski dopunjava do
+              100%.
             </Text>
           </View>
-
-          <View className="rounded-full bg-primary/10 px-3 py-1.5">
-            <Text className="text-xs font-bold text-primary">
+          <View
+            className={`rounded-full px-3 py-1.5 ${isTotalOverLimit ? "bg-error/10" : "bg-primary/10"}`}
+          >
+            <Text
+              className={`text-xs font-bold ${isTotalOverLimit ? "text-error" : "text-primary"}`}
+            >
               {totalPercentage.toFixed(2)}%
             </Text>
           </View>
         </View>
 
-        {fields.map((field, index) => (
-          <ForageItemForm
-            key={field.id}
-            control={control}
-            index={index}
-            canRemove={fields.length > 1}
-            selectedForageTypes={selectedForageTypes}
-            errors={errors}
-            onRemove={() => {
-              remove(index);
-            }}
-          />
-        ))}
+        <ForageItemDraftForm
+          selectedForageTypes={selectedForageTypes}
+          onAdd={(item) => {
+            append({
+              forageType: item.forageType,
+              percentage: String(item.percentage),
+              intensity: item.intensity,
+              notes: item.notes,
+            });
+          }}
+        />
 
-        {errors.items?.message && (
+        {isTotalOverLimit && (
+          <View className="mb-4 rounded-2xl border border-error/30 bg-error/10 px-4 py-3">
+            <Text className="font-semibold text-error">
+              Ukupno je {totalPercentage.toFixed(2)}%.
+            </Text>
+            <Text className="mt-1 text-sm text-error">
+              Zbir procenata mora biti najviše 100%. Uklonite ili smanjite neku
+              stavku pre kreiranja profila.
+            </Text>
+          </View>
+        )}
+        {errors.items?.message && !isTotalOverLimit && (
           <Text className="mb-3 text-sm text-error">
             {errors.items.message}
           </Text>
         )}
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Dodaj vrstu paše"
-          onPress={() => {
-            append({
-              forageType: null,
-              percentage: '',
-              intensity: 3,
-              notes: '',
-            });
-          }}
-          className="mb-4 min-h-14 items-center justify-center rounded-2xl border border-primary bg-surface px-5"
-        >
-          <Text className="text-base font-bold text-primary">
-            + Dodaj vrstu paše
-          </Text>
-        </Pressable>
+        {items.length > 0 && (
+          <>
+            <Text className="mb-3 mt-4 text-base font-bold text-foreground">
+              Dodate vrste
+            </Text>
+            <View className="mb-4 overflow-hidden rounded-3xl border border-border bg-surface">
+              {items.map(
+                (item, index) =>
+                  item.forageType && (
+                    <AddedForageItem
+                      key={fields[index]?.id ?? index}
+                      forageType={item.forageType}
+                      percentage={item.percentage}
+                      intensity={item.intensity}
+                      notes={item.notes}
+                      isLast={index === items.length - 1}
+                      onRemove={() => remove(index)}
+                    />
+                  ),
+              )}
+            </View>
+          </>
+        )}
 
-        {missingPercentage > 0 && (
+        {!isTotalOverLimit && missingPercentage > 0 && items.length > 0 && (
           <View className="mb-4 rounded-2xl bg-primary/10 px-4 py-3">
             <Text className="text-sm text-foreground">
               Server će dodati „Ostalo“ sa {missingPercentage.toFixed(2)}%.
             </Text>
           </View>
         )}
-
         {createMutation.isError && (
           <View className="mb-4 rounded-2xl border border-error/30 bg-surface px-4 py-3">
             <Text className="text-sm text-error">
-              {getCreateErrorMessage(
-                createMutation.error,
-              )}
+              {getCreateErrorMessage(createMutation.error)}
             </Text>
           </View>
         )}
-
         <Pressable
           disabled={createMutation.isPending}
-          onPress={handleSubmit(onSubmit)}
-          className={`
-            min-h-14
-            items-center
-            justify-center
-            rounded-2xl
-            bg-primary
-            px-5
-            ${createMutation.isPending ? 'opacity-60' : ''}
-          `}
+          onPress={() => {
+            if (!isTotalOverLimit) {
+              void handleSubmit(onSubmit)();
+            }
+          }}
+          className={`min-h-14 items-center justify-center rounded-2xl px-5 ${isTotalOverLimit ? "bg-error" : "bg-primary"} ${createMutation.isPending ? "opacity-60" : ""}`}
         >
           <Text className="text-base font-bold text-background">
-            {createMutation.isPending
-              ? 'Čuvanje...'
-              : 'Kreiraj profil paše'}
+            {isTotalOverLimit
+              ? "Ispravite zbir procenata"
+              : createMutation.isPending
+                ? "Čuvanje..."
+                : "Kreiraj profil paše"}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -414,78 +325,50 @@ export function CreateForageProfileScreen({
   );
 }
 
-function ForageItemForm({
-  control,
-  index,
-  canRemove,
+function ForageItemDraftForm({
   selectedForageTypes,
-  errors,
-  onRemove,
+  onAdd,
 }: {
-  control: ReturnType<
-    typeof useForm<
-      CreateForageProfileFormInput,
-      unknown,
-      CreateForageProfileFormValues
-    >
-  >['control'];
-  index: number;
-  canRemove: boolean;
   selectedForageTypes: Set<SelectableForageType>;
-  errors: ReturnType<
-    typeof useForm<
-      CreateForageProfileFormInput,
-      unknown,
-      CreateForageProfileFormValues
-    >
-  >['formState']['errors'];
-  onRemove: () => void;
+  onAdd: (item: CreateForageProfileItemFormValues) => void;
 }) {
-  const currentForageType = useWatch({
+  const {
     control,
-    name: `items.${index}.forageType`,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<
+    CreateForageProfileItemFormInput,
+    unknown,
+    CreateForageProfileItemFormValues
+  >({
+    resolver: zodResolver(createForageProfileItemSchema),
+    defaultValues: emptyItemDraft,
   });
 
   return (
-    <View className="mb-4 rounded-3xl border border-border bg-surface p-4">
-      <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-base font-bold text-foreground">
-          Vrsta paše {index + 1}
-        </Text>
-
-        {canRemove && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Ukloni vrstu paše ${index + 1}`}
-            onPress={onRemove}
-            className="min-h-10 min-w-10 items-center justify-center rounded-full bg-error/10"
-          >
-            <Ionicons
-              name="trash-outline"
-              size={19}
-              color={colors.error}
-            />
-          </Pressable>
-        )}
-      </View>
-
+    <View className="mb-4 rounded-3xl border border-primary/30 bg-surface p-4">
+      <Text className="text-base font-bold text-foreground">
+        Dodaj vrstu paše
+      </Text>
+      <Text className="mb-4 mt-1 text-sm text-muted">
+        Izabrana vrsta se više neće nuditi u sledećoj stavci.
+      </Text>
       <Controller
         control={control}
-        name={`items.${index}.forageType`}
+        name="forageType"
         render={({ field }) => (
           <ForageTypePicker
             value={field.value}
             onChange={field.onChange}
             selectedForageTypes={selectedForageTypes}
-            currentForageType={currentForageType}
-            error={errors.items?.[index]?.forageType?.message}
+            error={errors.forageType?.message}
           />
         )}
       />
-
       <Controller
         control={control}
-        name={`items.${index}.percentage`}
+        name="percentage"
         render={({ field }) => (
           <FormTextInput
             label="Zastupljenost (%) *"
@@ -493,25 +376,20 @@ function ForageItemForm({
             onChangeText={field.onChange}
             placeholder="npr. 40"
             keyboardType="decimal-pad"
-            error={errors.items?.[index]?.percentage?.message}
+            error={errors.percentage?.message}
           />
         )}
       />
-
       <Controller
         control={control}
-        name={`items.${index}.intensity`}
+        name="intensity"
         render={({ field }) => (
-          <IntensityPicker
-            value={field.value}
-            onChange={field.onChange}
-          />
+          <IntensityPicker value={field.value} onChange={field.onChange} />
         )}
       />
-
       <Controller
         control={control}
-        name={`items.${index}.notes`}
+        name="notes"
         render={({ field }) => (
           <FormTextInput
             label="Napomena"
@@ -519,10 +397,66 @@ function ForageItemForm({
             onChangeText={field.onChange}
             placeholder="Opcionalno"
             multiline
-            error={errors.items?.[index]?.notes?.message}
+            error={errors.notes?.message}
           />
         )}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Dodaj vrstu paše u profil"
+        onPress={handleSubmit((item) => {
+          onAdd(item);
+          reset(emptyItemDraft);
+        })}
+        className="min-h-14 items-center justify-center rounded-2xl bg-primary px-5"
+      >
+        <Text className="text-base font-bold text-background">
+          Dodaj u profil
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function AddedForageItem({
+  forageType,
+  percentage,
+  intensity,
+  notes,
+  isLast,
+  onRemove,
+}: {
+  forageType: SelectableForageType;
+  percentage: string;
+  intensity: number;
+  notes: string;
+  isLast: boolean;
+  onRemove: () => void;
+}) {
+  return (
+    <View
+      className={`flex-row items-center gap-3 px-4 py-4 ${isLast ? "" : "border-b border-border"}`}
+    >
+      <View className="flex-1">
+        <View className="flex-row items-center justify-between gap-3">
+          <Text className="text-base font-bold text-foreground">
+            {forageTypeLabels[forageType]}
+          </Text>
+          <Text className="text-base font-bold text-primary">
+            {percentage}%
+          </Text>
+        </View>
+        <Text className="mt-1 text-sm text-muted">Jačina: {intensity}/5</Text>
+        {notes && <Text className="mt-1 text-sm text-muted">{notes}</Text>}
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Ukloni ${forageTypeLabels[forageType]} iz profila`}
+        onPress={onRemove}
+        className="min-h-11 min-w-11 items-center justify-center rounded-full bg-error/10"
+      >
+        <Ionicons name="close" size={20} color={colors.error} />
+      </Pressable>
     </View>
   );
 }
@@ -531,13 +465,11 @@ function ForageTypePicker({
   value,
   onChange,
   selectedForageTypes,
-  currentForageType,
   error,
 }: {
   value: SelectableForageType | null;
   onChange: (value: SelectableForageType) => void;
   selectedForageTypes: Set<SelectableForageType>;
-  currentForageType: SelectableForageType | null;
   error?: string;
 }) {
   return (
@@ -545,7 +477,6 @@ function ForageTypePicker({
       <Text className="mb-2 text-sm font-semibold text-foreground">
         Vrsta *
       </Text>
-
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -553,49 +484,29 @@ function ForageTypePicker({
       >
         {forageTypeOptions.map((option) => {
           const isSelected = value === option.value;
-          const isUsedByAnotherItem =
-            selectedForageTypes.has(option.value) &&
-            currentForageType !== option.value;
-
+          const isAlreadyAdded = selectedForageTypes.has(option.value);
           return (
             <Pressable
               key={option.value}
               accessibilityRole="button"
               accessibilityState={{
                 selected: isSelected,
-                disabled: isUsedByAnotherItem,
+                disabled: isAlreadyAdded,
               }}
-              disabled={isUsedByAnotherItem}
-              onPress={() => {
-                onChange(option.value);
-              }}
-              className={`
-                min-h-11
-                items-center
-                justify-center
-                rounded-xl
-                border
-                px-3
-                ${isSelected
-                  ? 'border-primary bg-primary'
-                  : 'border-border bg-background'
-                }
-                ${isUsedByAnotherItem ? 'opacity-40' : ''}
-              `}
+              disabled={isAlreadyAdded}
+              onPress={() => onChange(option.value)}
+              className={`min-h-11 items-center justify-center rounded-xl border px-3 ${isSelected ? "border-primary bg-primary" : "border-border bg-background"} ${isAlreadyAdded ? "opacity-40" : ""}`}
             >
-              <Text className={`text-sm font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}>
+              <Text
+                className={`text-sm font-semibold ${isSelected ? "text-background" : "text-foreground"}`}
+              >
                 {option.label}
               </Text>
             </Pressable>
           );
         })}
       </ScrollView>
-
-      {error && (
-        <Text className="mt-1 text-sm text-error">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
@@ -612,34 +523,21 @@ function IntensityPicker({
       <Text className="mb-2 text-sm font-semibold text-foreground">
         Jačina paše *
       </Text>
-
       <View className="flex-row gap-2">
         {[1, 2, 3, 4, 5].map((intensity) => {
           const isSelected = value === intensity;
-
           return (
             <Pressable
               key={intensity}
               accessibilityRole="button"
               accessibilityLabel={`Jačina ${intensity}`}
               accessibilityState={{ selected: isSelected }}
-              onPress={() => {
-                onChange(intensity);
-              }}
-              className={`
-                min-h-12
-                flex-1
-                items-center
-                justify-center
-                rounded-xl
-                border
-                ${isSelected
-                  ? 'border-primary bg-primary'
-                  : 'border-border bg-background'
-                }
-              `}
+              onPress={() => onChange(intensity)}
+              className={`min-h-12 flex-1 items-center justify-center rounded-xl border ${isSelected ? "border-primary bg-primary" : "border-border bg-background"}`}
             >
-              <Text className={`font-bold ${isSelected ? 'text-background' : 'text-foreground'}`}>
+              <Text
+                className={`font-bold ${isSelected ? "text-background" : "text-foreground"}`}
+              >
                 {intensity}
               </Text>
             </Pressable>
@@ -655,7 +553,7 @@ function FormTextInput({
   value,
   onChangeText,
   placeholder,
-  keyboardType = 'default',
+  keyboardType = "default",
   maxLength,
   multiline = false,
   error,
@@ -664,7 +562,7 @@ function FormTextInput({
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
-  keyboardType?: 'default' | 'number-pad' | 'decimal-pad';
+  keyboardType?: "default" | "number-pad" | "decimal-pad";
   maxLength?: number;
   multiline?: boolean;
   error?: string;
@@ -674,7 +572,6 @@ function FormTextInput({
       <Text className="mb-2 text-sm font-semibold text-foreground">
         {label}
       </Text>
-
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -683,33 +580,15 @@ function FormTextInput({
         keyboardType={keyboardType}
         maxLength={maxLength}
         multiline={multiline}
-        textAlignVertical={multiline ? 'top' : 'center'}
-        className={`
-          ${multiline ? 'min-h-28 py-3' : 'h-14'}
-          rounded-2xl
-          border
-          bg-surface
-          px-4
-          text-base
-          text-foreground
-          ${error ? 'border-error' : 'border-border'}
-        `}
+        textAlignVertical={multiline ? "top" : "center"}
+        className={`${multiline ? "min-h-28 py-3" : "h-14"} rounded-2xl border bg-surface px-4 text-base text-foreground ${error ? "border-error" : "border-border"}`}
       />
-
-      {error && (
-        <Text className="mt-1 text-sm text-error">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
 
-function SectionTitle({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
       {children}
