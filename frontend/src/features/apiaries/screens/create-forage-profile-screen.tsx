@@ -79,6 +79,8 @@ function getCreateErrorMessage(error: unknown) {
 export function CreateForageProfileScreen({
   apiaryId,
 }: CreateForageProfileScreenProps) {
+  const currentYear = new Date().getFullYear();
+
   const createMutation = useCreateForageProfile(apiaryId);
   const {
     control,
@@ -91,7 +93,7 @@ export function CreateForageProfileScreen({
   >({
     resolver: zodResolver(createForageProfileSchema),
     defaultValues: {
-      year: String(new Date().getFullYear()),
+      year: String(currentYear),
       radiusKm: "",
       name: "",
       notes: "",
@@ -111,7 +113,7 @@ export function CreateForageProfileScreen({
 
   const onSubmit = async (values: CreateForageProfileFormValues) => {
     const request: CreateForageProfileRequest = {
-      year: values.year,
+      year: currentYear,
       radiusKm: values.radiusKm,
       name: values.name,
       notes: optionalText(values.notes),
@@ -140,7 +142,7 @@ export function CreateForageProfileScreen({
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[9]}
+        stickyHeaderIndices={[8]}
         contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       >
         <Pressable
@@ -158,20 +160,17 @@ export function CreateForageProfileScreen({
         </Text>
 
         <SectionTitle>Osnovni podaci</SectionTitle>
-        <Controller
-          control={control}
-          name="year"
-          render={({ field }) => (
-            <FormTextInput
-              label="Godina *"
-              value={field.value}
-              onChangeText={field.onChange}
-              keyboardType="number-pad"
-              maxLength={4}
-              error={errors.year?.message}
-            />
-          )}
-        />
+        <View className="mb-4">
+          <Text className="mb-2 text-sm font-semibold text-foreground">
+            Godina
+          </Text>
+          <View className="h-14 flex-row items-center justify-between rounded-2xl border border-border bg-surface px-4">
+            <Text className="text-base text-foreground">{currentYear}</Text>
+            <Text className="text-sm font-semibold text-muted">
+              Tekuća godina
+            </Text>
+          </View>
+        </View>
         <Controller
           control={control}
           name="name"

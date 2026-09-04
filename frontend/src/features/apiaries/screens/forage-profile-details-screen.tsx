@@ -188,7 +188,7 @@ export function ForageProfileDetailsScreen({
             {
               key: "forage-profile-observations",
               label: "Zapazanja",
-              icon: "camera-outline",
+              icon: "image-outline",
               accessibilityLabel: "Prikazi zapazanja vezana za profil paše",
               onPress: () => {
                 
