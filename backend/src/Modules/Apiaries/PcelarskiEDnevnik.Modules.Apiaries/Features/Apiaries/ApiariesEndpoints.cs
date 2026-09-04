@@ -7,6 +7,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetById;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Update;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageProfiles;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Elevation;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
 
@@ -22,6 +23,7 @@ public static class ApiariesEndpoints {
         group.MapGetApiariesEndpoint();
         group.MapGetApiaryByIdEndpoint();
         group.MapUpdateApiaryEndpoint();
+        group.MapGetElevationEndpoint();
 
         group.MapApiaryStaysEndpoints();
         group.MapForageProfilesEndpoints();

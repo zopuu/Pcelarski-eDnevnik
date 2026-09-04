@@ -1,85 +1,48 @@
+import {
+  apiClient,
+} from '@/shared/api/api-client';
+
 export type GeographicCoordinates = {
   latitude: number;
   longitude: number;
 };
 
-type OpenTopoDataResponse = {
-  status?: unknown;
-  results?: unknown;
+type ElevationResponse = {
+  elevationMeters: number;
 };
-
-const openTopoDataEndpoint =
-  'https://api.opentopodata.org/v1/aster30m';
-
-function readElevation(
-  response: unknown,
-): number | null {
-  if (
-    typeof response !== 'object' ||
-    response === null
-  ) {
-    return null;
-  }
-
-  const payload =
-    response as OpenTopoDataResponse;
-
-  if (
-    payload.status !== 'OK' ||
-    !Array.isArray(payload.results) ||
-    payload.results.length === 0
-  ) {
-    return null;
-  }
-
-  const result =
-    payload.results[0];
-
-  if (
-    typeof result !== 'object' ||
-    result === null ||
-    !('elevation' in result) ||
-    typeof result.elevation !== 'number' ||
-    !Number.isFinite(result.elevation)
-  ) {
-    return null;
-  }
-
-  return Math.round(
-    result.elevation,
-  );
-}
 
 export async function getElevationMeters(
   coordinates: GeographicCoordinates,
   signal?: AbortSignal,
 ): Promise<number> {
-  const locations =
-    `${coordinates.latitude},${coordinates.longitude}`;
+  const query =
+    new URLSearchParams({
+      latitude:
+        coordinates.latitude.toString(),
+      longitude:
+        coordinates.longitude.toString(),
+    });
 
-  const response = await fetch(
-    `${openTopoDataEndpoint}?locations=${encodeURIComponent(locations)}`,
+  const response =
+    await apiClient.get<ElevationResponse>(
+      `/api/apiaries/elevation?${query.toString()}`,
     {
+      authenticated: true,
       signal,
     },
   );
 
-  if (!response.ok) {
-    throw new Error(
-      'Elevation lookup failed.',
-    );
-  }
-
-  const elevation =
-    readElevation(
-      await response.json(),
-    );
-
-  if (elevation === null) {
+  if (
+    !Number.isFinite(
+      response.elevationMeters,
+    )
+  ) {
     throw new Error(
       'Elevation is not available for this location.',
     );
   }
 
-  return elevation;
+  return Math.round(
+    response.elevationMeters,
+  );
 }
