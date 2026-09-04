@@ -18,16 +18,20 @@ const jpegCompression = 0.75;
 export function getForageObservationPhotoUri(
   observationId: string,
 ): string | null {
-  const photo = new File(
-    Paths.document,
-    'forage-observations',
-    observationId,
-    'photo.jpg',
-  );
+  try {
+    const photo = new File(
+      Paths.document,
+      'forage-observations',
+      observationId,
+      'photo.jpg',
+    );
 
-  return photo.exists
-    ? photo.uri
-    : null;
+    return photo.exists
+      ? photo.uri
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function saveForageObservationPhoto(

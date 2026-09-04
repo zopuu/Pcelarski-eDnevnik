@@ -7,6 +7,10 @@ import {
   router,
 } from 'expo-router';
 import {
+  useEffect,
+  useState,
+} from 'react';
+import {
   ActivityIndicator,
   FlatList,
   Pressable,
@@ -258,19 +262,58 @@ function ObservationTimelineItem({
             )}
           </View>
 
-          {photoUri && (
-            <Image
-              source={photoUri}
-              contentFit="cover"
-              style={{
-                alignSelf: 'stretch',
-                width: 104,
-              }}
-            />
-          )}
+          <ObservationPhoto photoUri={photoUri} />
         </View>
       </View>
     </View>
+  );
+}
+
+function ObservationPhoto({
+  photoUri,
+}: {
+  photoUri: string | null;
+}) {
+  const [hasLoadError, setHasLoadError] =
+    useState(false);
+
+  useEffect(() => {
+    setHasLoadError(false);
+  }, [photoUri]);
+
+  if (!photoUri || hasLoadError) {
+    return (
+      <View
+        className="shrink-0 items-center justify-center bg-surface-warm"
+        style={{
+          alignSelf: 'stretch',
+          width: 104,
+        }}
+      >
+        <Ionicons
+          name="image-outline"
+          size={28}
+          color={colors.muted}
+        />
+        <Text className="mt-2 px-2 text-center text-[11px] font-medium text-muted">
+          Fotografija nije dostupna na ovom uređaju
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={photoUri}
+      contentFit="cover"
+      onError={() => {
+        setHasLoadError(true);
+      }}
+      style={{
+        alignSelf: 'stretch',
+        width: 104,
+      }}
+    />
   );
 }
 
