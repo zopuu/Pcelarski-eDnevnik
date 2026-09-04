@@ -109,10 +109,10 @@ export function HomeScreen() {
               icon:
                 'leaf-outline',
               accessibilityLabel:
-                'Dodaj zapažanje paše',
+                'Otvori zapažanja paše',
               onPress: () => {
-                showComingSoon(
-                  'Zapažanje paše',
+                router.push(
+                  '/forage-observations' as never,
                 );
               },
             },

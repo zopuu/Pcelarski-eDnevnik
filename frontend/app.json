@@ -38,7 +38,14 @@
       ],
       "expo-web-browser",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Dozvolite pristup kameri za fotografisanje zapažanja.",
+          "photosPermission": "Dozvolite pristup galeriji za izbor fotografije zapažanja."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

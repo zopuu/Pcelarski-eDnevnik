@@ -192,6 +192,72 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageObservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid?>("ForageProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("forage_profile_id");
+
+                    b.Property<string>("ForageType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("forage_type");
+
+                    b.Property<short>("Intensity")
+                        .HasColumnType("smallint")
+                        .HasColumnName("intensity");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("location_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTimeOffset>("ObservedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("observed_at");
+
+                    b.Property<Guid>("ObservedByBeekeeperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("observed_by_beekeeper_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id")
+                        .HasName("pk_forage_observations");
+
+                    b.HasIndex("LocationId")
+                        .HasDatabaseName("ix_forage_observations_location_id");
+
+                    b.HasIndex("ForageProfileId", "ObservedAt")
+                        .HasDatabaseName("ix_forage_observations_profile_observed_at");
+
+                    b.HasIndex("ObservedByBeekeeperId", "ObservedAt")
+                        .HasDatabaseName("ix_forage_observations_beekeeper_observed_at");
+
+                    b.ToTable("forage_observations", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_forage_observations_forage_type", "\"forage_type\" IN (\r\n    'Meadow',\r\n    'Forest',\r\n    'Sunflower',\r\n    'Acacia',\r\n    'Linden',\r\n    'OilseedRape',\r\n    'Clover',\r\n    'FruitTrees',\r\n    'Chestnut',\r\n    'Buckwheat',\r\n    'Other'\r\n)");
+
+                            t.HasCheckConstraint("ck_forage_observations_intensity", "\"intensity\" BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -302,6 +368,22 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_apiary_stays_locations_location_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageObservation", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ForageProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_forage_observations_forage_profiles_forage_profile_id");
+
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLocation", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_forage_observations_locations_location_id");
                 });
 
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
