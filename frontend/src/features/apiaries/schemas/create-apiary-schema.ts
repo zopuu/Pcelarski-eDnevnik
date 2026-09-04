@@ -71,13 +71,13 @@ export const createApiarySchema =
             ),
 
         latitude: coordinateSchema(
-            'Geografska širina',
+            'Lokacija',
             -90,
             90,
         ),
 
         longitude: coordinateSchema(
-            'Geografska dužina',
+            'Lokacija',
             -180,
             180,
         ),

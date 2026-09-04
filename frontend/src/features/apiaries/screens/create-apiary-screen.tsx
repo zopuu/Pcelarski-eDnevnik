@@ -9,7 +9,13 @@ import {
 import {
   Controller,
   useForm,
+  useWatch,
 } from 'react-hook-form';
+
+import {
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Pressable,
@@ -44,6 +50,14 @@ import {
   colors,
 } from '@/shared/theme/colors';
 
+import {
+  MapLocationPicker,
+} from '@/shared/components/map-location-picker/map-location-picker';
+
+import type {
+  GeographicCoordinates,
+} from '@/shared/api/open-topo-data';
+
 function optionalText(
   value: string,
 ): string | null {
@@ -63,6 +77,21 @@ function parseCoordinate(
       .trim()
       .replace(',', '.'),
   );
+}
+
+function parseSelectedCoordinate(
+  value: string,
+): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const coordinate =
+    parseCoordinate(value);
+
+  return Number.isFinite(coordinate)
+    ? coordinate
+    : null;
 }
 
 function parseOptionalInteger(
@@ -121,6 +150,7 @@ export function CreateApiaryScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: {
       errors,
     },
@@ -147,6 +177,83 @@ export function CreateApiaryScreen() {
         stayNote: '',
       },
     });
+
+  const latitude =
+    useWatch({
+      control,
+      name: 'latitude',
+    });
+
+  const longitude =
+    useWatch({
+      control,
+      name: 'longitude',
+    });
+
+  const [
+    isElevationLoading,
+    setIsElevationLoading,
+  ] = useState(false);
+
+  const hasManualAltitudeOverride =
+    useRef(false);
+
+  const latitudeNumber =
+    parseSelectedCoordinate(latitude);
+
+  const longitudeNumber =
+    parseSelectedCoordinate(longitude);
+
+  const selectedLocation =
+    latitudeNumber !== null &&
+    longitudeNumber !== null
+      ? {
+        latitude: latitudeNumber,
+        longitude: longitudeNumber,
+      }
+      : null;
+
+  const handleLocationChange = (
+    coordinates: GeographicCoordinates,
+  ) => {
+    hasManualAltitudeOverride.current =
+      false;
+
+    setValue(
+      'latitude',
+      coordinates.latitude.toFixed(6),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+
+    setValue(
+      'longitude',
+      coordinates.longitude.toFixed(6),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+  };
+
+  const handleAltitudeChange = (
+    altitudeMeters: number | null,
+  ) => {
+    if (hasManualAltitudeOverride.current) {
+      return;
+    }
+
+    setValue(
+      'altitudeMeters',
+      altitudeMeters?.toString() ?? '',
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+  };
 
   const onSubmit =
     async (
@@ -424,9 +531,10 @@ export function CreateApiaryScreen() {
             text-muted
           "
         >
-          Lokacija je obavezna.
-          Za sada unesite koordinate
-          ručno.
+          Izaberite tačnu poziciju na
+          satelitskom snimku. Koordinate
+          i nadmorska visina se popunjavaju
+          automatski.
         </Text>
 
         <Controller
@@ -453,52 +561,21 @@ export function CreateApiaryScreen() {
           )}
         />
 
-        <Controller
-          control={control}
-          name="latitude"
-          render={({
-            field,
-          }) => (
-            <FormTextInput
-              label="Geografska širina *"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
-              placeholder="45.267136"
-              keyboardType="decimal-pad"
-              error={
-                errors.latitude
-                  ?.message
-              }
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="longitude"
-          render={({
-            field,
-          }) => (
-            <FormTextInput
-              label="Geografska dužina *"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
-              placeholder="19.833549"
-              keyboardType="decimal-pad"
-              error={
-                errors.longitude
-                  ?.message
-              }
-            />
-          )}
+        <MapLocationPicker
+          value={selectedLocation}
+          onLocationChange={
+            handleLocationChange
+          }
+          onAltitudeChange={
+            handleAltitudeChange
+          }
+          onElevationLoadingChange={
+            setIsElevationLoading
+          }
+          error={
+            errors.latitude?.message ??
+            errors.longitude?.message
+          }
         />
 
         <Controller
@@ -512,9 +589,11 @@ export function CreateApiaryScreen() {
               value={
                 field.value
               }
-              onChangeText={
-                field.onChange
-              }
+              onChangeText={(value) => {
+                hasManualAltitudeOverride.current =
+                  true;
+                field.onChange(value);
+              }}
               placeholder="npr. 85"
               keyboardType="numbers-and-punctuation"
               error={
@@ -707,7 +786,8 @@ export function CreateApiaryScreen() {
         <Pressable
           disabled={
             createMutation
-              .isPending
+              .isPending ||
+            isElevationLoading
           }
           onPress={
             handleSubmit(
@@ -722,7 +802,8 @@ export function CreateApiaryScreen() {
             bg-primary
             px-5
             ${createMutation
-              .isPending
+              .isPending ||
+              isElevationLoading
               ? 'opacity-60'
               : ''
             }
@@ -736,7 +817,8 @@ export function CreateApiaryScreen() {
             "
           >
             {createMutation
-              .isPending
+              .isPending ||
+              isElevationLoading
               ? 'Čuvanje...'
               : 'Kreiraj pčelinjak'}
           </Text>
