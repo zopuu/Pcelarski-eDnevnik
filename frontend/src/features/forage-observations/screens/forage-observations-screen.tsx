@@ -174,6 +174,7 @@ export function ForageObservationsScreen({
           renderItem={({ item, index }) => (
             <ObservationTimelineItem
               observation={item}
+              isFirst={index === 0}
               isLast={index === observations.length - 1}
             />
           )}
@@ -202,9 +203,11 @@ export function ForageObservationsScreen({
 
 function ObservationTimelineItem({
   observation,
+  isFirst,
   isLast,
 }: {
   observation: ForageObservation;
+  isFirst: boolean;
   isLast: boolean;
 }) {
   const photoUri =
@@ -223,11 +226,24 @@ function ObservationTimelineItem({
         </Text>
       </View>
 
-      <View className="relative w-7 items-center">
-        {!isLast && (
-          <View className="absolute bottom-0 top-4 w-px bg-border" />
+      <View className="relative w-7 items-center justify-center">
+        {!isFirst && (
+          <View
+            className="absolute top-0 w-px bg-border"
+            style={{
+              bottom: '50%',
+            }}
+          />
         )}
-        <View className="z-10 mt-1 h-4 w-4 rounded-full border-4 border-background bg-primary" />
+        {!isLast && (
+          <View
+            className="absolute bottom-0 w-px bg-border"
+            style={{
+              top: '50%',
+            }}
+          />
+        )}
+        <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
       </View>
 
       <View className="mb-5 flex-1 overflow-hidden rounded-3xl border border-border bg-surface">
