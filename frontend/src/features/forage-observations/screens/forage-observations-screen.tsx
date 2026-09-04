@@ -97,12 +97,18 @@ function intensityLabel(
   ][intensity - 1] ?? String(intensity);
 }
 
-export function ForageObservationsScreen() {
+type ForageObservationsScreenProps = {
+  forageProfileId?: string;
+};
+
+export function ForageObservationsScreen({
+  forageProfileId,
+}: ForageObservationsScreenProps) {
   const {
     openDrawer,
   } = useAppDrawer();
   const observationsQuery =
-    useForageObservations();
+    useForageObservations(forageProfileId);
   const observations =
     observationsQuery.data?.pages.flatMap(
       (page) => page.items,
@@ -153,10 +159,14 @@ export function ForageObservationsScreen() {
           ListHeaderComponent={
             <View className="mb-7">
               <Text className="text-2xl font-bold tracking-tight text-foreground">
-                Zapažanja paše
+                {forageProfileId
+                  ? 'Zapažanja u zoni paše'
+                  : 'Zapažanja paše'}
               </Text>
               <Text className="mt-1 text-sm text-muted">
-                Vaša terenska zapažanja, od najnovijeg.
+                {forageProfileId
+                  ? 'Zapažanja unutar poluprečnika trenutnog boravka, od najnovijeg.'
+                  : 'Vaša terenska zapažanja, od najnovijeg.'}
               </Text>
             </View>
           }

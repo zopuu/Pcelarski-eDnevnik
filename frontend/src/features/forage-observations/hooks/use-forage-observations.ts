@@ -4,17 +4,28 @@ import {
 
 import {
   getForageObservations,
+  getForageObservationsByProfile,
 } from '../api/get-forage-observations';
 import {
   forageObservationQueryKeys,
 } from '../forage-observation-query-keys';
 
-export function useForageObservations() {
+export function useForageObservations(
+  forageProfileId?: string,
+) {
   return useInfiniteQuery({
-    queryKey:
-      forageObservationQueryKeys.all,
+    queryKey: forageProfileId
+      ? forageObservationQueryKeys.byProfile(
+        forageProfileId,
+      )
+      : forageObservationQueryKeys.all,
     queryFn: ({ pageParam }) =>
-      getForageObservations(pageParam),
+      forageProfileId
+        ? getForageObservationsByProfile(
+          forageProfileId,
+          pageParam,
+        )
+        : getForageObservations(pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.hasMore

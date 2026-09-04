@@ -17,3 +17,16 @@ export function getForageObservations(
     },
   );
 }
+
+export function getForageObservationsByProfile(
+  forageProfileId: string,
+  page: number,
+  pageSize = 50,
+): Promise<ForageObservationsPage> {
+  return apiClient.get<ForageObservationsPage>(
+    `/api/forage-observations/profile/${forageProfileId}?page=${page}&pageSize=${pageSize}`,
+    {
+      authenticated: true,
+    },
+  );
+}

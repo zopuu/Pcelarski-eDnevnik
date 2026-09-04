@@ -191,8 +191,14 @@ export function ForageProfileDetailsScreen({
               icon: "image-outline",
               accessibilityLabel: "Prikazi zapazanja vezana za profil paše",
               onPress: () => {
-                
-              }
+                router.push({
+                  pathname: "/apiaries/[apiaryId]/forage-profiles/[forageProfileId]/observations",
+                  params: {
+                    apiaryId,
+                    forageProfileId: profile.id,
+                  },
+                } as never);
+              },
             },
             {
               key: "lock-status",
