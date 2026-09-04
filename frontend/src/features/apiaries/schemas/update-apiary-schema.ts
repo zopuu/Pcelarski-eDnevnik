@@ -2,6 +2,37 @@ import {
   z,
 } from 'zod';
 
+function coordinateSchema(
+  minimum: number,
+  maximum: number,
+) {
+  return z
+    .string()
+    .trim()
+    .min(
+      1,
+      'Lokacija je obavezna.',
+    )
+    .refine(
+      (value) => {
+        const coordinate =
+          Number(
+            value.replace(',', '.'),
+          );
+
+        return (
+          Number.isFinite(coordinate) &&
+          coordinate >= minimum &&
+          coordinate <= maximum
+        );
+      },
+      {
+        message:
+          'Lokacija nije ispravna.',
+      },
+    );
+}
+
 export const updateApiarySchema =
   z.object({
     name:
@@ -36,6 +67,30 @@ export const updateApiarySchema =
           'migratory',
         ])
         .nullable(),
+
+    latitude: coordinateSchema(
+      -90,
+      90,
+    ),
+
+    longitude: coordinateSchema(
+      -180,
+      180,
+    ),
+
+    altitudeMeters:
+      z
+        .string()
+        .trim()
+        .refine(
+          (value) =>
+            value.length === 0 ||
+            /^-?\d+$/.test(value),
+          {
+            message:
+              'Nadmorska visina mora biti ceo broj.',
+          },
+        ),
 
     orientation:
       z

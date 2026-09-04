@@ -5,6 +5,9 @@ import type {
   ApiaryType,
   ApiaryStatus,
 } from './apiary';
+import type {
+  UpdateLocationRequest,
+} from './location';
 export type UpdateApiaryRequest = {
   identificationNumber:
     | string
@@ -54,10 +57,14 @@ export type UpdateApiaryStayRequest = {
 export type UpdateApiaryFormRequest = {
   apiaryId: string;
   stayId: string;
+  locationId: string;
 
   apiary:
     UpdateApiaryRequest;
 
   stay:
     UpdateApiaryStayRequest;
+
+  location:
+    UpdateLocationRequest;
 };

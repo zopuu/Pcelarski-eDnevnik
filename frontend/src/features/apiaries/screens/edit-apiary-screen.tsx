@@ -8,11 +8,14 @@ import {
 
 import {
   useEffect,
+  useRef,
+  useState,
 } from 'react';
 
 import {
   Controller,
   useForm,
+  useWatch,
 } from 'react-hook-form';
 
 import {
@@ -40,6 +43,10 @@ import {
 } from '@/features/apiaries/hooks/use-update-apiary';
 
 import {
+  useLocation,
+} from '@/features/apiaries/hooks/use-location';
+
+import {
   updateApiarySchema,
 } from '@/features/apiaries/schemas/update-apiary-schema';
 
@@ -55,6 +62,14 @@ import {
   colors,
 } from '@/shared/theme/colors';
 
+import {
+  MapLocationPicker,
+} from '@/shared/components/map-location-picker/map-location-picker';
+
+import type {
+  GeographicCoordinates,
+} from '@/shared/api/open-topo-data';
+
 type EditApiaryScreenProps = {
   apiaryId: string;
 };
@@ -67,6 +82,42 @@ function optionalText(
 
   return trimmed.length > 0
     ? trimmed
+    : null;
+}
+
+function parseCoordinate(
+  value: string,
+): number {
+  return Number(
+    value
+      .trim()
+      .replace(',', '.'),
+  );
+}
+
+function parseSelectedCoordinate(
+  value: string,
+): number | null {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const coordinate =
+    parseCoordinate(value);
+
+  return Number.isFinite(coordinate)
+    ? coordinate
+    : null;
+}
+
+function parseOptionalInteger(
+  value: string,
+): number | null {
+  const trimmed =
+    value.trim();
+
+  return trimmed.length > 0
+    ? Number(trimmed)
     : null;
 }
 
@@ -133,6 +184,17 @@ export function EditApiaryScreen({
       apiaryId,
     );
 
+  const {
+    data: location,
+    isLoading:
+      isLocationLoading,
+    isError:
+      isLocationError,
+  } =
+    useLocation(
+      currentStay?.locationId ?? '',
+    );
+
   const updateMutation =
     useUpdateApiary();
 
@@ -140,6 +202,7 @@ export function EditApiaryScreen({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: {
       errors,
       isDirty,
@@ -159,15 +222,55 @@ export function EditApiaryScreen({
 
         type: null,
 
+        latitude: '',
+        longitude: '',
+        altitudeMeters: '',
+
         orientation:
           null,
       },
     });
 
+  const latitude =
+    useWatch({
+      control,
+      name: 'latitude',
+    });
+
+  const longitude =
+    useWatch({
+      control,
+      name: 'longitude',
+    });
+
+  const [
+    isElevationLoading,
+    setIsElevationLoading,
+  ] = useState(false);
+
+  const hasManualAltitudeOverride =
+    useRef(false);
+
+  const latitudeNumber =
+    parseSelectedCoordinate(latitude);
+
+  const longitudeNumber =
+    parseSelectedCoordinate(longitude);
+
+  const selectedLocation =
+    latitudeNumber !== null &&
+    longitudeNumber !== null
+      ? {
+        latitude: latitudeNumber,
+        longitude: longitudeNumber,
+      }
+      : null;
+
   useEffect(() => {
     if (
       !apiary ||
-      !currentStay
+      !currentStay ||
+      !location
     ) {
       return;
     }
@@ -184,6 +287,17 @@ export function EditApiaryScreen({
       type:
         apiary.type,
 
+      latitude:
+        location.latitude.toString(),
+
+      longitude:
+        location.longitude.toString(),
+
+      altitudeMeters:
+        location.altitudeMeters
+          ?.toString() ??
+        '',
+
       orientation:
         currentStay
           .orientation,
@@ -191,15 +305,61 @@ export function EditApiaryScreen({
   }, [
     apiary,
     currentStay,
+    location,
     reset,
   ]);
+
+  const handleLocationChange = (
+    coordinates: GeographicCoordinates,
+  ) => {
+    hasManualAltitudeOverride.current =
+      false;
+
+    setValue(
+      'latitude',
+      coordinates.latitude.toFixed(6),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+
+    setValue(
+      'longitude',
+      coordinates.longitude.toFixed(6),
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+  };
+
+  const handleAltitudeChange = (
+    altitudeMeters: number | null,
+  ) => {
+    if (hasManualAltitudeOverride.current) {
+      return;
+    }
+
+    setValue(
+      'altitudeMeters',
+      altitudeMeters?.toString() ?? '',
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      },
+    );
+  };
 
   const onSubmit =
     async (
       values:
         UpdateApiaryFormValues,
     ) => {
-      if (!currentStay) {
+      if (
+        !currentStay ||
+        !location
+      ) {
         return;
       }
 
@@ -210,6 +370,9 @@ export function EditApiaryScreen({
 
             stayId:
               currentStay.id,
+
+            locationId:
+              location.id,
 
             apiary: {
               name:
@@ -231,6 +394,33 @@ export function EditApiaryScreen({
               orientation:
                 values.orientation,
             },
+
+            location: {
+              name:
+                location.name,
+
+              latitude:
+                parseCoordinate(
+                  values.latitude,
+                ),
+
+              longitude:
+                parseCoordinate(
+                  values.longitude,
+                ),
+
+              altitudeMeters:
+                parseOptionalInteger(
+                  values.altitudeMeters,
+                ),
+
+              cadastralParcelNumber:
+                location
+                  .cadastralParcelNumber,
+
+              description:
+                location.description,
+            },
           });
 
         router.back();
@@ -244,7 +434,8 @@ export function EditApiaryScreen({
 
   const isLoading =
     isApiaryLoading ||
-    isStayLoading;
+    isStayLoading ||
+    isLocationLoading;
 
   if (isLoading) {
     return (
@@ -291,7 +482,9 @@ export function EditApiaryScreen({
 
   if (
     isStayError ||
-    !currentStay
+    !currentStay ||
+    isLocationError ||
+    !location
   ) {
     return (
       <LoadError
@@ -492,6 +685,74 @@ export function EditApiaryScreen({
             text-foreground
           "
         >
+          Lokacija pčelinjaka
+        </Text>
+
+        <Text
+          className="
+            mb-4
+            text-sm
+            text-muted
+          "
+        >
+          Dodirnite satelitski snimak da
+          promenite poziciju. Koordinate
+          i nadmorska visina se popunjavaju
+          automatski.
+        </Text>
+
+        <MapLocationPicker
+          value={selectedLocation}
+          onLocationChange={
+            handleLocationChange
+          }
+          onAltitudeChange={
+            handleAltitudeChange
+          }
+          onElevationLoadingChange={
+            setIsElevationLoading
+          }
+          error={
+            errors.latitude?.message ??
+            errors.longitude?.message
+          }
+        />
+
+        <Controller
+          control={control}
+          name="altitudeMeters"
+          render={({
+            field,
+          }) => (
+            <FormTextInput
+              label="Nadmorska visina (m)"
+              value={
+                field.value
+              }
+              onChangeText={(value) => {
+                hasManualAltitudeOverride.current =
+                  true;
+                field.onChange(value);
+              }}
+              placeholder="npr. 85"
+              keyboardType="numbers-and-punctuation"
+              error={
+                errors.altitudeMeters
+                  ?.message
+              }
+            />
+          )}
+        />
+
+        <Text
+          className="
+            mb-1
+            mt-6
+            text-lg
+            font-bold
+            text-foreground
+          "
+        >
           Položaj pčelinjaka
         </Text>
 
@@ -599,6 +860,7 @@ export function EditApiaryScreen({
           disabled={
             updateMutation
               .isPending ||
+            isElevationLoading ||
             !isDirty
           }
           onPress={
@@ -616,6 +878,7 @@ export function EditApiaryScreen({
             ${
               updateMutation
                 .isPending ||
+              isElevationLoading ||
               !isDirty
                 ? 'opacity-60'
                 : ''
@@ -630,7 +893,8 @@ export function EditApiaryScreen({
             "
           >
             {updateMutation
-              .isPending
+              .isPending ||
+              isElevationLoading
               ? 'Čuvanje...'
               : 'Sačuvaj izmene'}
           </Text>
@@ -703,6 +967,10 @@ type FormTextInputProps = {
   placeholder?: string;
   error?: string;
 
+  keyboardType?:
+    | 'default'
+    | 'numbers-and-punctuation';
+
   autoCapitalize?:
     | 'none'
     | 'sentences'
@@ -716,6 +984,7 @@ function FormTextInput({
   onChangeText,
   placeholder,
   error,
+  keyboardType = 'default',
   autoCapitalize = 'sentences',
 }: FormTextInputProps) {
   return (
@@ -744,6 +1013,9 @@ function FormTextInput({
         }
         autoCapitalize={
           autoCapitalize
+        }
+        keyboardType={
+          keyboardType
         }
         className={`
           h-14

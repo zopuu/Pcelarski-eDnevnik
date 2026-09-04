@@ -11,6 +11,10 @@ import {
   updateApiaryStay,
 } from '@/features/apiaries/api/update-apiary-stay';
 
+import {
+  updateLocation,
+} from '@/features/apiaries/api/update-location';
+
 import type {
   UpdateApiaryFormRequest,
 } from '@/features/apiaries/types/update-apiary';
@@ -37,9 +41,16 @@ export function useUpdateApiary() {
           request.stay,
         );
 
+      const location =
+        await updateLocation(
+          request.locationId,
+          request.location,
+        );
+
       return {
         apiary,
         stay,
+        location,
       };
     },
 
@@ -69,6 +80,15 @@ export function useUpdateApiary() {
               'apiary-stays',
               variables.apiaryId,
               'current',
+            ],
+          }),
+
+        queryClient
+          .invalidateQueries({
+            queryKey: [
+              'locations',
+              'detail',
+              variables.locationId,
             ],
           }),
       ]);
