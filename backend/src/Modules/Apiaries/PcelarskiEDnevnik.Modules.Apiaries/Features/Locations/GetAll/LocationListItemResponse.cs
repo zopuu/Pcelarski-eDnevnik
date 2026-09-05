@@ -6,4 +6,5 @@ public sealed record LocationListItemResponse(
     decimal Latitude,
     decimal Longitude,
     int? AltitudeMeters,
-    string? CadastralParcelNumber);
+    string? CadastralParcelNumber,
+    string? Description);

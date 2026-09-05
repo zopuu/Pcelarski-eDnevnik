@@ -15,6 +15,7 @@ export type ApiaryLocationListItem = {
   longitude: number;
   altitudeMeters: number | null;
   cadastralParcelNumber: string | null;
+  description: string | null;
 };
 
 export type CreateLocationRequest = {

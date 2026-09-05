@@ -38,7 +38,8 @@ public static class GetLocationsEndpoint {
                                         x.Latitude,
                                         x.Longitude,
                                         x.AltitudeMeters,
-                                        x.CadastralParcelNumber))
+                                        x.CadastralParcelNumber,
+                                        x.Description))
                             .ToListAsync(
                                 cancellationToken);
 

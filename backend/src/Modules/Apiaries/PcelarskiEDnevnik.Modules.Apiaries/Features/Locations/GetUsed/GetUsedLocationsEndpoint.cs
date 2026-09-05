@@ -51,7 +51,8 @@ public static class GetUsedLocationsEndpoint {
                                         location.Latitude,
                                         location.Longitude,
                                         location.AltitudeMeters,
-                                        location.CadastralParcelNumber))
+                                        location.CadastralParcelNumber,
+                                        location.Description))
                             .ToListAsync(
                                 cancellationToken);
 

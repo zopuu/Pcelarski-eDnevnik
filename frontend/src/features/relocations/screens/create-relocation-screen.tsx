@@ -1,21 +1,21 @@
-import Ionicons from '@react-native-vector-icons/ionicons';
 import {
   zodResolver,
 } from '@hookform/resolvers/zod';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
   router,
 } from 'expo-router';
+import {
+  useState,
+} from 'react';
 import {
   Controller,
   useForm,
   useWatch,
 } from 'react-hook-form';
 import {
-  useState,
-} from 'react';
-import {
-  Alert,
   ActivityIndicator,
+  Alert,
   Pressable,
   Text,
   TextInput,
@@ -49,13 +49,13 @@ import {
 import {
   useCreateRelocation,
 } from '@/features/relocations/hooks/use-create-relocation';
+import type {
+  CreateRelocationFormValues,
+} from '@/features/relocations/schemas/create-relocation-schema';
 import {
   createRelocationSchema,
   orientationValues,
   transportMethodValues,
-} from '@/features/relocations/schemas/create-relocation-schema';
-import type {
-  CreateRelocationFormValues,
 } from '@/features/relocations/schemas/create-relocation-schema';
 import type {
   CreateRelocationRequest,
@@ -65,12 +65,12 @@ import type {
 import {
   useAppDrawer,
 } from '@/providers/app-drawer-provider';
-import type {
-  GeographicCoordinates,
-} from '@/shared/api/open-topo-data';
 import {
   ApiError,
 } from '@/shared/api/api-error';
+import type {
+  GeographicCoordinates,
+} from '@/shared/api/open-topo-data';
 import {
   ContextualActionBar,
 } from '@/shared/components/contextual-action-bar/contextual-action-bar';
@@ -1053,14 +1053,53 @@ function StepLegend({
           stepNumber === step;
         const isComplete =
           stepNumber < step;
+        const previousConnectorIsComplete =
+          step > stepNumber - 1;
+        const nextConnectorIsComplete =
+          step > stepNumber;
 
         return (
           <View
             key={label}
-            className="flex-1 items-center"
+            className="relative flex-1 items-center"
           >
+            {index > 0 && (
+              <View
+                className={`
+                  absolute
+                  left-0
+                  right-1/2
+                  top-5
+                  h-0.5
+                  ${previousConnectorIsComplete
+                    ? 'bg-primary'
+                    : 'bg-border'
+                  }
+                `}
+              />
+            )}
+
+            {index < steps.length - 1 && (
+              <View
+                className={`
+                  absolute
+                  left-1/2
+                  right-0
+                  top-5
+                  h-0.5
+                  ${nextConnectorIsComplete
+                    ? 'bg-primary'
+                    : 'bg-border'
+                  }
+                `}
+              />
+            )}
+
             <View
-              className={`
+              className="relative z-10 h-10 w-10 items-center justify-center rounded-full bg-background"
+            >
+              <View
+                className={`
                 h-8
                 w-8
                 items-center
@@ -1071,21 +1110,22 @@ function StepLegend({
                   : 'bg-border'
                 }
               `}
-            >
-              <Text
-                className={`
-                  text-xs
-                  font-bold
-                  ${isCurrent || isComplete
-                    ? 'text-background'
-                    : 'text-muted'
-                  }
-                `}
               >
-                {isComplete
-                  ? '✓'
-                  : stepNumber}
-              </Text>
+                <Text
+                  className={`
+                    text-xs
+                    font-bold
+                    ${isCurrent || isComplete
+                      ? 'text-background'
+                      : 'text-muted'
+                    }
+                  `}
+                >
+                  {isComplete
+                    ? '✓'
+                    : stepNumber}
+                </Text>
+              </View>
             </View>
 
             <Text
@@ -1240,6 +1280,7 @@ type StepTwoProps = {
     longitude: number;
     altitudeMeters: number | null;
     cadastralParcelNumber: string | null;
+    description: string | null;
   }>;
   apiaries: Array<{
     id: string;
@@ -1379,7 +1420,7 @@ function StepTwo({
     <View>
       <SectionHeading
         title="Odredišna lokacija"
-        description="Izaberite sačuvanu lokaciju ili dodajte novu. Zatim odredite novu orijentaciju pčelinjaka."
+        description="Izaberite sačuvanu lokaciju ili dodajte novu."
       />
 
       <View className="flex-row gap-3">
@@ -1426,10 +1467,12 @@ function StepTwo({
                     location.name?.trim() ||
                     'Lokacija bez naziva'
                   }
-                  description={formatCoordinates(
-                    location.latitude,
-                    location.longitude,
-                  )}
+                  metadata={
+                    location.altitudeMeters === null
+                      ? null
+                      : `${location.altitudeMeters} m n/v`
+                  }
+                  description={location.description}
                   selected={
                     destinationLocationId === location.id
                   }
@@ -1464,9 +1507,6 @@ function StepTwo({
         Nova orijentacija leta
       </Text>
 
-      <Text className="mb-4 text-sm text-muted">
-        Orijentacija se ne preuzima sa prethodne lokacije.
-      </Text>
 
       <View className="flex-row flex-wrap gap-2">
         {orientationValues.map((orientation) => (
@@ -1874,7 +1914,7 @@ function StepFour({
 
       <View className="rounded-3xl border border-border bg-surface px-5 py-2">
         <SummaryRow
-          label="Vrsta"
+          label="Tip"
           value={
             kind === 'wholeApiary'
               ? 'Ceo pčelinjak'
@@ -2011,7 +2051,8 @@ function SectionHeading({
 type SelectionCardProps = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
-  description: string;
+  metadata?: string | null;
+  description?: string | null;
   selected: boolean;
   onPress: () => void;
 };
@@ -2019,6 +2060,7 @@ type SelectionCardProps = {
 function SelectionCard({
   icon,
   title,
+  metadata,
   description,
   selected,
   onPress,
@@ -2073,9 +2115,17 @@ function SelectionCard({
           {title}
         </Text>
 
-        <Text className="mt-1 text-sm text-muted">
-          {description}
-        </Text>
+        {metadata && (
+          <Text className="mt-1 text-sm font-semibold text-muted">
+            {metadata}
+          </Text>
+        )}
+
+        {description && (
+          <Text className="mt-1 text-sm text-muted">
+            {description}
+          </Text>
+        )}
       </View>
 
       <View
