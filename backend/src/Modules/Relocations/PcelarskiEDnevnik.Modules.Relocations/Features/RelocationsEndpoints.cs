@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
+using PcelarskiEDnevnik.Modules.Relocations.Features.GetByApiary;
 
 public static class RelocationsEndpoints {
     public static IEndpointRouteBuilder
@@ -13,6 +14,7 @@ public static class RelocationsEndpoints {
                 .RequireAuthorization();
 
         group.MapCreateRelocationEndpoint();
+        group.MapGetApiaryRelocationsEndpoint();
 
         return endpoints;
     }

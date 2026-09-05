@@ -13,6 +13,9 @@ import {
 import {
   createRelocation,
 } from '../api/create-relocation';
+import {
+  relocationQueryKeys,
+} from '../relocation-query-keys';
 
 export function useCreateRelocation() {
   const queryClient =
@@ -31,6 +34,10 @@ export function useCreateRelocation() {
         queryClient.invalidateQueries({
           queryKey:
             hiveQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey:
+            relocationQueryKeys.all,
         }),
       ]);
     },
