@@ -150,8 +150,8 @@ namespace PcelarskiEDnevnik.Modules.Relocations.Migrations
 
                     b.Property<string>("TransportMethod")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
                         .HasColumnName("transport_method");
 
                     b.HasKey("Id")
@@ -171,6 +171,8 @@ namespace PcelarskiEDnevnik.Modules.Relocations.Migrations
                             t.HasCheckConstraint("ck_relocations_distance_km", "\"distance_km\" IS NULL OR \"distance_km\" >= 0");
 
                             t.HasCheckConstraint("ck_relocations_kind", "\"kind\" IN ('WholeApiary', 'SelectedHives')");
+
+                            t.HasCheckConstraint("ck_relocations_transport_method", "\"transport_method\" IN ('Trailer', 'Truck', 'Van', 'Other')");
                         });
                 });
 

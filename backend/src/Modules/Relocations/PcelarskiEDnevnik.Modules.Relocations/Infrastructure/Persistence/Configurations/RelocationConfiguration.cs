@@ -46,6 +46,9 @@ internal sealed class
                 table.HasCheckConstraint(
                     "ck_relocations_kind",
                     "\"kind\" IN ('WholeApiary', 'SelectedHives')");
+                table.HasCheckConstraint(
+                    "ck_relocations_transport_method",
+                    "\"transport_method\" IN ('Trailer', 'Truck', 'Van', 'Other')");
             });
 
         builder.HasKey(x => x.Id)
@@ -89,6 +92,7 @@ internal sealed class
                 x => x.TransportMethod)
             .HasColumnName(
                 "transport_method")
+            .HasConversion<string>()
             .HasMaxLength(
                 RelocationRules
                     .TransportMethodMaxLength)

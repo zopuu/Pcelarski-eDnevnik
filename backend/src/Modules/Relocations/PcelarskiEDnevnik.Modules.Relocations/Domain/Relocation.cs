@@ -11,7 +11,7 @@ public sealed class Relocation {
         DateTimeOffset occurredAtUtc,
         decimal? costAmount,
         string? currencyCode,
-        string transportMethod,
+        RelocationTransportMethod transportMethod,
         decimal? distanceKm,
         string? notes) {
         Id = id;
@@ -25,7 +25,7 @@ public sealed class Relocation {
                 .ToUpperInvariant();
 
         TransportMethod =
-            transportMethod.Trim();
+            transportMethod;
 
         DistanceKm = distanceKm;
 
@@ -46,7 +46,7 @@ public sealed class Relocation {
 
     public string? CurrencyCode { get; private set; }
 
-    public string TransportMethod { get; private set; } = null!;
+    public RelocationTransportMethod TransportMethod { get; private set; }
 
     public decimal? DistanceKm { get; private set; }
 
@@ -62,7 +62,7 @@ public sealed class Relocation {
         DateTimeOffset occurredAtUtc,
         decimal? costAmount,
         string? currencyCode,
-        string transportMethod,
+        RelocationTransportMethod transportMethod,
         decimal? distanceKm,
         string? notes) {
         if (beekeeperId == Guid.Empty) {
@@ -76,10 +76,9 @@ public sealed class Relocation {
                 nameof(relocationKind));
         }
 
-        if (string.IsNullOrWhiteSpace(
-                transportMethod)) {
+        if (!Enum.IsDefined(transportMethod)) {
             throw new ArgumentException(
-                "Transport method is required.",
+                "Invalid transport method.",
                 nameof(transportMethod));
         }
 

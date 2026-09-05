@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using PcelarskiEDnevnik.Modules.Relocations.Domain;
 
+using PcelarskiEDnevnik.Modules.Apiaries.Domain;
+
 namespace PcelarskiEDnevnik.Modules.Relocations.Features.Create;
 
 public sealed record CreateRelocationRequest :
@@ -14,6 +16,12 @@ public sealed record CreateRelocationRequest :
     public Guid? DestinationLocationId { get; init; }
 
     public Guid? DestinationApiaryId { get; init; }
+
+    [EnumDataType(
+        typeof(HiveEntranceOrientation),
+        ErrorMessage =
+            "Invalid destination apiary orientation.")]
+    public HiveEntranceOrientation? DestinationOrientation { get; init; }
 
     public List<Guid>? HiveIds { get; init; }
 
@@ -32,8 +40,10 @@ public sealed record CreateRelocationRequest :
     public string? CurrencyCode { get; init; }
 
     [Required]
-    [StringLength(20)]
-    public string TransportMethod { get; init; } = null!;
+    [EnumDataType(
+        typeof(RelocationTransportMethod),
+        ErrorMessage = "Invalid transport method.")]
+    public RelocationTransportMethod TransportMethod { get; init; }
 
     [Range(
         typeof(decimal),
@@ -80,6 +90,12 @@ public sealed record CreateRelocationRequest :
                     [nameof(DestinationLocationId)]);
             }
 
+            if (!DestinationOrientation.HasValue) {
+                yield return new ValidationResult(
+                    "Destination orientation is required.",
+                    [nameof(DestinationOrientation)]);
+            }
+
             if (DestinationApiaryId.HasValue) {
                 yield return new ValidationResult(
                     "Destination apiary must not be supplied for whole-apiary relocation.",
@@ -99,6 +115,18 @@ public sealed record CreateRelocationRequest :
                 yield return new ValidationResult(
                     "Destination apiary is required.",
                     [nameof(DestinationApiaryId)]);
+            }
+
+            if (DestinationLocationId.HasValue) {
+                yield return new ValidationResult(
+                    "Destination location must not be supplied for selected-hives relocation.",
+                    [nameof(DestinationLocationId)]);
+            }
+
+            if (DestinationOrientation.HasValue) {
+                yield return new ValidationResult(
+                    "Destination orientation must not be supplied for selected-hives relocation.",
+                    [nameof(DestinationOrientation)]);
             }
 
             if (HiveIds is null ||

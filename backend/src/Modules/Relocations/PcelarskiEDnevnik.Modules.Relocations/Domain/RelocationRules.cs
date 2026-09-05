@@ -2,7 +2,7 @@
 
 public static class RelocationRules {
     public const int
-        TransportMethodMaxLength = 20;
+        TransportMethodMaxLength = 7;
 
     public const int
         CurrencyCodeMaxLength = 3;
