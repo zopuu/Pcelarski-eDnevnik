@@ -4,6 +4,7 @@ using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.Hives;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Identity.Web;
+using PcelarskiEDnevnik.Modules.Relocations;
 
 namespace PcelarskiEDnevnik.Api.Composition;
 
@@ -17,7 +18,8 @@ internal static class ModuleRegistration {
             .AddAccountsModule(configuration)
             .AddBeekeeperProfilesModule(configuration)
             .AddApiariesModule(configuration)
-            .AddHivesModule(configuration);
+            .AddHivesModule(configuration)
+            .AddRelocationsModule(configuration);
 
         return services;
     }

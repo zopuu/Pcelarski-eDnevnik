@@ -76,4 +76,5 @@ public sealed class HiveStay {
         EndedAtUtc =
             endedAtUtc;
     }
+
 }

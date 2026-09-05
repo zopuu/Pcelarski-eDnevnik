@@ -10,7 +10,6 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\HiveStays\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
   </ItemGroup>
 

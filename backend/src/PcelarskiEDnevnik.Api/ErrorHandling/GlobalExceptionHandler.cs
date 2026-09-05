@@ -15,6 +15,11 @@ internal sealed class GlobalExceptionHandler(
         CancellationToken cancellationToken) {
         var problemDetails =
             exception switch {
+                NotFoundException notFound =>
+                    CreateNotFoundProblem(
+                        httpContext,
+                        notFound),
+
                 ConflictException conflict =>
                     CreateConflictProblem(
                         httpContext,
@@ -24,6 +29,7 @@ internal sealed class GlobalExceptionHandler(
                     CreateInternalServerProblem(
                         httpContext)
             };
+
 
         if (problemDetails.Status ==
             StatusCodes.Status500InternalServerError) {
@@ -61,6 +67,28 @@ internal sealed class GlobalExceptionHandler(
             Detail = exception.Message,
             Instance = context.Request.Path
         };
+
+        problem.Extensions["code"] =
+            exception.Code;
+
+        return problem;
+    }
+    private static ProblemDetails
+    CreateNotFoundProblem(
+        HttpContext context,
+        NotFoundException exception) {
+        var problem =
+            new ProblemDetails {
+                Status =
+                    StatusCodes.Status404NotFound,
+
+                Title = "Not Found",
+
+                Detail = exception.Message,
+
+                Instance =
+                    context.Request.Path
+            };
 
         problem.Extensions["code"] =
             exception.Code;

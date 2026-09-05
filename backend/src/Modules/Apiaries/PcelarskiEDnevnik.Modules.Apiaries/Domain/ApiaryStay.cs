@@ -122,4 +122,19 @@ public sealed class ApiaryStay {
         UpdatedAtUtc =
             DateTimeOffset.UtcNow;
     }
+    public void Close(
+    DateTimeOffset endedAtUtc) {
+        if (EndedAtUtc.HasValue) {
+            throw new InvalidOperationException(
+                "Apiary stay is already closed.");
+        }
+
+        if (endedAtUtc <= StartedAtUtc) {
+            throw new InvalidOperationException(
+                "Apiary stay must end after it started.");
+        }
+
+        EndedAtUtc = endedAtUtc;
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
 }

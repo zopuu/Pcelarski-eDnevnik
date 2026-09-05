@@ -9,6 +9,7 @@ using PcelarskiEDnevnik.Modules.Hives.Features.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens;
 using PcelarskiEDnevnik.Modules.Identity;
+using PcelarskiEDnevnik.Modules.Relocations;
 using PcelarskiEDnevnik.Modules.Identity.Web;
 
 namespace PcelarskiEDnevnik.Api.Composition;
@@ -27,6 +28,7 @@ internal static class EndpointRegistration {
         app.MapHivesEndpoints();
         app.MapQueensEndpoints();
         app.MapForageObservationsEndpoints();
+        app.MapRelocationsEndpoints();
 
         return app;
     }

@@ -12,6 +12,7 @@
     <Project Path="src/Modules/Hives/PcelarskiEDnevnik.Modules.Hives/PcelarskiEDnevnik.Modules.Hives.csproj" />
     <Project Path="src/Modules/Identity/PcelarskiEDnevnik.Modules.Identity.Web/PcelarskiEDnevnik.Modules.Identity.Web.csproj" />
     <Project Path="src/Modules/Identity/PcelarskiEDnevnik.Modules.Identity/PcelarskiEDnevnik.Modules.Identity.csproj" />
+    <Project Path="src/Modules/Relocations/PcelarskiEDnevnik.Modules.Relocations/PcelarskiEDnevnik.Modules.Relocations.csproj" Id="f05104b9-1a66-4d53-b600-e114ecdedb71" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/PcelarskiEDnevnik.ArchitectureTests/PcelarskiEDnevnik.ArchitectureTests.csproj" />

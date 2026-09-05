@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Modules\Accounts\PcelarskiEDnevnik.Modules.Accounts\PcelarskiEDnevnik.Modules.Accounts.csproj" />
     <ProjectReference Include="..\Modules\BeekeeperProfiles\PcelarskiEDnevnik.Modules.BeekeeperProfiles\PcelarskiEDnevnik.Modules.BeekeeperProfiles.csproj" />
     <ProjectReference Include="..\Modules\Identity\PcelarskiEDnevnik.Modules.Identity.Web\PcelarskiEDnevnik.Modules.Identity.Web.csproj" />
+    <ProjectReference Include="..\Modules\Relocations\PcelarskiEDnevnik.Modules.Relocations\PcelarskiEDnevnik.Modules.Relocations.csproj" />
   </ItemGroup>
 
 </Project>
