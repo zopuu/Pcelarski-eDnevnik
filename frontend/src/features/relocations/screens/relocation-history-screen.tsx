@@ -5,7 +5,6 @@ import {
 } from 'expo-router';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   Text,
@@ -177,6 +176,7 @@ export function RelocationHistoryScreen({
           renderItem={({ item, index }) => (
             <RelocationTimelineItem
               relocation={item}
+              apiaryId={apiaryId}
               isFirst={index === 0}
               isLast={index === relocations.length - 1}
             />
@@ -206,10 +206,12 @@ export function RelocationHistoryScreen({
 
 function RelocationTimelineItem({
   relocation,
+  apiaryId,
   isFirst,
   isLast,
 }: {
   relocation: ApiaryRelocationHistoryItem;
+  apiaryId: string;
   isFirst: boolean;
   isLast: boolean;
 }) {
@@ -239,10 +241,14 @@ function RelocationTimelineItem({
         accessibilityRole="button"
         accessibilityLabel={`Otvori selidbu: ${relocation.originLocationName} do ${relocation.destinationLocationName}`}
         onPress={() => {
-          Alert.alert(
-            'Detalji selidbe',
-            'Detaljan prikaz selidbe biće dostupan uskoro.',
-          );
+          router.push({
+            pathname:
+              '/apiaries/[apiaryId]/relocations/[relocationId]',
+            params: {
+              apiaryId,
+              relocationId: relocation.id,
+            },
+          });
         }}
         className="mb-5 flex-1 rounded-3xl border border-border bg-surface px-4 py-4"
         style={({ pressed }) => ({
