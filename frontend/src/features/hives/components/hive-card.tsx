@@ -30,6 +30,10 @@ type HiveCardProps = {
   status: HiveStatus;
 
   onPress: () => void;
+
+  selectionMode?: boolean;
+
+  selected?: boolean;
 };
 
 const typeLabels:
@@ -57,6 +61,8 @@ export function HiveCard({
   colorHex,
   status,
   onPress,
+  selectionMode = false,
+  selected = false,
 }: HiveCardProps) {
   return (
     <Pressable
@@ -178,14 +184,41 @@ export function HiveCard({
         </Text>
       </View>
 
-      <Ionicons
-        name="chevron-forward"
-        size={22}
-        color="#8E8577"
-        style={{
-          marginRight: 16,
-        }}
-      />
+      {selectionMode ? (
+        <View
+          accessibilityElementsHidden
+          className={`
+            mr-4
+            h-7
+            w-7
+            items-center
+            justify-center
+            rounded-full
+            border
+            ${selected
+              ? 'border-primary bg-primary'
+              : 'border-border bg-surface'
+            }
+          `}
+        >
+          {selected && (
+            <Ionicons
+              name="checkmark"
+              size={18}
+              color={colors.onPrimary}
+            />
+          )}
+        </View>
+      ) : (
+        <Ionicons
+          name="chevron-forward"
+          size={22}
+          color="#8E8577"
+          style={{
+            marginRight: 16,
+          }}
+        />
+      )}
     </Pressable>
   );
 }

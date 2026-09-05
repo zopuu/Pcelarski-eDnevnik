@@ -237,13 +237,14 @@ export function ApiaryHivesScreen({
     } as never);
   };
 
-  const handleRelocationsPress =
-    () => {
-      Alert.alert(
-        'Istorija selidbi',
-        'Istorija selidbi biće povezana kada implementiramo odgovarajući ekran.',
-      );
-    };
+  const handleRelocationsPress = () => {
+    router.push({
+      pathname: '/apiaries/[apiaryId]/relocations',
+      params: {
+        apiaryId,
+      },
+    });
+  };
 
   const handleScanPress = () => {
     Alert.alert(

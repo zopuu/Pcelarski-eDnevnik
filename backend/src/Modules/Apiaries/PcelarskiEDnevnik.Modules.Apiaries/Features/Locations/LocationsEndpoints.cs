@@ -5,6 +5,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.Create;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.Delete;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.GetAll;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.GetById;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.GetUsed;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations.Update;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Locations;
@@ -20,6 +21,7 @@ public static class LocationsEndpoints {
 
         group.MapCreateLocationEndpoint();
         group.MapGetLocationsEndpoint();
+        group.MapGetUsedLocationsEndpoint();
         group.MapGetLocationByIdEndpoint();
         group.MapUpdateLocationEndpoint();
         group.MapDeleteLocationEndpoint();

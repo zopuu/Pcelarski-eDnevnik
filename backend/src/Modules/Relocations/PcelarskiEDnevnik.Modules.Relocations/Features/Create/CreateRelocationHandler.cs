@@ -167,7 +167,8 @@ internal sealed class CreateRelocationHandler {
                 destinationLocation.Id,
                 request.OccurredAtUtc,
                 null,
-                request.DestinationOrientation!.Value);
+                request.DestinationOrientation!.Value,
+                request.DestinationStayNote);
 
         _apiariesDbContext.ApiaryStays.Add(
             destinationStay);

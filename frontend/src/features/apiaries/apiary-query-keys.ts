@@ -20,6 +20,11 @@ export const apiaryQueryKeys = {
       'current',
     ] as const,
 
+  locations: () =>
+    [
+      'locations',
+    ] as const,
+
   forageProfiles: (
     apiaryId: string,
     year?: number,

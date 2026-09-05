@@ -23,6 +23,9 @@ public sealed record CreateRelocationRequest :
             "Invalid destination apiary orientation.")]
     public HiveEntranceOrientation? DestinationOrientation { get; init; }
 
+    [StringLength(ApiaryStayRules.NoteMaxLength)]
+    public string? DestinationStayNote { get; init; }
+
     public List<Guid>? HiveIds { get; init; }
 
     public DateTimeOffset OccurredAtUtc { get; init; }
@@ -127,6 +130,13 @@ public sealed record CreateRelocationRequest :
                 yield return new ValidationResult(
                     "Destination orientation must not be supplied for selected-hives relocation.",
                     [nameof(DestinationOrientation)]);
+            }
+
+            if (!string.IsNullOrWhiteSpace(
+                    DestinationStayNote)) {
+                yield return new ValidationResult(
+                    "Destination stay note must not be supplied for selected-hives relocation.",
+                    [nameof(DestinationStayNote)]);
             }
 
             if (HiveIds is null ||
