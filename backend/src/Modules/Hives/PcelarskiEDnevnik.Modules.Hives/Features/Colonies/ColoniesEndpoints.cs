@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Routing;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.Create;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.CreateWithQueen;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.GetCurrentByHive;
+using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.Transfer;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies.Update;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.Colonies;
@@ -38,6 +39,12 @@ public static class ColoniesEndpoints {
 
         coloniesGroup
             .MapUpdateColonyEndpoint();
+
+        coloniesGroup
+            .MapTransferColonyEndpoint();
+
+        coloniesGroup
+            .MapGetTransferDestinationsEndpoint();
 
         return endpoints;
     }

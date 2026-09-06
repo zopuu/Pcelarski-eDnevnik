@@ -235,6 +235,16 @@ export function ColonyDetailsScreen({
     );
   };
 
+  const handleTransferPress = () => {
+    router.push({
+      pathname: '/hives/[hiveId]/colonies/[colonyId]/transfer',
+      params: {
+        hiveId,
+        colonyId,
+      },
+    } as never);
+  };
+
   const moreActions: ContextualAction[] = [
     {
       key: 'end-stay',
@@ -279,16 +289,11 @@ export function ColonyDetailsScreen({
               },
             ]}
             primaryAction={{
-              key: 'actions',
-              label: 'Akcije',
-              icon: 'construct-outline',
-              accessibilityLabel: 'Otvori akcije nad društvom',
-              onPress: () => {
-                showPlaceholder(
-                  'Akcije nad društvom',
-                  'Ovde će kasnije biti pregled, prihrana, tretman i ostale akcije nad društvom.',
-                );
-              },
+              key: 'transfer-colony',
+              label: 'Premesti',
+              icon: 'swap-horizontal-outline',
+              accessibilityLabel: 'Premesti društvo u drugu košnicu',
+              onPress: handleTransferPress,
             }}
             rightActions={[
               {

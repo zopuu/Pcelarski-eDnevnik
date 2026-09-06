@@ -9,6 +9,10 @@ internal static class ColonyPersistenceErrors {
         ActiveHiveUniqueIndex =
             "ux_colony_stays_active_hive";
 
+    private const string
+        ActiveColonyUniqueIndex =
+            "ux_colony_stays_active_colony";
+
     public static bool
         IsActiveHiveConflict(
             DbUpdateException exception) {
@@ -20,5 +24,18 @@ internal static class ColonyPersistenceErrors {
             &&
             postgresException.ConstraintName ==
                 ActiveHiveUniqueIndex;
+    }
+
+    public static bool
+        IsActiveColonyConflict(
+            DbUpdateException exception) {
+        return exception.InnerException
+            is PostgresException postgresException
+            &&
+            postgresException.SqlState ==
+                PostgresErrorCodes.UniqueViolation
+            &&
+            postgresException.ConstraintName ==
+                ActiveColonyUniqueIndex;
     }
 }

@@ -372,6 +372,29 @@ export function HiveDetailsScreen({
             );
         };
 
+    const handleTransferColonyPress =
+        () => {
+            if (!currentColony) {
+                return;
+            }
+
+            setIsMoreOpen(
+                false,
+            );
+
+            router.push({
+                pathname:
+                    '/hives/[hiveId]/colonies/[colonyId]/transfer',
+
+                params: {
+                    hiveId,
+
+                    colonyId:
+                        currentColony.id,
+                },
+            } as never);
+        };
+
     const handleDeactivatePress =
         () => {
             setIsMoreOpen(
@@ -434,6 +457,24 @@ export function HiveDetailsScreen({
                     handleEditPress,
             },
         ];
+
+    if (currentColony) {
+        moreActions.push({
+            key: 'transfer-colony',
+
+            label:
+                'Premesti društvo',
+
+            icon:
+                'swap-horizontal-outline',
+
+            accessibilityLabel:
+                'Premesti društvo u drugu košnicu',
+
+            onPress:
+                handleTransferColonyPress,
+        });
+    }
 
     if (isActive) {
         moreActions.push({
