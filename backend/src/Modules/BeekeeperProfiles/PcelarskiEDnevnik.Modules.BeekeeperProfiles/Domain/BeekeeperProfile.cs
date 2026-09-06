@@ -15,10 +15,10 @@ public sealed class BeekeeperProfile {
         int? agriculturalHoldingNumber = null) {
         Id = id;
         UserId = userId;
-        FirstName = firstName;
-        LastName = lastName;
-        Hid = hid;
-        Phone = phone;
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        Hid = NormalizeOptionalText(hid);
+        Phone = NormalizeOptionalText(phone);
         AgriculturalHoldingNumber = agriculturalHoldingNumber;
         CreatedAtUtc = DateTimeOffset.UtcNow;
     }
@@ -47,11 +47,17 @@ public sealed class BeekeeperProfile {
         string? hid,
         string? phone,
         int? agriculturalHoldingNumber) {
-        FirstName = firstName;
-        LastName = lastName;
-        Hid = hid;
-        Phone = phone;
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        Hid = NormalizeOptionalText(hid);
+        Phone = NormalizeOptionalText(phone);
         AgriculturalHoldingNumber = agriculturalHoldingNumber;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+
+    private static string? NormalizeOptionalText(string? value) {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 }

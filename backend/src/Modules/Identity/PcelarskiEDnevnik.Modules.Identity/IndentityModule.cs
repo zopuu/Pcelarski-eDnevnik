@@ -13,8 +13,8 @@ using PcelarskiEDnevnik.Modules.Identity.Domain;
 using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Initialization;
 using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Identity.Infrastructure.Services;
+using PcelarskiEDnevnik.Modules.Identity.Features.Accounts;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
-using System.Security.Claims;
 
 namespace PcelarskiEDnevnik.Modules.Identity;
 
@@ -119,11 +119,19 @@ public static class IdentityModule {
                 async (
                     ICurrentUserContext currentUser,
                     ICurrentBeekeeperContext currentBeekeeper,
-                    ClaimsPrincipal user,
+                    UserManager<ApplicationUser> userManager,
                     CancellationToken cancellationToken) => {
                         var beekeeperId =
                             await currentBeekeeper.GetBeekeeperIdAsync(
                                 cancellationToken);
+
+                        var identityUser =
+                            await userManager.FindByIdAsync(
+                                currentUser.UserId.ToString());
+
+                        if (identityUser is null) {
+                            return Results.NotFound();
+                        }
 
                         return Results.Ok(new {
                             userId =
@@ -131,16 +139,14 @@ public static class IdentityModule {
 
                             beekeeperId,
 
-                            email =
-                                user.GetClaim(
-                                    OpenIddictConstants.Claims.Email),
+                            email = identityUser.Email,
 
-                            username =
-                                user.GetClaim(
-                                    OpenIddictConstants.Claims.PreferredUsername)
+                            username = identityUser.UserName
                         });
-                    })
+            })
             .RequireAuthorization();
+
+        endpoints.MapAccountEndpoints();
 
         return endpoints;
     }

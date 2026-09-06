@@ -6,3 +6,17 @@ export type BeekeeperProfile = {
   phone: string | null;
   agriculturalHoldingNumber: number | null;
 };
+
+export type UpdateMyProfileRequest = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  hid: string | null;
+  phone: string | null;
+  agriculturalHoldingNumber: number | null;
+};
+
+export type UpdateMyProfileResponse =
+  BeekeeperProfile & {
+    email: string;
+  };

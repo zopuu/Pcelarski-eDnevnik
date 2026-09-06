@@ -1,5 +1,6 @@
 ﻿using PcelarskiEDnevnik.Api.Features.Registration;
 using PcelarskiEDnevnik.Modules.Accounts;
+using PcelarskiEDnevnik.Api.Features.Profile;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations;
@@ -24,6 +25,7 @@ internal static class EndpointRegistration {
         app.MapApiariesEndpoints();
         app.MapLocationsEndpoints();
         app.MapProfileEndpoints();
+        app.MapUpdateMyProfileEndpoint();
         app.MapColoniesEndpoints();
         app.MapHivesEndpoints();
         app.MapQueensEndpoints();

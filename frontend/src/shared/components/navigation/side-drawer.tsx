@@ -19,10 +19,16 @@ import {
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
+import {
+  colors,
+} from '@/shared/theme/colors';
 
 type SideDrawerProps = {
   visible: boolean;
   onClose: () => void;
+  onProfilePress: () => void;
+  profileName?: string;
+  isProfileLoading?: boolean;
   onLogout: () => void;
   isLoggingOut?: boolean;
 };
@@ -32,6 +38,9 @@ const ANIMATION_DURATION = 220;
 export function SideDrawer({
   visible,
   onClose,
+  onProfilePress,
+  profileName,
+  isProfileLoading = false,
   onLogout,
   isLoggingOut = false,
 }: SideDrawerProps) {
@@ -178,9 +187,68 @@ export function SideDrawer({
   "
           >
             <View className="flex-1">
-              {/*
-      Navigation items will go here later.
-    */}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Otvori profil"
+                onPress={onProfilePress}
+                className="
+                  items-center
+                  border-b
+                  border-border
+                  px-4
+                  pb-6
+                  pt-5
+                  active:bg-primary/10
+                "
+              >
+                <View
+                  className="
+                    h-20
+                    w-20
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-primary/15
+                  "
+                >
+                  <Ionicons
+                    name="person"
+                    size={38}
+                    color={colors.primaryDark}
+                  />
+                </View>
+
+                {isProfileLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.primary}
+                    className="mt-3"
+                  />
+                ) : (
+                  <Text
+                    numberOfLines={2}
+                    className="
+                      mt-3
+                      text-center
+                      text-lg
+                      font-bold
+                      text-foreground
+                    "
+                  >
+                    {profileName ?? 'Moj profil'}
+                  </Text>
+                )}
+
+                <Text
+                  className="
+                    mt-1
+                    text-sm
+                    text-muted
+                  "
+                >
+                  Prikaži profil
+                </Text>
+              </Pressable>
 
               <View className="flex-1" />
 
@@ -210,13 +278,13 @@ export function SideDrawer({
                   {isLoggingOut ? (
                     <ActivityIndicator
                       size="small"
-                      color="#C2413B"
+                      color={colors.error}
                     />
                   ) : (
                     <Ionicons
                       name="log-out-outline"
                       size={24}
-                      color="#C2413B"
+                      color={colors.error}
                     />
                   )}
 

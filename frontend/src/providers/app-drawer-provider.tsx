@@ -6,6 +6,12 @@ import {
   useMemo,
   useState,
 } from 'react';
+import {
+  router,
+} from 'expo-router';
+import {
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import {
   SideDrawer,
@@ -13,6 +19,9 @@ import {
 import {
   useAuth,
 } from '@/features/auth/hooks/use-auth';
+import {
+  useMyProfile,
+} from '@/features/beekeeper-profile/hooks/use-my-profile';
 
 type AppDrawerContextValue = {
   openDrawer: () => void;
@@ -31,6 +40,12 @@ export function AppDrawerProvider({
   const {
     signOut,
   } = useAuth();
+  const queryClient =
+    useQueryClient();
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+  } = useMyProfile();
   const [
     isOpen,
     setIsOpen,
@@ -78,12 +93,24 @@ export function AppDrawerProvider({
       try {
         await signOut();
       } finally {
+        queryClient.clear();
         setIsLoggingOut(false);
       }
     }, [
       isLoggingOut,
+      queryClient,
       signOut,
     ]);
+
+  const handleProfilePress =
+    useCallback(() => {
+      setIsOpen(false);
+      router.push('/profile' as never);
+    }, []);
+
+  const profileName = profile
+    ? `${profile.firstName} ${profile.lastName}`
+    : undefined;
 
   return (
     <AppDrawerContext.Provider
@@ -94,6 +121,9 @@ export function AppDrawerProvider({
       <SideDrawer
         visible={isOpen}
         onClose={closeDrawer}
+        onProfilePress={handleProfilePress}
+        profileName={profileName}
+        isProfileLoading={isProfileLoading}
         onLogout={() => {
           void handleLogout();
         }}

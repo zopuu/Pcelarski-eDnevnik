@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Modules\Apiaries\PcelarskiEDnevnik.Modules.Apiaries\PcelarskiEDnevnik.Modules.Apiaries.csproj" />
+    <ProjectReference Include="..\..\src\Modules\BeekeeperProfiles\PcelarskiEDnevnik.Modules.BeekeeperProfiles\PcelarskiEDnevnik.Modules.BeekeeperProfiles.csproj" />
   </ItemGroup>
 
 </Project>

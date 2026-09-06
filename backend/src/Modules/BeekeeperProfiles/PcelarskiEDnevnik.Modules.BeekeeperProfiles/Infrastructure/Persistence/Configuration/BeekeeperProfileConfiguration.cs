@@ -28,17 +28,17 @@ internal sealed class BeekeeperProfileConfiguration
 
         builder.Property(x => x.FirstName)
             .HasColumnName("first_name")
-            .HasMaxLength(20)
+            .HasMaxLength(BeekeeperProfileRules.FirstNameMaxLength)
             .IsRequired();
 
         builder.Property(x => x.LastName)
             .HasColumnName("last_name")
-            .HasMaxLength(30)
+            .HasMaxLength(BeekeeperProfileRules.LastNameMaxLength)
             .IsRequired();
 
         builder.Property(x => x.Hid)
             .HasColumnName("hid")
-            .HasMaxLength(12);
+            .HasMaxLength(BeekeeperProfileRules.HidMaxLength);
 
         builder.HasIndex(x => x.Hid)
             .IsUnique()
@@ -46,7 +46,7 @@ internal sealed class BeekeeperProfileConfiguration
 
         builder.Property(x => x.Phone)
             .HasColumnName("phone")
-            .HasMaxLength(20);
+            .HasMaxLength(BeekeeperProfileRules.PhoneMaxLength);
 
         builder.Property(x => x.AgriculturalHoldingNumber)
             .HasColumnName("agricultural_holding_number");
