@@ -10,7 +10,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useState } from 'react';
+import {
+  useMemo,
+  useState,
+} from 'react';
 import {
   useApiary,
 } from '@/features/apiaries/hooks/use-apiary';
@@ -18,10 +21,17 @@ import {
 import {
   HiveCard,
 } from '@/features/hives/components/hive-card';
+import {
+  HiveListFilters,
+} from '@/features/hives/components/hive-list-filters';
 
 import {
   useHives,
 } from '@/features/hives/hooks/use-hives';
+import type {
+  HiveStatus,
+  HiveType,
+} from '@/features/hives/types/hive';
 
 import {
   useAppDrawer,
@@ -85,6 +95,22 @@ export function ApiaryHivesScreen({
     isMoreOpen,
     setIsMoreOpen,
   ] = useState(false);
+  const [
+    labelSearch,
+    setLabelSearch,
+  ] = useState('');
+  const [
+    selectedStatus,
+    setSelectedStatus,
+  ] = useState<HiveStatus | null>(null);
+  const [
+    selectedType,
+    setSelectedType,
+  ] = useState<HiveType | null>(null);
+  const [
+    selectedColor,
+    setSelectedColor,
+  ] = useState<string | null | undefined>(undefined);
 
   const {
     data: apiary,
@@ -214,6 +240,34 @@ export function ApiaryHivesScreen({
     getApiaryTypeLabel(
       apiary.type,
     );
+
+  const availableColors = useMemo(
+    () => Array.from(
+      new Set(
+        hives
+          .map((hive) => hive.colorHex)
+          .filter((color): color is string => color !== null),
+      ),
+    ).sort(),
+    [hives],
+  );
+
+  const filteredHives = useMemo(() => {
+    const normalizedSearch = labelSearch
+      .trim()
+      .toLocaleLowerCase('sr-Latn-RS');
+
+    return hives.filter((hive) => {
+      const matchesLabel = !normalizedSearch || hive.label
+        .toLocaleLowerCase('sr-Latn-RS')
+        .includes(normalizedSearch);
+      const matchesStatus = !selectedStatus || hive.status === selectedStatus;
+      const matchesType = !selectedType || hive.type === selectedType;
+      const matchesColor = selectedColor === undefined || hive.colorHex === selectedColor;
+
+      return matchesLabel && matchesStatus && matchesType && matchesColor;
+    });
+  }, [hives, labelSearch, selectedColor, selectedStatus, selectedType]);
 
   const handleAddHive = () => {
     router.push({
@@ -385,7 +439,7 @@ export function ApiaryHivesScreen({
         }
       >
         <FlatList
-          data={hives}
+          data={filteredHives}
           keyExtractor={(
             hive,
           ) => hive.id}
@@ -537,16 +591,32 @@ export function ApiaryHivesScreen({
                       text-muted
                     "
                   >
-                    {hives.length ===
-                      0
+                    {hives.length === 0
                       ? 'Nema košnica'
-                      : hives.length ===
-                        1
+                      : filteredHives.length === hives.length &&
+                          hives.length === 1
                         ? '1 košnica'
-                        : `${hives.length} košnica`}
+                        : filteredHives.length === hives.length
+                          ? `${hives.length} košnica`
+                          : `${filteredHives.length} od ${hives.length} košnica`}
                   </Text>
                 </View>
               </View>
+
+              <HiveListFilters
+                labelSearch={labelSearch}
+                onLabelSearchChange={setLabelSearch}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                selectedType={selectedType}
+                onTypeChange={setSelectedType}
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+                availableColors={availableColors}
+                hasColorlessHives={hives.some(
+                  (hive) => hive.colorHex === null,
+                )}
+              />
             </View>
           }
           ListEmptyComponent={
@@ -568,8 +638,9 @@ export function ApiaryHivesScreen({
                   text-foreground
                 "
               >
-                Pčelinjak još nema
-                košnica.
+                {hives.length === 0
+                  ? 'Pčelinjak još nema košnica.'
+                  : 'Nema košnica za izabrane filtere.'}
               </Text>
 
               <Text
@@ -580,9 +651,9 @@ export function ApiaryHivesScreen({
                   text-muted
                 "
               >
-                Dodajte prvu košnicu
-                pomoću centralnog
-                dugmeta Košnica.
+                {hives.length === 0
+                  ? 'Dodajte prvu košnicu pomoću centralnog dugmeta Košnica.'
+                  : 'Promenite filtere da biste videli druge košnice.'}
               </Text>
             </View>
           }
