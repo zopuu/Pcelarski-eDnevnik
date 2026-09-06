@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens.Create;
+using PcelarskiEDnevnik.Modules.Hives.Features.Queens.Change;
+using PcelarskiEDnevnik.Modules.Hives.Features.Queens.GetAvailable;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens.GetCurrentByColony;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens.GetStays;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens.Update;
@@ -27,6 +29,9 @@ public static class QueensEndpoints {
         colonyQueensGroup
             .MapGetCurrentQueenByColonyEndpoint();
 
+        colonyQueensGroup
+            .MapChangeQueenEndpoint();
+
         var queensGroup =
             endpoints
                 .MapGroup(
@@ -40,6 +45,9 @@ public static class QueensEndpoints {
 
         queensGroup
             .MapGetQueenStaysEndpoint();
+
+        queensGroup
+            .MapGetAvailableQueensEndpoint();
 
         return endpoints;
     }

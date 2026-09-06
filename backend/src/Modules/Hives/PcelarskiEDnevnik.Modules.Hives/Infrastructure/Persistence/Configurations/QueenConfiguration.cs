@@ -30,7 +30,9 @@ internal sealed class QueenConfiguration
                         'Active',
                         'Dead',
                         'Killed',
-                        'Missing'
+                        'Missing',
+                        'Sold',
+                        'Removed'
                     )
                     """);
             });

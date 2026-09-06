@@ -8,5 +8,7 @@ public enum QueenStayEndReason {
     Removed = 5,
     Swarmed = 6,
     ColonyEnded = 7,
-    Other = 8
+    Other = 8,
+    Transferred = 9,
+    ColonyWithoutQueen = 10
 }

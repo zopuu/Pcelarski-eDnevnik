@@ -221,6 +221,23 @@ public sealed class Queen {
             DateTimeOffset.UtcNow;
     }
 
+    public void SetStatus(
+        QueenStatus status) {
+        if (!Enum.IsDefined(status)) {
+            throw new ArgumentOutOfRangeException(
+                nameof(status));
+        }
+
+        if (Status != QueenStatus.Active &&
+            Status != status) {
+            throw new InvalidOperationException(
+                "Only an active queen can change to a different status.");
+        }
+
+        Status = status;
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+
     private void EnsureActive() {
         if (Status !=
             QueenStatus.Active) {

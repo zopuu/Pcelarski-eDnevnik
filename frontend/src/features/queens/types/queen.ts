@@ -6,7 +6,9 @@ export type QueenStatus =
   | 'active'
   | 'dead'
   | 'killed'
-  | 'missing';
+  | 'missing'
+  | 'sold'
+  | 'removed';
 
 export type QueenIntroductionMethod =
   | 'placement'

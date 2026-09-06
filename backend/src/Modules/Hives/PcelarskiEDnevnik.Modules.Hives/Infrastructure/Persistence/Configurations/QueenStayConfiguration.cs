@@ -59,7 +59,9 @@ internal sealed class QueenStayConfiguration
                         'Removed',
                         'Swarmed',
                         'ColonyEnded',
-                        'Other'
+                        'Other',
+                        'Transferred',
+                        'ColonyWithoutQueen'
                     )
                     """);
             });

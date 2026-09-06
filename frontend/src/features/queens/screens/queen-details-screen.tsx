@@ -78,6 +78,10 @@ function getQueenStatusLabel(status: string) {
       return 'Ubijena';
     case 'missing':
       return 'Nestala';
+    case 'sold':
+      return 'Prodata';
+    case 'removed':
+      return 'Uklonjena';
     default:
       return status;
   }
@@ -262,10 +266,10 @@ export function QueenDetailsScreen({
               icon: 'swap-horizontal-outline',
               accessibilityLabel: 'Zameni trenutnu maticu',
               onPress: () => {
-                showPlaceholder(
-                  'Zamena matice',
-                  'Zamena matice biće povezana kada implementiramo lifecycle akciju.',
-                );
+                router.push({
+                  pathname: '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]/change',
+                  params: { hiveId, colonyId, queenId },
+                } as never);
               },
             }}
             rightActions={[
