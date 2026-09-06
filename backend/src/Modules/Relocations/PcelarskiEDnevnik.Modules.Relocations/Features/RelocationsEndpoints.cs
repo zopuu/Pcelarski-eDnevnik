@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using PcelarskiEDnevnik.Modules.Relocations.Features.GetByApiary;
 using PcelarskiEDnevnik.Modules.Relocations.Features.GetById;
+using PcelarskiEDnevnik.Modules.Relocations.Features.GetByHive;
 
 public static class RelocationsEndpoints {
     public static IEndpointRouteBuilder
@@ -17,6 +18,7 @@ public static class RelocationsEndpoints {
         group.MapCreateRelocationEndpoint();
         group.MapGetApiaryRelocationsEndpoint();
         group.MapGetRelocationByIdEndpoint();
+        group.MapGetHiveRelocationsEndpoint();
 
         return endpoints;
     }

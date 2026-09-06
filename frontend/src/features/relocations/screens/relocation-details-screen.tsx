@@ -35,6 +35,7 @@ import {
 
 type RelocationDetailsScreenProps = {
   relocationId: string;
+  subject?: 'apiary' | 'hive';
 };
 
 const transportMethodLabels = {
@@ -75,6 +76,7 @@ function formatDate(value: string) {
 
 export function RelocationDetailsScreen({
   relocationId,
+  subject = 'apiary',
 }: RelocationDetailsScreenProps) {
   const { openDrawer } = useAppDrawer();
   const relocationQuery = useRelocation(relocationId);
@@ -100,17 +102,19 @@ export function RelocationDetailsScreen({
         >
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Nazad na istoriju selidbi"
+            accessibilityLabel={`Nazad na istoriju selidbi ${
+              subject === 'hive' ? 'košnice' : 'pčelinjaka'
+            }`}
             onPress={() => router.back()}
             className="self-start py-2"
           >
             <Text className="text-sm font-semibold text-primary">
-              ← Selidbe
+              ← {subject === 'hive' ? 'Košnica' : 'Selidbe'}
             </Text>
           </Pressable>
 
           <Text className="mt-3 text-xs font-bold uppercase tracking-widest text-muted">
-            Selidba
+            {subject === 'hive' ? 'Selidba košnice' : 'Selidba'}
           </Text>
           <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
             {relocationQuery.data.origin.location.name?.trim() ||

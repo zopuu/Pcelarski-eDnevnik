@@ -10,4 +10,12 @@ export const relocationQueryKeys = {
     'history',
     apiaryId,
   ] as const,
+
+  hiveHistory: (
+    hiveId: string,
+  ) => [
+    ...relocationQueryKeys.all,
+    'hive-history',
+    hiveId,
+  ] as const,
 };

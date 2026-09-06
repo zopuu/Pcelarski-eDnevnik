@@ -138,13 +138,13 @@ public static class GetRelocationByIdEndpoint {
                                 x.OwnerBeekeeperId == beekeeperId)
                     .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-                ApiaryRelocationPlaceResponse ToPlace(
+                RelocationPlaceResponse ToPlace(
                     Guid apiaryId,
                     ApiaryStay stay) {
                     var apiary = apiaries[apiaryId];
                     var location = locations[stay.LocationId];
 
-                    return new ApiaryRelocationPlaceResponse(
+                    return new RelocationPlaceResponse(
                         new RelocationApiaryResponse(
                             apiary.Id,
                             apiary.IdentificationNumber ?? "—",
@@ -165,7 +165,7 @@ public static class GetRelocationByIdEndpoint {
                             location.Longitude));
                 }
 
-                return Results.Ok(new RelocationDetailsResponse(
+                return Results.Ok(new GetRelocationByIdResponse(
                     relocation.Id,
                     relocation.Kind,
                     relocation.OccurredAtUtc,
@@ -182,42 +182,3 @@ public static class GetRelocationByIdEndpoint {
         return endpoints;
     }
 }
-
-public sealed record RelocationDetailsResponse(
-    Guid Id,
-    RelocationKind Kind,
-    DateTimeOffset OccurredAtUtc,
-    RelocationTransportMethod TransportMethod,
-    decimal? DistanceKm,
-    decimal? CostAmount,
-    string? CurrencyCode,
-    string? Notes,
-    int? HiveCount,
-    ApiaryRelocationPlaceResponse Origin,
-    ApiaryRelocationPlaceResponse Destination);
-
-public sealed record ApiaryRelocationPlaceResponse(
-    RelocationApiaryResponse Apiary,
-    RelocationApiaryStayResponse Stay,
-    RelocationLocationResponse Location);
-
-public sealed record RelocationApiaryResponse(
-    Guid Id,
-    string IdentificationNumber,
-    string? Name);
-
-public sealed record RelocationApiaryStayResponse(
-    Guid Id,
-    DateTimeOffset StartedAtUtc,
-    DateTimeOffset? EndedAtUtc,
-    HiveEntranceOrientation? Orientation,
-    string? Note);
-
-public sealed record RelocationLocationResponse(
-    Guid Id,
-    string? Name,
-    string? Description,
-    int? AltitudeMeters,
-    string? CadastralParcelNumber,
-    decimal Latitude,
-    decimal Longitude);

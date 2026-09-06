@@ -337,9 +337,8 @@ export function HiveDetailsScreen({
 
     const handleRelocationsPress =
         () => {
-            Alert.alert(
-                'Selidbe',
-                'Prikaz selidbi košnice biće povezan kada implementiramo selidbe.',
+            router.push(
+                `/hives/${hiveId}/relocations` as never,
             );
         };
 

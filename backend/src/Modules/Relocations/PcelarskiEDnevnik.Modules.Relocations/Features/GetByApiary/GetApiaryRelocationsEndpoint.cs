@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Relocations.Domain;
+using PcelarskiEDnevnik.Modules.Relocations.Features.History;
 using PcelarskiEDnevnik.Modules.Relocations.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Errors;
@@ -184,7 +185,7 @@ public static class GetApiaryRelocationsEndpoint {
                         var originStay = apiaryStays[relation.OriginApiaryStayId];
                         var destinationStay = apiaryStays[relation.DestinationApiaryStayId];
 
-                        return new ApiaryRelocationHistoryItemResponse(
+                        return new RelocationHistoryItemResponse(
                             relocation.Id,
                             relocation.Kind,
                             relocation.OccurredAtUtc,
@@ -200,7 +201,7 @@ public static class GetApiaryRelocationsEndpoint {
                     var originHiveStay = hiveStays[itemsForRelocation[0].OriginHiveStayId];
                     var destinationHiveStay = hiveStays[itemsForRelocation[0].DestinationHiveStayId];
 
-                    return new ApiaryRelocationHistoryItemResponse(
+                    return new RelocationHistoryItemResponse(
                         relocation.Id,
                         relocation.Kind,
                         relocation.OccurredAtUtc,
@@ -212,7 +213,7 @@ public static class GetApiaryRelocationsEndpoint {
                         relocation.Notes);
                 }).ToList();
 
-                return Results.Ok(new ApiaryRelocationsPageResponse(
+                return Results.Ok(new RelocationHistoryPageResponse(
                     items,
                     page,
                     hasNextPage));
@@ -221,19 +222,3 @@ public static class GetApiaryRelocationsEndpoint {
         return endpoints;
     }
 }
-
-public sealed record ApiaryRelocationsPageResponse(
-    IReadOnlyList<ApiaryRelocationHistoryItemResponse> Items,
-    int Page,
-    bool HasNextPage);
-
-public sealed record ApiaryRelocationHistoryItemResponse(
-    Guid Id,
-    RelocationKind Kind,
-    DateTimeOffset OccurredAtUtc,
-    string OriginLocationName,
-    string DestinationLocationName,
-    int? HiveCount,
-    RelocationTransportMethod TransportMethod,
-    decimal? DistanceKm,
-    string? Notes);
