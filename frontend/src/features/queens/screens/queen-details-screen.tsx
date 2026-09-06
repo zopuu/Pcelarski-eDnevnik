@@ -192,26 +192,17 @@ export function QueenDetailsScreen({
   };
 
   const handleEndStayPress = () => {
-    Alert.alert(
-      'Završi boravak matice',
-      'Ovde će se kasnije evidentirati datum i razlog završetka boravka matice u društvu.',
-      [
-        {
-          text: 'Otkaži',
-          style: 'cancel',
-        },
-        {
-          text: 'Završi boravak',
-          style: 'destructive',
-          onPress: () => {
-            showPlaceholder(
-              'Završavanje boravka',
-              'Završavanje boravka matice još nije implementirano.',
-            );
-          },
-        },
-      ],
-    );
+    setIsMoreOpen(false);
+
+    router.push({
+      pathname:
+        '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]/end',
+      params: {
+        hiveId,
+        colonyId,
+        queenId,
+      },
+    } as never);
   };
 
   const moreActions: ContextualAction[] = [

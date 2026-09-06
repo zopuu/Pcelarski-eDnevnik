@@ -1090,6 +1090,25 @@ export function HiveDetailsScreen({
                                         trenutna matica nije
                                         evidentirana.
                                     </Text>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Dodaj maticu"
+                                        className="mt-4 min-h-12 items-center justify-center rounded-2xl bg-primary px-4"
+                                        onPress={() =>
+                                            router.push({
+                                                pathname:
+                                                    "/hives/[hiveId]/colonies/[colonyId]/queens/create",
+                                                params: {
+                                                    hiveId,
+                                                    colonyId: currentColony.id,
+                                                },
+                                            } as never)
+                                        }
+                                    >
+                                        <Text className="font-bold text-background">
+                                            Dodaj maticu
+                                        </Text>
+                                    </Pressable>
                                 </DetailsCard>
                             )}
                         </View>
