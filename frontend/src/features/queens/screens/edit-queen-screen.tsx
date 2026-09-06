@@ -17,6 +17,7 @@ import {
   useWatch,
 } from 'react-hook-form';
 import {
+  Alert,
   ActivityIndicator,
   Pressable,
   Text,
@@ -50,6 +51,7 @@ import type {
   UpdateQueenFormValues,
 } from '../schemas/update-queen-schema';
 import type {
+  QueenIntroductionOutcome,
   QueenOrigin,
 } from '../types/queen';
 
@@ -63,6 +65,17 @@ const originOptions: { label: string; value: QueenOrigin }[] = [
   { label: 'Kupljena', value: 'purchased' },
   { label: 'Odgojena', value: 'produced' },
   { label: 'Nepoznato', value: 'unknown' },
+];
+
+const introductionOutcomeOptions: {
+  label: string;
+  value: QueenIntroductionOutcome;
+}[] = [
+  { label: 'Prihvaćena', value: 'accepted' },
+  { label: 'Ubijena', value: 'killed' },
+  { label: 'Nestala', value: 'missing' },
+  { label: 'Nije provereno', value: 'unverified' },
+  { label: 'Drugo', value: 'other' },
 ];
 
 function parseDateOnly(value: string) {
@@ -127,6 +140,7 @@ export function EditQueenScreen({
       breed: '',
       emergedOn: '',
       acquiredOn: '',
+      introductionOutcome: null,
       notes: '',
     },
   });
@@ -151,11 +165,19 @@ export function EditQueenScreen({
       breed: queen.breed ?? '',
       emergedOn: queen.emergedOn ?? '',
       acquiredOn: queen.acquiredOn ?? '',
+      introductionOutcome: queen.introductionOutcome,
       notes: queen.notes ?? '',
     });
   }, [queen, reset]);
 
-  const onSubmit = async (values: UpdateQueenFormValues) => {
+  const introductionOutcome = queen?.introductionOutcome ?? null;
+  const canEditIntroductionOutcome = introductionOutcome === null || [
+    'missing',
+    'unverified',
+    'other',
+  ].includes(introductionOutcome);
+
+  const saveChanges = async (values: UpdateQueenFormValues) => {
     try {
       await updateMutation.mutateAsync({
         queenId,
@@ -167,14 +189,48 @@ export function EditQueenScreen({
           breed: optionalText(values.breed),
           emergedOn: optionalText(values.emergedOn),
           acquiredOn: optionalText(values.acquiredOn),
+          introductionOutcome:
+            canEditIntroductionOutcome
+              ? values.introductionOutcome ?? undefined
+              : undefined,
           notes: optionalText(values.notes),
         },
       });
+
+      if (values.introductionOutcome === 'killed') {
+        router.replace({
+          pathname: '/hives/[hiveId]/colonies/[colonyId]',
+          params: { hiveId, colonyId },
+        } as never);
+        return;
+      }
 
       router.back();
     } catch {
       // The recoverable mutation error is shown below the form.
     }
+  };
+
+  const onSubmit = (values: UpdateQueenFormValues) => {
+    if (values.introductionOutcome !== 'killed') {
+      void saveChanges(values);
+      return;
+    }
+
+    Alert.alert(
+      'Potvrdite ishod uvođenja',
+      'Da li ste sigurni da je matica ubijena? Ovim uklanjate ovu maticu iz evidencije.',
+      [
+        { text: 'Odustani', style: 'cancel' },
+        {
+          text: 'Da, ubijena je',
+          style: 'destructive',
+          onPress: () => {
+            void saveChanges(values);
+          },
+        },
+      ],
+    );
   };
 
   if (colonyQuery.isLoading || queenQuery.isLoading) {
@@ -204,7 +260,7 @@ export function EditQueenScreen({
 
         <Text className="text-2xl font-bold text-foreground">Izmeni maticu</Text>
         <Text className="mt-1 text-sm text-muted">
-          Izmenite osnovne podatke o matici. Status i boravak se menjaju posebnim lifecycle akcijama.
+          Izmenite osnovne podatke o matici.
         </Text>
 
         <SectionTitle>Osnovni podaci</SectionTitle>
@@ -220,6 +276,22 @@ export function EditQueenScreen({
             />
           )}
         />
+
+        {canEditIntroductionOutcome && (
+          <>
+            <SectionTitle>Ishod uvođenja</SectionTitle>
+            <Controller
+              control={control}
+              name="introductionOutcome"
+              render={({ field }) => (
+                <IntroductionOutcomeChoices
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </>
+        )}
 
         <Controller
           control={control}
@@ -430,6 +502,42 @@ function OriginChoices({
           );
         })}
       </View>
+    </View>
+  );
+}
+
+function IntroductionOutcomeChoices({
+  value,
+  onChange,
+}: {
+  value: QueenIntroductionOutcome | null;
+  onChange: (value: QueenIntroductionOutcome) => void;
+}) {
+  return (
+    <View className="mb-4 gap-2">
+      <Text className="text-sm text-muted">
+        Dopunite ishod kada je provereno stanje matice.
+      </Text>
+      {introductionOutcomeOptions.map((option) => {
+        const isSelected = value === option.value;
+
+        return (
+          <Pressable
+            key={option.value}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: isSelected }}
+            onPress={() => {
+              onChange(option.value);
+            }}
+            className={`min-h-12 flex-row items-center rounded-2xl border px-4 ${isSelected ? 'border-primary bg-primary/10' : 'border-border bg-surface'}`}
+          >
+            <View
+              className={`mr-3 h-5 w-5 rounded-full border-2 ${isSelected ? 'border-primary bg-primary' : 'border-muted'}`}
+            />
+            <Text className="font-semibold text-foreground">{option.label}</Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

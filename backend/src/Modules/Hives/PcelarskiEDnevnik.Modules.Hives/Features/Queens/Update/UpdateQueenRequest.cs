@@ -45,6 +45,14 @@ public sealed record UpdateQueenRequest {
         init;
     }
 
+    [EnumDataType(
+        typeof(QueenIntroductionOutcome))]
+    public QueenIntroductionOutcome?
+        IntroductionOutcome {
+        get;
+        init;
+    }
+
     [StringLength(
         QueenRules.NotesMaxLength)]
     public string? Notes {

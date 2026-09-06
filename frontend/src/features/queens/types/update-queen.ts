@@ -1,4 +1,5 @@
 import type {
+  QueenIntroductionOutcome,
   QueenOrigin,
   QueenStatus,
 } from './queen';
@@ -10,6 +11,7 @@ export type UpdateQueenRequest = {
   breed: string | null;
   emergedOn: string | null;
   acquiredOn: string | null;
+  introductionOutcome?: QueenIntroductionOutcome;
   notes: string | null;
 };
 

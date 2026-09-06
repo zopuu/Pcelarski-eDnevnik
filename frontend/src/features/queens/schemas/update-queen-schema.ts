@@ -17,6 +17,9 @@ export const updateQueenSchema = z.object({
   breed: z.string().trim().max(100, 'Rasa može imati najviše 100 karaktera.'),
   emergedOn: optionalDate,
   acquiredOn: optionalDate,
+  introductionOutcome: z.enum([
+    'accepted', 'killed', 'missing', 'unverified', 'other',
+  ]).nullable(),
   notes: z.string().trim().max(1000, 'Napomena može imati najviše 1.000 karaktera.'),
 }).superRefine((values, context) => {
   if (

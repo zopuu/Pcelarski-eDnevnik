@@ -28,9 +28,9 @@ export function useUpdateQueen() {
       request,
     }: UpdateQueenVariables) => updateQueen(queenId, request),
 
-    onSuccess: async (_response, variables) => {
+    onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: queenQueryKeys.currentByColony(variables.colonyId),
+        queryKey: queenQueryKeys.all,
       });
     },
   });
