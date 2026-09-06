@@ -123,8 +123,11 @@ function getHiveStatusLabel(
         case 'inactive':
             return 'Neaktivna';
 
-        case 'deactivated':
-            return 'Deaktivirana';
+        case 'writtenoff':
+            return 'Rashodovana';
+
+        case 'underrepair':
+            return 'Na popravci';
 
         default:
             return value;
@@ -364,9 +367,8 @@ export function HiveDetailsScreen({
                 false,
             );
 
-            Alert.alert(
-                'Izmena košnice',
-                'Ekran za izmenu košnice još nije implementiran.',
+            router.push(
+                `/hives/${hiveId}/edit` as never,
             );
         };
 

@@ -130,6 +130,62 @@ public sealed class Hive {
             purchaseDate);
     }
 
+    public void Update(
+        string label,
+        HiveType type,
+        string? identificationNumber,
+        string? colorHex,
+        DateOnly? manufactureDate,
+        string? manufacturer,
+        HiveMaterial? material,
+        DateOnly? purchaseDate,
+        bool hasFeeder,
+        int? feederVolumeMl,
+        string? note) {
+        Label = NormalizeRequiredText(
+            label,
+            HiveRules.LabelMaxLength,
+            nameof(label));
+
+        Type = type;
+
+        IdentificationNumber =
+            NormalizeOptionalText(
+                identificationNumber,
+                HiveRules.IdentificationNumberLength,
+                nameof(identificationNumber));
+
+        ColorHex = NormalizeColorHex(colorHex);
+
+        ValidateDates(
+            manufactureDate,
+            purchaseDate);
+
+        ManufactureDate = manufactureDate;
+
+        Manufacturer = NormalizeOptionalText(
+            manufacturer,
+            HiveRules.ManufacturerMaxLength,
+            nameof(manufacturer));
+
+        Material = material;
+
+        PurchaseDate = purchaseDate;
+
+        HasFeeder = hasFeeder;
+
+        FeederVolumeMl = NormalizeFeederVolume(
+            hasFeeder,
+            feederVolumeMl);
+
+        Note = NormalizeOptionalText(
+            note,
+            HiveRules.NoteMaxLength,
+            nameof(note));
+
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+
     private static string NormalizeRequiredText(
         string value,
         int maxLength,
@@ -215,5 +271,23 @@ public sealed class Hive {
                 "Manufacture date cannot be after purchase date.",
                 nameof(manufactureDate));
         }
+    }
+
+    private static int? NormalizeFeederVolume(
+        bool hasFeeder,
+        int? feederVolumeMl) {
+        if (!hasFeeder) {
+            return null;
+        }
+
+        if (
+            feederVolumeMl is null ||
+            feederVolumeMl <= 0) {
+            throw new ArgumentException(
+                "Feeder volume must be provided when the hive has a feeder.",
+                nameof(feederVolumeMl));
+        }
+
+        return feederVolumeMl;
     }
 }

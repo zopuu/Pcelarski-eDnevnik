@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.Create;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetAll;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetById;
+using PcelarskiEDnevnik.Modules.Hives.Features.Hives.Update;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 
@@ -26,6 +27,9 @@ public static class HivesEndpoints {
 
         hivesGroup
             .MapGetHiveByIdEndpoint();
+
+        hivesGroup
+            .MapUpdateHiveEndpoint();
 
         return endpoints;
     }
