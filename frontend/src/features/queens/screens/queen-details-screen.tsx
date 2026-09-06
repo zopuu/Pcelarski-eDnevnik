@@ -232,10 +232,15 @@ export function QueenDetailsScreen({
                 icon: 'time-outline',
                 accessibilityLabel: 'Prikaži istoriju boravaka matice',
                 onPress: () => {
-                  showPlaceholder(
-                    'Istorija boravaka',
-                    'Istorija boravaka matice biće dostupna kada je implementiramo.',
-                  );
+                  router.push({
+                    pathname:
+                      '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]/stays',
+                    params: {
+                      hiveId,
+                      colonyId,
+                      queenId,
+                    },
+                  } as never);
                 },
               },
               {

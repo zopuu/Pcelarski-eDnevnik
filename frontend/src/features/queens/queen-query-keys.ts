@@ -10,4 +10,12 @@ export const queenQueryKeys = {
     'current-by-colony',
     colonyId,
   ] as const,
+
+  stayHistory: (
+    queenId: string,
+  ) => [
+    ...queenQueryKeys.all,
+    'stay-history',
+    queenId,
+  ] as const,
 };
