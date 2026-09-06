@@ -16,10 +16,10 @@ internal sealed class QueenConfiguration
                 table.HasCheckConstraint(
                     "ck_queens_origin",
                     """
-                    "origin" IS NULL
-                    OR "origin" IN (
+                    "origin" IN (
                         'Purchased',
-                        'Produced'
+                        'Produced',
+                        'Unknown'
                     )
                     """);
 
@@ -63,7 +63,8 @@ internal sealed class QueenConfiguration
                 "origin")
             .HasConversion<string>()
             .HasMaxLength(
-                QueenRules.OriginMaxLength);
+                QueenRules.OriginMaxLength)
+            .IsRequired();
 
         builder.Property(
                 x => x.Breeder)

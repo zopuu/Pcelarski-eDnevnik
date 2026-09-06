@@ -288,7 +288,7 @@ export function ChangeQueenScreen({
                 field.onChange(value);
                 setValue('existingQueenId', '');
               }} options={[
-                { value: 'new', label: '+ Evidentiraj novu maticu' },
+                { value: 'new', label: 'Evidentiraj novu maticu' },
                 { value: 'existing', label: 'Izaberi postojeću maticu' },
               ]} />
             )} />

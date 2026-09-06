@@ -62,6 +62,7 @@ type EditQueenScreenProps = {
 const originOptions: { label: string; value: QueenOrigin }[] = [
   { label: 'Kupljena', value: 'purchased' },
   { label: 'Odgojena', value: 'produced' },
+  { label: 'Nepoznato', value: 'unknown' },
 ];
 
 function parseDateOnly(value: string) {

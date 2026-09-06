@@ -1,6 +1,7 @@
 export type QueenOrigin =
   | 'purchased'
-  | 'produced';
+  | 'produced'
+  | 'unknown';
 
 export type QueenStatus =
   | 'active'

@@ -119,6 +119,8 @@ function getQueenOriginLabel(origin: string | null) {
       return 'Kupljena';
     case 'produced':
       return 'Odgojena';
+    case 'unknown':
+      return 'Nepoznato';
     default:
       return '—';
   }

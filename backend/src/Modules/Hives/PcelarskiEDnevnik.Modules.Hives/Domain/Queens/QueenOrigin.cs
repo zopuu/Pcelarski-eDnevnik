@@ -2,5 +2,6 @@
 
 public enum QueenOrigin {
     Purchased = 1,
-    Produced = 2
+    Produced = 2,
+    Unknown = 3
 }

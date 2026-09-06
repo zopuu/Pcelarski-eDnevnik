@@ -304,6 +304,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .HasColumnName("notes");
 
                     b.Property<string>("Origin")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("origin");
@@ -329,7 +330,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("queens", "hives", t =>
                         {
-                            t.HasCheckConstraint("ck_queens_origin", "\"origin\" IS NULL\r\nOR \"origin\" IN (\r\n    'Purchased',\r\n    'Produced'\r\n)");
+                            t.HasCheckConstraint("ck_queens_origin", "\"origin\" IN (\r\n    'Purchased',\n    'Produced',\n    'Unknown'\n)");
 
                             t.HasCheckConstraint("ck_queens_status", "\"status\" IN (\r\n    'Active',\r\n    'Dead',\n    'Killed',\n    'Missing',\n    'Sold',\n    'Removed'\n)");
                         });
@@ -360,6 +361,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .HasColumnName("ended_on");
 
                     b.Property<string>("IntroductionMethod")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("introduction_method");
@@ -410,7 +412,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_queen_stays_end_reason", "\"end_reason\" IS NULL\r\nOR \"end_reason\" IN (\r\n    'Replaced',\r\n    'Dead',\r\n    'Killed',\r\n    'Missing',\r\n    'Removed',\r\n    'Swarmed',\n    'ColonyEnded',\n    'Other',\n    'Transferred',\n    'ColonyWithoutQueen'\n)");
 
-                            t.HasCheckConstraint("ck_queen_stays_introduction_method", "\"introduction_method\" IS NULL\r\nOR \"introduction_method\" IN (\r\n    'Placement',\r\n    'Caged',\r\n    'Direct',\r\n    'Unknown',\r\n    'Other'\r\n)");
+                            t.HasCheckConstraint("ck_queen_stays_introduction_method", "\"introduction_method\" IN (\r\n    'Placement',\r\n    'Caged',\r\n    'Direct',\r\n    'Unknown',\r\n    'Other'\r\n)");
 
                             t.HasCheckConstraint("ck_queen_stays_introduction_outcome", "\"introduction_outcome\" IS NULL\r\nOR \"introduction_outcome\" IN (\r\n    'Accepted',\r\n    'Killed',\r\n    'Missing',\r\n    'Unverified',\r\n    'Other'\r\n)");
                         });

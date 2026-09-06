@@ -24,8 +24,7 @@ internal sealed class QueenStayConfiguration
                 table.HasCheckConstraint(
                     "ck_queen_stays_introduction_method",
                     """
-                    "introduction_method" IS NULL
-                    OR "introduction_method" IN (
+                    "introduction_method" IN (
                         'Placement',
                         'Caged',
                         'Direct',
@@ -104,7 +103,8 @@ internal sealed class QueenStayConfiguration
             .HasConversion<string>()
             .HasMaxLength(
                 QueenStayRules
-                    .IntroductionMethodMaxLength);
+                    .IntroductionMethodMaxLength)
+            .IsRequired();
 
         builder.Property(
                 x => x.IntroductionOutcome)

@@ -12,7 +12,7 @@ export const updateQueenSchema = z.object({
     (value) => value === '' || /^#[0-9A-Fa-f]{6}$/.test(value),
     'Izaberite ispravnu boju oznake.',
   ),
-  origin: z.enum(['purchased', 'produced']).nullable(),
+  origin: z.enum(['purchased', 'produced', 'unknown']).nullable(),
   breeder: z.string().trim().max(100, 'Odgajivač može imati najviše 100 karaktera.'),
   breed: z.string().trim().max(100, 'Rasa može imati najviše 100 karaktera.'),
   emergedOn: optionalDate,
