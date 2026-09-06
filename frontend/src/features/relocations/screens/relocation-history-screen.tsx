@@ -217,7 +217,7 @@ function RelocationTimelineItem({
 }) {
   return (
     <View className="flex-row">
-      <View className="w-16 items-end pr-3">
+      <View className="w-16 items-end justify-center pr-3">
         <Text className="text-right text-xs font-bold text-foreground">
           {formatTimelineDate(relocation.occurredAtUtc)}
         </Text>
@@ -278,10 +278,6 @@ function RelocationTimelineItem({
           />
         </View>
         <View className="mt-4 flex-row flex-wrap gap-x-4 gap-y-2">
-          <TimelineDetail
-            icon="calendar-outline"
-            label={formatTimelineDate(relocation.occurredAtUtc)}
-          />
           <TimelineDetail
             icon="car-outline"
             label={transportMethodLabels[relocation.transportMethod]}
