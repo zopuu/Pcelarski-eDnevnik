@@ -6,16 +6,37 @@ import type {
   CreateForageObservationRequest,
   CreateForageObservationResponse,
 } from '../types/forage-observation';
+import {
+  appendImageToFormData,
+} from '@/shared/api/image-upload';
 
-export function createForageObservation(
+export async function createForageObservation(
   request: CreateForageObservationRequest,
 ): Promise<CreateForageObservationResponse> {
+  const formData = new FormData();
+
+  formData.append('ObservedAt', request.observedAt);
+  formData.append('ForageType', request.forageType);
+  formData.append('Intensity', request.intensity.toString());
+  formData.append('Latitude', request.latitude.toString());
+  formData.append('Longitude', request.longitude.toString());
+
+  if (request.notes) {
+    formData.append('Notes', request.notes);
+  }
+
+  await appendImageToFormData(
+    formData,
+    'Image',
+    request.image,
+  );
+
   return apiClient.post<
     CreateForageObservationResponse,
-    CreateForageObservationRequest
+    FormData
   >(
     '/api/forage-observations',
-    request,
+    formData,
     {
       authenticated: true,
     },

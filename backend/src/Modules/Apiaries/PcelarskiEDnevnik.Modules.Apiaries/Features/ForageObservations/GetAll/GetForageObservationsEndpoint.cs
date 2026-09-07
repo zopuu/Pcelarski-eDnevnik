@@ -74,6 +74,9 @@ public static class GetForageObservationsEndpoint {
                                 profile != null
                                     ? profile.Name
                                     : null,
+                                observation.ImagePath == null
+                                    ? null
+                                    : "/uploads/" + observation.ImagePath,
                                 observation.CreatedAtUtc,
                                 observation.UpdatedAtUtc);
 

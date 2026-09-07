@@ -24,9 +24,6 @@ import {
 import type {
   ForageObservation,
 } from '../types/forage-observation';
-import {
-  getForageObservationPhotoUri,
-} from '../storage/forage-observation-photo';
 
 import {
   AppHeader,
@@ -43,6 +40,9 @@ import {
 import {
   useAppDrawer,
 } from '@/providers/app-drawer-provider';
+import {
+  environment,
+} from '@/shared/config/environment';
 import type {
   ForageType,
 } from '@/features/apiaries/types/forage-profile';
@@ -221,10 +221,9 @@ function ObservationTimelineItem({
   isLast: boolean;
   onPress: () => void;
 }) {
-  const photoUri =
-    getForageObservationPhotoUri(
-      observation.id,
-    );
+  const photoUri = observation.imageUrl
+    ? `${environment.apiUrl}${observation.imageUrl}`
+    : null;
 
   return (
     <View className="flex-row">
@@ -341,7 +340,7 @@ function ObservationPhoto({
           color={colors.muted}
         />
         <Text className="mt-2 px-2 text-center text-[11px] font-medium text-muted">
-          Fotografija nije dostupna na ovom uređaju
+          Nema fotografije
         </Text>
       </View>
     );

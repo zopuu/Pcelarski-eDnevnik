@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
+using PcelarskiEDnevnik.Modules.Apiaries.Features;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.SharedKernel.Storage;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations.Update;
 
@@ -12,13 +15,14 @@ public static class UpdateForageObservationEndpoint {
     public static IEndpointRouteBuilder
         MapUpdateForageObservationEndpoint(
             this IEndpointRouteBuilder endpoints) {
-        endpoints.MapPut(
+        var endpoint = endpoints.MapPut(
             "/{observationId:guid}",
             async (
                 Guid observationId,
-                UpdateForageObservationRequest request,
+                [FromForm] UpdateForageObservationRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
+                IImageStorage imageStorage,
                 CancellationToken cancellationToken) => {
                     var beekeeperId =
                         await currentBeekeeper
@@ -39,6 +43,16 @@ public static class UpdateForageObservationEndpoint {
 
                     if (observation is null) {
                         return Results.NotFound();
+                    }
+
+                    if (!ImageUpload.TryValidate(
+                            request.Image,
+                            out var imageFileExtension,
+                            out var imageError)) {
+                        return Results.ValidationProblem(
+                            new Dictionary<string, string[]> {
+                                ["image"] = [imageError!]
+                            });
                     }
 
                     var location =
@@ -84,6 +98,17 @@ public static class UpdateForageObservationEndpoint {
                         request.Notes,
                         forageProfileId);
 
+                    var imagePath = await ImageUpload.SaveAsync(
+                        request.Image,
+                        imageFileExtension,
+                        ImageStorageArea.ForageObservations,
+                        imageStorage,
+                        cancellationToken);
+
+                    if (imagePath is not null) {
+                        observation.UpdateImagePath(imagePath);
+                    }
+
                     await dbContext
                         .SaveChangesAsync(
                             cancellationToken);
@@ -98,10 +123,14 @@ public static class UpdateForageObservationEndpoint {
                             location.Latitude,
                             location.Longitude,
                             observation.ForageProfileId,
+                            ImageUpload.ToImageUrl(
+                                observation.ImagePath),
                             observation.UpdatedAtUtc!.Value);
 
                     return Results.Ok(response);
                 });
+
+        endpoint.DisableAntiforgery();
 
         return endpoints;
     }

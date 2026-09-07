@@ -212,6 +212,11 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .HasColumnType("uuid")
                         .HasColumnName("forage_profile_id");
 
+                    b.Property<string>("ImagePath")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_path");
+
                     b.Property<string>("ForageType")
                         .IsRequired()
                         .HasMaxLength(20)

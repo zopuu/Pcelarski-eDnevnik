@@ -63,4 +63,9 @@ public sealed record UpdateForageObservationRequest {
         get;
         init;
     }
+
+    public Microsoft.AspNetCore.Http.IFormFile? Image {
+        get;
+        init;
+    }
 }

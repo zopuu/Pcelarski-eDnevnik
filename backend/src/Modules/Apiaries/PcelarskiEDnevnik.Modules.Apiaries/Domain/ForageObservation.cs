@@ -11,7 +11,8 @@ public sealed class ForageObservation {
         short intensity,
         string? notes,
         Guid locationId,
-        Guid? forageProfileId) {
+        Guid? forageProfileId,
+        string? imagePath) {
         Validate(
             observedByBeekeeperId,
             forageType,
@@ -32,6 +33,7 @@ public sealed class ForageObservation {
 
         LocationId = locationId;
         ForageProfileId = forageProfileId;
+        ImagePath = NormalizeOptionalText(imagePath);
 
         CreatedAtUtc =
             DateTimeOffset.UtcNow;
@@ -74,6 +76,11 @@ public sealed class ForageObservation {
         private set;
     }
 
+    public string? ImagePath {
+        get;
+        private set;
+    }
+
     public DateTimeOffset CreatedAtUtc {
         get;
         private set;
@@ -91,7 +98,8 @@ public sealed class ForageObservation {
         short intensity,
         string? notes,
         Guid locationId,
-        Guid? forageProfileId) {
+        Guid? forageProfileId,
+        string? imagePath = null) {
         return new ForageObservation(
             observedByBeekeeperId,
             observedAt,
@@ -99,7 +107,8 @@ public sealed class ForageObservation {
             intensity,
             notes,
             locationId,
-            forageProfileId);
+            forageProfileId,
+            imagePath);
     }
 
     public void Update(
@@ -126,6 +135,11 @@ public sealed class ForageObservation {
 
         UpdatedAtUtc =
             DateTimeOffset.UtcNow;
+    }
+
+    public void UpdateImagePath(string imagePath) {
+        ImagePath = NormalizeOptionalText(imagePath);
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
 
     private static void Validate(

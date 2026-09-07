@@ -73,6 +73,10 @@ internal sealed class ForageObservationConfiguration
             .HasColumnName(
                 "forage_profile_id");
 
+        builder.Property(x => x.ImagePath)
+            .HasMaxLength(255)
+            .HasColumnName("image_path");
+
         builder.Property(x => x.CreatedAtUtc)
             .HasColumnName(
                 "created_at_utc");

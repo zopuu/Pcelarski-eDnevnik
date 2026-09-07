@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.SharedKernel.Errors;
 using PcelarskiEDnevnik.SharedKernel.Storage;
 using Microsoft.AspNetCore.Mvc;
+using PcelarskiEDnevnik.Modules.Apiaries.Features;
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
 
 
@@ -26,7 +27,7 @@ public static class CreateApiaryEndpoint {
                         await currentBeekeeper.GetBeekeeperIdAsync(
                             cancellationToken);
 
-                    if (!ApiaryImageUpload.TryValidate(
+                    if (!ImageUpload.TryValidate(
                             request.Image,
                             out var imageFileExtension,
                             out var imageError)) {
@@ -39,9 +40,10 @@ public static class CreateApiaryEndpoint {
                     var stayRequest = request.InitialStay;
                     var locationRequest = stayRequest.Location;
 
-                    var imagePath = await ApiaryImageUpload.SaveAsync(
+                    var imagePath = await ImageUpload.SaveAsync(
                         request.Image,
                         imageFileExtension,
+                        ImageStorageArea.Apiaries,
                         imageStorage,
                         cancellationToken);
 
@@ -94,7 +96,7 @@ public static class CreateApiaryEndpoint {
                             apiary.Id,
                             apiary.IdentificationNumber,
                             apiary.Name,
-                            ApiaryImageUpload.ToImageUrl(apiary.ImagePath),
+                            ImageUpload.ToImageUrl(apiary.ImagePath),
                             apiary.Type,
                             apiary.Status,
                             apiary.CreatedAtUtc);

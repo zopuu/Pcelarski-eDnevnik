@@ -18,15 +18,21 @@ import {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  environment,
+} from '@/shared/config/environment';
+import type {
+  ImageUpload,
+} from '@/shared/api/image-upload';
 
-export type ObservationPhotoDraft = {
-  uri: string;
+export type ObservationPhotoDraft = ImageUpload & {
   width: number;
   height: number;
 };
 
 type ObservationPhotoPickerProps = {
   value: ObservationPhotoDraft | null;
+  imageUrl?: string | null;
   onChange: (
     photo: ObservationPhotoDraft | null,
   ) => void;
@@ -38,14 +44,24 @@ const imagePickerOptions: ImagePicker.ImagePickerOptions = {
   quality: 1,
 };
 
+const maximumImageSizeBytes = 5 * 1024 * 1024;
+const allowedMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;
+
 export function ObservationPhotoPicker({
   value,
+  imageUrl,
   onChange,
 }: ObservationPhotoPickerProps) {
   const [isPicking, setIsPicking] =
     useState(false);
   const [error, setError] =
     useState<string | null>(null);
+  const previewUri = value?.uri ??
+    (imageUrl ? `${environment.apiUrl}${imageUrl}` : null);
 
   const selectPhoto = async (
     source: 'camera' | 'library',
@@ -88,8 +104,29 @@ export function ObservationPhotoPicker({
 
       const asset = result.assets[0];
 
+      if (asset.fileSize && asset.fileSize > maximumImageSizeBytes) {
+        setError('Fotografija može imati najviše 5 MB.');
+        return;
+      }
+
+      if (!allowedMimeTypes.includes(
+        asset.mimeType as typeof allowedMimeTypes[number],
+      )) {
+        setError('Izaberite JPEG, PNG ili WebP fotografiju.');
+        return;
+      }
+
+      const mimeType = asset.mimeType as ImageUpload['mimeType'];
+      const extension = mimeType === 'image/png'
+        ? 'png'
+        : mimeType === 'image/webp'
+          ? 'webp'
+          : 'jpg';
+
       onChange({
         uri: asset.uri,
+        fileName: asset.fileName ?? `forage-observation.${extension}`,
+        mimeType,
         width: asset.width,
         height: asset.height,
       });
@@ -111,10 +148,10 @@ export function ObservationPhotoPicker({
         Možete dodati jednu fotografiju zapažanja.
       </Text>
 
-      {value ? (
+      {previewUri ? (
         <View className="overflow-hidden rounded-3xl border border-border bg-surface">
           <Image
-            source={value.uri}
+            source={previewUri}
             contentFit="cover"
             style={{
               width: '100%',
@@ -123,20 +160,42 @@ export function ObservationPhotoPicker({
           />
           <View className="flex-row items-center justify-between gap-4 px-4 py-3">
             <Text className="flex-1 text-sm text-muted">
-              Fotografija će biti sačuvana samo na ovom uređaju.
+              {value
+                ? 'Fotografija će biti poslata uz čuvanje zapažanja.'
+                : 'Fotografija je sačuvana uz zapažanje.'}
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Ukloni fotografiju"
-              onPress={() => onChange(null)}
-              className="min-h-11 min-w-11 items-center justify-center rounded-full bg-error/10"
-            >
-              <Ionicons
-                name="trash-outline"
-                size={20}
-                color={colors.error}
-              />
-            </Pressable>
+            {value && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Ukloni novu fotografiju"
+                onPress={() => onChange(null)}
+                className="min-h-11 min-w-11 items-center justify-center rounded-full bg-error/10"
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={20}
+                  color={colors.error}
+                />
+              </Pressable>
+            )}
+          </View>
+          <View className="flex-row gap-3 px-4 pb-4">
+            <PhotoAction
+              label="Kamera"
+              icon="camera-outline"
+              disabled={isPicking}
+              onPress={() => {
+                void selectPhoto('camera');
+              }}
+            />
+            <PhotoAction
+              label="Zameni"
+              icon="images-outline"
+              disabled={isPicking}
+              onPress={() => {
+                void selectPhoto('library');
+              }}
+            />
           </View>
         </View>
       ) : (
@@ -177,6 +236,9 @@ export function ObservationPhotoPicker({
           {error}
         </Text>
       )}
+      <Text className="mt-2 text-sm text-muted">
+        JPEG, PNG ili WebP, najviše 5 MB.
+      </Text>
     </View>
   );
 }

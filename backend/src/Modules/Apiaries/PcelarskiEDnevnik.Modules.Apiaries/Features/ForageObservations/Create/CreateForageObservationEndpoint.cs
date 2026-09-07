@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
+using PcelarskiEDnevnik.Modules.Apiaries.Features;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
+using PcelarskiEDnevnik.SharedKernel.Storage;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries
     .Features.ForageObservations.Create;
@@ -13,17 +16,35 @@ public static class
     public static IEndpointRouteBuilder
         MapCreateForageObservationEndpoint(
             this IEndpointRouteBuilder endpoints) {
-        endpoints.MapPost(
+        var endpoint = endpoints.MapPost(
             "/",
             async (
-                CreateForageObservationRequest request,
+                [FromForm] CreateForageObservationRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
+                IImageStorage imageStorage,
                 CancellationToken cancellationToken) => {
                     var beekeeperId =
                         await currentBeekeeper
                             .GetBeekeeperIdAsync(
                                 cancellationToken);
+
+                    if (!ImageUpload.TryValidate(
+                            request.Image,
+                            out var imageFileExtension,
+                            out var imageError)) {
+                        return Results.ValidationProblem(
+                            new Dictionary<string, string[]> {
+                                ["image"] = [imageError!]
+                            });
+                    }
+
+                    var imagePath = await ImageUpload.SaveAsync(
+                        request.Image,
+                        imageFileExtension,
+                        ImageStorageArea.ForageObservations,
+                        imageStorage,
+                        cancellationToken);
 
                     var location =
                         ApiaryLocation.Create(
@@ -53,7 +74,8 @@ public static class
                             request.Intensity!.Value,
                             request.Notes,
                             location.Id,
-                            forageProfileId);
+                            forageProfileId,
+                            imagePath);
 
                     dbContext
                         .Set<ApiaryLocation>()
@@ -70,8 +92,12 @@ public static class
                         $"/api/forage-observations/{observation.Id}",
                         new CreateForageObservationResponse(
                             observation.Id,
-                            observation.ForageProfileId));
+                            observation.ForageProfileId,
+                            ImageUpload.ToImageUrl(
+                                observation.ImagePath)));
                 });
+
+        endpoint.DisableAntiforgery();
 
         return endpoints;
     }

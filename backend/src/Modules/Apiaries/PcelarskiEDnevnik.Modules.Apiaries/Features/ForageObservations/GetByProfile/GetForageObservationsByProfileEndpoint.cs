@@ -105,6 +105,9 @@ public static class
                                 location.Longitude,
                                 observation.ForageProfileId,
                                 profile.Name,
+                                observation.ImagePath == null
+                                    ? null
+                                    : "/uploads/" + observation.ImagePath,
                                 observation.CreatedAtUtc,
                                 observation.UpdatedAtUtc);
 

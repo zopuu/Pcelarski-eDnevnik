@@ -1,6 +1,9 @@
 import type {
   ForageType,
 } from '@/features/apiaries/types/forage-profile';
+import type {
+  ImageUpload,
+} from '@/shared/api/image-upload';
 
 export type ForageObservation = {
   id: string;
@@ -12,6 +15,7 @@ export type ForageObservation = {
   longitude: number;
   forageProfileId: string | null;
   forageProfileName: string | null;
+  imageUrl: string | null;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 };
@@ -30,15 +34,18 @@ export type CreateForageObservationRequest = {
   notes: string | null;
   latitude: number;
   longitude: number;
+  image: ImageUpload | null;
 };
 
 export type CreateForageObservationResponse = {
   id: string;
   forageProfileId: string | null;
+  imageUrl: string | null;
 };
 
 export type UpdateForageObservationResponse = {
   id: string;
   forageProfileId: string | null;
+  imageUrl: string | null;
   updatedAtUtc: string;
 };

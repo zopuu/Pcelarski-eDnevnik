@@ -4,4 +4,5 @@
 public sealed record
     CreateForageObservationResponse(
         Guid Id,
-        Guid? ForageProfileId);
+        Guid? ForageProfileId,
+        string? ImageUrl);

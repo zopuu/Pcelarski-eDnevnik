@@ -11,4 +11,5 @@ public sealed record UpdateForageObservationResponse(
     decimal Latitude,
     decimal Longitude,
     Guid? ForageProfileId,
+    string? ImageUrl,
     DateTimeOffset UpdatedAtUtc);

@@ -72,6 +72,9 @@ public static class
                                     forageProfile != null
                                         ? forageProfile.Name
                                         : null,
+                                    forageObservation.ImagePath == null
+                                        ? null
+                                        : "/uploads/" + forageObservation.ImagePath,
                                     forageObservation.CreatedAtUtc,
                                     forageObservation.UpdatedAtUtc)
                         )

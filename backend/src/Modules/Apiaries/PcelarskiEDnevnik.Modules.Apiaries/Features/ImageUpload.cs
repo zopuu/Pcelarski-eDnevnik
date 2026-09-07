@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using PcelarskiEDnevnik.SharedKernel.Storage;
 
-namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
+namespace PcelarskiEDnevnik.Modules.Apiaries.Features;
 
-internal static class ApiaryImageUpload {
+internal static class ImageUpload {
     public static bool TryValidate(
         IFormFile? image,
         out string? fileExtension,
@@ -34,6 +34,7 @@ internal static class ApiaryImageUpload {
     public static async Task<string?> SaveAsync(
         IFormFile? image,
         string? fileExtension,
+        ImageStorageArea area,
         IImageStorage imageStorage,
         CancellationToken cancellationToken) {
         if (image is null || image.Length == 0 || fileExtension is null) {
@@ -45,7 +46,7 @@ internal static class ApiaryImageUpload {
         return await imageStorage.SaveAsync(
             stream,
             fileExtension,
-            ImageStorageArea.Apiaries,
+            area,
             cancellationToken);
     }
 

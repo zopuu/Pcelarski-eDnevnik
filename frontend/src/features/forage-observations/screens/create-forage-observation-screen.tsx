@@ -10,7 +10,6 @@ import {
   useWatch,
 } from 'react-hook-form';
 import {
-  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -23,7 +22,6 @@ import {
 
 import {
   useEffect,
-  useRef,
   useState,
 } from 'react';
 
@@ -53,12 +51,6 @@ import type {
 import type {
   CreateForageObservationRequest,
 } from '../types/forage-observation';
-import {
-  deleteForageObservationPhoto,
-  getForageObservationPhotoUri,
-  saveForageObservationPhoto,
-} from '../storage/forage-observation-photo';
-
 import {
   ApiError,
 } from '@/shared/api/api-error';
@@ -141,10 +133,6 @@ export function CreateForageObservationScreen({
     );
   const [photo, setPhoto] =
     useState<ObservationPhotoDraft | null>(null);
-  const [hasPhotoChanged, setHasPhotoChanged] =
-    useState(false);
-  const hydratedPhotoObservationId =
-    useRef<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -231,38 +219,6 @@ export function CreateForageObservationScreen({
     });
   }, [observationQuery.data, reset]);
 
-  useEffect(() => {
-    if (
-      !isEditing ||
-      !observationQuery.data ||
-      hydratedPhotoObservationId.current ===
-      observationQuery.data.id
-    ) {
-      return;
-    }
-
-    const photoUri =
-      getForageObservationPhotoUri(
-        observationQuery.data.id,
-      );
-
-    setPhoto(
-      photoUri
-        ? {
-          uri: photoUri,
-          width: 0,
-          height: 0,
-        }
-        : null,
-    );
-    hydratedPhotoObservationId.current =
-      observationQuery.data.id;
-    setHasPhotoChanged(false);
-  }, [
-    isEditing,
-    observationQuery.data,
-  ]);
-
   const onSubmit = async (
     values: CreateForageObservationFormValues,
   ) => {
@@ -273,6 +229,7 @@ export function CreateForageObservationScreen({
       notes: optionalText(values.notes),
       latitude: values.latitude,
       longitude: values.longitude,
+      image: photo,
     };
 
     try {
@@ -285,33 +242,6 @@ export function CreateForageObservationScreen({
               request.observedAt,
           })
           : await createMutation.mutateAsync(request);
-
-      const shouldPersistPhoto =
-        isEditing
-          ? hasPhotoChanged
-          : photo !== null;
-
-      if (shouldPersistPhoto && photo) {
-        try {
-          await saveForageObservationPhoto(
-            response.id,
-            photo,
-          );
-        } catch {
-          Alert.alert(
-            'Zapažanje je sačuvano',
-            'Fotografiju nije moguće sačuvati na ovom uređaju.',
-          );
-        }
-      }
-      else if (
-        shouldPersistPhoto &&
-        !photo
-      ) {
-        deleteForageObservationPhoto(
-          response.id,
-        );
-      }
 
       router.replace(
         isEditing
@@ -445,9 +375,9 @@ export function CreateForageObservationScreen({
 
         <ObservationPhotoPicker
           value={photo}
+          imageUrl={observationQuery.data?.imageUrl}
           onChange={(nextPhoto) => {
             setPhoto(nextPhoto);
-            setHasPhotoChanged(true);
           }}
         />
 

@@ -60,4 +60,9 @@ public sealed record
         get;
         init;
     }
+
+    public Microsoft.AspNetCore.Http.IFormFile? Image {
+        get;
+        init;
+    }
 }

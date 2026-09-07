@@ -24,10 +24,6 @@ import {
 import {
   useForageObservation,
 } from '../hooks/use-forage-observation';
-import {
-  deleteForageObservationPhoto,
-  getForageObservationPhotoUri,
-} from '../storage/forage-observation-photo';
 import type {
   ForageObservation,
 } from '../types/forage-observation';
@@ -53,6 +49,9 @@ import {
 import {
   colors,
 } from '@/shared/theme/colors';
+import {
+  environment,
+} from '@/shared/config/environment';
 
 type ForageObservationDetailsScreenProps = {
   observationId: string;
@@ -133,7 +132,7 @@ export function ForageObservationDetailsScreen({
   const handleDelete = () => {
     Alert.alert(
       'Obriši zapažanje',
-      'Da li sigurno želite da obrišete ovo zapažanje i lokalnu fotografiju?',
+      'Da li sigurno želite da obrišete ovo zapažanje?',
       [
         {
           text: 'Otkaži',
@@ -146,9 +145,6 @@ export function ForageObservationDetailsScreen({
             void deleteMutation
               .mutateAsync(observation.id)
               .then(() => {
-                deleteForageObservationPhoto(
-                  observation.id,
-                );
                 router.back();
               })
               .catch(() => {
@@ -296,8 +292,9 @@ function ObservationPhoto({
 }: {
   observation: ForageObservation;
 }) {
-  const photoUri =
-    getForageObservationPhotoUri(observation.id);
+  const photoUri = observation.imageUrl
+    ? `${environment.apiUrl}${observation.imageUrl}`
+    : null;
   const [hasLoadError, setHasLoadError] =
     useState(false);
 
@@ -310,7 +307,7 @@ function ObservationPhoto({
           color={colors.muted}
         />
         <Text className="mt-3 text-center text-sm text-muted">
-          Fotografija nije dostupna na ovom uređaju.
+          Zapažanje nema fotografiju.
         </Text>
       </View>
     );
