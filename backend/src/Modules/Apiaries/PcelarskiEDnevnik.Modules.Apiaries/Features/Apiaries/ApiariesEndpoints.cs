@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Deactivate;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetAll;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetById;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Update;
@@ -23,6 +24,7 @@ public static class ApiariesEndpoints {
         group.MapGetApiariesEndpoint();
         group.MapGetApiaryByIdEndpoint();
         group.MapUpdateApiaryEndpoint();
+        group.MapDeactivateApiaryEndpoint();
         group.MapGetElevationEndpoint();
 
         group.MapApiaryStaysEndpoints();

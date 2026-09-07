@@ -85,6 +85,18 @@ public sealed class Apiary {
         ImagePath = NormalizeOptionalText(imagePath);
         UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
+
+    public void Deactivate(
+        DateTimeOffset deactivatedAtUtc) {
+        if (Status == ApiaryStatus.Inactive) {
+            throw new InvalidOperationException(
+                "Apiary is already inactive.");
+        }
+
+        Status = ApiaryStatus.Inactive;
+        UpdatedAtUtc = deactivatedAtUtc;
+    }
+
     private static string? NormalizeOptionalText(
     string? value) {
         if (string.IsNullOrWhiteSpace(value)) {

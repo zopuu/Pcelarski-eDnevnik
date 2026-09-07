@@ -32,7 +32,8 @@ public static class UpdateApiaryEndpoint {
                             .SingleOrDefaultAsync(
                                 x =>
                                     x.Id == id &&
-                                    x.OwnerBeekeeperId == beekeeperId,
+                                    x.OwnerBeekeeperId == beekeeperId &&
+                                    x.Status != PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Inactive,
                                 cancellationToken);
 
                     if (apiary is null) {

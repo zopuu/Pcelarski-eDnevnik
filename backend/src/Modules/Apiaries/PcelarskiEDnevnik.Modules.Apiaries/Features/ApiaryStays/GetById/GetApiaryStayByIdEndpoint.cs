@@ -30,7 +30,8 @@ public static class GetApiaryStayByIdEndpoint {
                                 x =>
                                     x.Id == apiaryId &&
                                     x.OwnerBeekeeperId ==
-                                    beekeeperId,
+                                    beekeeperId &&
+                                    x.Status == PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Active,
                                 cancellationToken);
 
                     if (!apiaryExists) {

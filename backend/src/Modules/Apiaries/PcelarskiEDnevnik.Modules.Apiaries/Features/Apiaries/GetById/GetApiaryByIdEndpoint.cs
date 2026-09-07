@@ -27,7 +27,8 @@ public static class GetApiaryByIdEndpoint {
                             .Where(
                                 x =>
                                     x.Id == id &&
-                                    x.OwnerBeekeeperId == beekeeperId)
+                                    x.OwnerBeekeeperId == beekeeperId &&
+                                    x.Status != PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Inactive)
                             .Select(
                                 x => new GetApiaryByIdResponse(
                                     x.Id,

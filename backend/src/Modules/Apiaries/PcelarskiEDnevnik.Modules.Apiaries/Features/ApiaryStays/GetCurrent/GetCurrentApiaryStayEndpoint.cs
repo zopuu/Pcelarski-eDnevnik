@@ -40,7 +40,9 @@ public static class GetCurrentApiaryStayEndpoint {
                                 stay.EndedAtUtc ==
                                     null &&
                                 apiary.OwnerBeekeeperId ==
-                                    beekeeperId
+                                    beekeeperId &&
+                                apiary.Status ==
+                                    PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Active
 
                             select new
                                 GetCurrentApiaryStayResponse(

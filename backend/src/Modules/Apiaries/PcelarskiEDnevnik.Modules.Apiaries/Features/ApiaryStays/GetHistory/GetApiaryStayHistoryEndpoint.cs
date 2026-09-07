@@ -45,7 +45,8 @@ public static class GetApiaryStayHistoryEndpoint {
                             .AsNoTracking()
                             .AnyAsync(
                                 x => x.Id == apiaryId &&
-                                    x.OwnerBeekeeperId == beekeeperId,
+                                    x.OwnerBeekeeperId == beekeeperId &&
+                                    x.Status == ApiaryStatus.Active,
                                 cancellationToken);
 
                     if (!ownsApiary) {

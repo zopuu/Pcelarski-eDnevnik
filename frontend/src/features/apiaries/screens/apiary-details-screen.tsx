@@ -1,6 +1,8 @@
 import {
   router,
 } from 'expo-router';
+import Ionicons
+  from '@react-native-vector-icons/ionicons';
 
 import {
   ActivityIndicator,
@@ -17,6 +19,22 @@ import {
 import {
   useApiary,
 } from '@/features/apiaries/hooks/use-apiary';
+import {
+  useCurrentApiaryStay,
+} from '@/features/apiaries/hooks/use-current-apiary-stay';
+import {
+  useDeactivateApiary,
+} from '@/features/apiaries/hooks/use-deactivate-apiary';
+import {
+  useLocation,
+} from '@/features/apiaries/hooks/use-location';
+import type {
+  CurrentApiaryStay,
+  HiveEntranceOrientation,
+} from '@/features/apiaries/types/apiary-stay';
+import type {
+  ApiaryLocation,
+} from '@/features/apiaries/types/location';
 import {
   ApiaryHeaderImage,
 } from '@/features/apiaries/components/apiary-header-image';
@@ -46,6 +64,9 @@ import {
 import {
   AppHeader,
 } from '@/shared/components/navigation/app-header';
+import {
+  LocationMap,
+} from '@/shared/components/map-location-picker/location-map';
 
 import {
   colors,
@@ -98,6 +119,14 @@ export function ApiaryHivesScreen({
     isMoreOpen,
     setIsMoreOpen,
   ] = useState(false);
+  const deactivateApiaryMutation =
+    useDeactivateApiary();
+  const currentStayQuery =
+    useCurrentApiaryStay(apiaryId);
+  const locationQuery =
+    useLocation(
+      currentStayQuery.data?.locationId ?? '',
+    );
   const [
     labelSearch,
     setLabelSearch,
@@ -336,25 +365,34 @@ export function ApiaryHivesScreen({
     });
   };
 
-  const handleDeletePress = () => {
+  const handleDeactivatePress = () => {
+    setIsMoreOpen(false);
+
     Alert.alert(
-      'Obriši pčelinjak',
-      'Da li sigurno želite da obrišete ovaj pčelinjak?',
+      'Deaktiviraj pčelinjak',
+      'Pčelinjak će zauvek ostati deaktiviran. Neće se prikazivati na podrazumevanoj listi i više mu nećete moći pristupiti.',
       [
         {
           text: 'Otkaži',
           style: 'cancel',
         },
         {
-          text: 'Obriši',
+          text: 'Deaktiviraj',
           style:
             'destructive',
 
           onPress: () => {
-            Alert.alert(
-              'Brisanje',
-              'Backend brisanje ćemo povezati kada implementiramo Delete funkcionalnost.',
-            );
+            void deactivateApiaryMutation
+              .mutateAsync(apiaryId)
+              .then(() => {
+                router.replace('/');
+              })
+              .catch(() => {
+                Alert.alert(
+                  'Deaktivacija nije uspela',
+                  'Pokušajte ponovo.',
+                );
+              });
           },
         },
       ],
@@ -712,6 +750,20 @@ export function ApiaryHivesScreen({
               }}
             />
           )}
+          ListFooterComponent={
+            <CurrentStaySection
+              currentStay={currentStayQuery.data}
+              isLoading={
+                currentStayQuery.isLoading ||
+                locationQuery.isLoading
+              }
+              hasError={
+                currentStayQuery.isError ||
+                locationQuery.isError
+              }
+              location={locationQuery.data}
+            />
+          }
         />
       </Screen>
 
@@ -757,21 +809,27 @@ export function ApiaryHivesScreen({
           },
 
           {
-            key: 'delete',
+            key: 'deactivate',
 
-            label: 'Obriši',
+            label: 'Deaktiviraj',
 
             icon:
-              'trash-outline',
+              'power-outline',
 
             accessibilityLabel:
-              'Obriši pčelinjak',
+              'Trajno deaktiviraj pčelinjak',
 
             variant:
               'danger',
 
             onPress:
-              handleDeletePress,
+              handleDeactivatePress,
+
+            disabled:
+              deactivateApiaryMutation.isPending,
+
+            loading:
+              deactivateApiaryMutation.isPending,
           },
         ]}
       />
@@ -783,6 +841,170 @@ type LoadErrorProps = {
   message: string;
   onRetry: () => void;
 };
+
+const orientationLabels: Record<
+  HiveEntranceOrientation,
+  string
+> = {
+  north: 'Sever',
+  northEast: 'Severoistok',
+  east: 'Istok',
+  southEast: 'Jugoistok',
+  south: 'Jug',
+  southWest: 'Jugozapad',
+  west: 'Zapad',
+  northWest: 'Severozapad',
+};
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat('sr-Latn-RS', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
+
+function CurrentStaySection({
+  currentStay,
+  location,
+  isLoading,
+  hasError,
+}: {
+  currentStay: CurrentApiaryStay | undefined;
+  location: ApiaryLocation | undefined;
+  isLoading: boolean;
+  hasError: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <View className="mt-8 items-center rounded-3xl border border-border bg-surface px-5 py-6">
+        <ActivityIndicator color={colors.primary} />
+        <Text className="mt-3 text-sm text-muted">
+          Učitavanje trenutnog boravka...
+        </Text>
+      </View>
+    );
+  }
+
+  if (hasError || !currentStay || !location) {
+    return (
+      <View className="mt-8 rounded-3xl border border-border bg-surface px-5 py-5">
+        <Text className="text-xl font-bold text-foreground">
+          Trenutni boravak
+        </Text>
+        <Text className="mt-2 text-sm text-muted">
+          Trenutni boravak ili njegova lokacija nisu evidentirani.
+        </Text>
+      </View>
+    );
+  }
+
+  const locationName =
+    location.name?.trim() ||
+    'Lokacija bez naziva';
+
+  return (
+    <View className="mt-8 overflow-hidden rounded-3xl border border-border bg-surface">
+      <View className="px-5 pb-5 pt-5">
+        <Text className="text-xl font-bold text-foreground">
+          Trenutni boravak
+        </Text>
+        <Text className="mt-1 text-sm text-muted">
+          Trenutna lokacija pčelinjaka
+        </Text>
+
+        <View className="mt-4 flex-row items-center gap-3">
+          <View className="h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
+            <Ionicons
+              name="location-outline"
+              size={22}
+              color={colors.primary}
+            />
+          </View>
+          <View className="flex-1">
+            <Text className="text-base font-bold text-foreground">
+              {locationName}
+            </Text>
+            {location.altitudeMeters !== null && (
+              <Text className="mt-0.5 text-sm text-muted">
+                {location.altitudeMeters} m n/v
+              </Text>
+            )}
+          </View>
+        </View>
+
+        <View className="mt-4 gap-3 rounded-2xl bg-background px-4 py-4">
+          <StayDetail
+            icon="calendar-outline"
+            label="Početak boravka"
+            value={formatDateTime(currentStay.startedAtUtc)}
+          />
+          <StayDetail
+            icon="compass-outline"
+            label="Orijentacija ulaza"
+            value={currentStay.orientation
+              ? orientationLabels[currentStay.orientation]
+              : 'Nije evidentirana'}
+          />
+          {location.cadastralParcelNumber && (
+            <StayDetail
+              icon="map-outline"
+              label="Katastarska parcela"
+              value={location.cadastralParcelNumber}
+            />
+          )}
+          {currentStay.note && (
+            <StayDetail
+              icon="chatbox-outline"
+              label="Beleška"
+              value={currentStay.note}
+            />
+          )}
+        </View>
+
+        {location.description && (
+          <Text className="mt-4 text-sm leading-5 text-muted">
+            {location.description}
+          </Text>
+        )}
+      </View>
+
+      <View className="border-t border-border">
+        <LocationMap
+          value={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+          }}
+          onLocationPress={() => undefined}
+        />
+      </View>
+    </View>
+  );
+}
+
+function StayDetail({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  value: string;
+}) {
+  return (
+    <View className="flex-row items-start gap-3">
+      <Ionicons name={icon} size={17} color={colors.muted} />
+      <Text className="w-28 text-sm text-muted">
+        {label}
+      </Text>
+      <Text className="flex-1 text-sm font-semibold text-foreground">
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 function LoadError({
   message,

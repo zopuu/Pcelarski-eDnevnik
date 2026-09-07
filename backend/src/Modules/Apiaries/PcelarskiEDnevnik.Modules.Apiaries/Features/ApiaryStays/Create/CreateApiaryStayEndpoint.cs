@@ -33,7 +33,8 @@ public static class CreateApiaryStayEndpoint {
                                 x =>
                                     x.Id == apiaryId &&
                                     x.OwnerBeekeeperId ==
-                                    beekeeperId,
+                                    beekeeperId &&
+                                    x.Status == ApiaryStatus.Active,
                                 cancellationToken);
 
                     if (!apiaryExists) {

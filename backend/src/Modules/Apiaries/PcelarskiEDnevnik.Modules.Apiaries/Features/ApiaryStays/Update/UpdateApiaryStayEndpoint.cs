@@ -36,7 +36,9 @@ public static class UpdateApiaryStayEndpoint {
                                             apiary.Id ==
                                                 x.ApiaryId &&
                                             apiary.OwnerBeekeeperId ==
-                                                beekeeperId),
+                                                beekeeperId &&
+                                            apiary.Status ==
+                                                PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Active),
                                 cancellationToken);
 
                     if (stay is null) {

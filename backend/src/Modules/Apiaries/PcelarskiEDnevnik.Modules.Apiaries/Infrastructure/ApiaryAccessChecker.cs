@@ -16,7 +16,8 @@ internal sealed class ApiaryAccessChecker(
             .AnyAsync(
                 x =>
                     x.Id == apiaryId &&
-                    x.OwnerBeekeeperId == beekeeperId,
+                    x.OwnerBeekeeperId == beekeeperId &&
+                    x.Status == PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStatus.Active,
                 cancellationToken);
     }
 }

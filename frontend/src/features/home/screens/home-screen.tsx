@@ -65,7 +65,7 @@ export function HomeScreen() {
   } = useApiaries();
   const [nameSearch, setNameSearch] = useState('');
   const [selectedStatus, setSelectedStatus] =
-    useState<ApiaryStatus | null>(null);
+    useState<ApiaryStatus | null>('active');
   const [selectedType, setSelectedType] =
     useState<ApiaryType | null>(null);
 
@@ -354,6 +354,9 @@ export function HomeScreen() {
                 }
                 imageUrl={
                   item.imageUrl
+                }
+                isInactive={
+                  item.status === 'inactive'
                 }
                 onPress={() => {
                   router.push({

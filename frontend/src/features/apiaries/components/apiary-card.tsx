@@ -20,6 +20,7 @@ import { environment } from '@/shared/config/environment';
 type ApiaryCardProps = {
   name: string | null;
   imageUrl: string | null;
+  isInactive: boolean;
   onPress: () => void;
 };
 
@@ -122,6 +123,7 @@ function HoneycombPattern({
 export function ApiaryCard({
   name,
   imageUrl,
+  isInactive,
   onPress,
 }: ApiaryCardProps) {
   const displayName =
@@ -135,6 +137,12 @@ export function ApiaryCard({
   return (
     <Pressable
       onPress={onPress}
+      disabled={isInactive}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isInactive }}
+      accessibilityLabel={isInactive
+        ? `${displayName}, trajno deaktiviran pčelinjak`
+        : `Otvori pčelinjak ${displayName}`}
       onLayout={(event) => {
         const {
           width,
@@ -154,7 +162,10 @@ export function ApiaryCard({
     border-white/80
     active:opacity-90
   "
-      style={styles.cardShadow}
+      style={[
+        styles.cardShadow,
+        isInactive && styles.inactiveCard,
+      ]}
     >
       {/* Main background: left lighter, right darker */}
       <LinearGradient
@@ -261,6 +272,14 @@ export function ApiaryCard({
           color={colors.white}
         />
       </View>
+
+      {isInactive && (
+        <View style={styles.inactiveBadge}>
+          <Text style={styles.inactiveBadgeText}>
+            Deaktiviran
+          </Text>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -276,6 +295,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 14,
     elevation: 6,
+  },
+
+  inactiveCard: {
+    opacity: 0.58,
+  },
+
+  inactiveBadge: {
+    position: 'absolute',
+    top: 14,
+    left: 16,
+    borderRadius: 999,
+    backgroundColor: 'rgba(60, 38, 8, 0.72)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+
+  inactiveBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
 
   topLight: {
