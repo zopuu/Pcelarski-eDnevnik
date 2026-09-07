@@ -26,4 +26,12 @@ export const hiveQueryKeys = {
     ...hiveQueryKeys.details(),
     hiveId,
   ] as const,
+
+  stayHistory: (
+    hiveId: string,
+  ) => [
+    ...hiveQueryKeys.all,
+    'stays',
+    hiveId,
+  ] as const,
 };

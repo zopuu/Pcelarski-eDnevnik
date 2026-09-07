@@ -332,9 +332,8 @@ export function HiveDetailsScreen({
 
     const handleStaysPress =
         () => {
-            Alert.alert(
-                'Istorija boravaka',
-                'Prikaz boravaka košnice biće povezan kada implementiramo Hive Stay istoriju.',
+            router.push(
+                `/hives/${hiveId}/stays` as never,
             );
         };
 

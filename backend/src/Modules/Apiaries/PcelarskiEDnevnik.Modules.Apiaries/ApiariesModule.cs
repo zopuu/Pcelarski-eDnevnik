@@ -21,6 +21,9 @@ public static class ApiariesModule {
         services.AddScoped<
             IApiaryAccessChecker,
             ApiaryAccessChecker>();
+        services.AddScoped<
+            IApiaryHistoryReader,
+            ApiaryHistoryReader>();
 
         services.AddHttpClient(
             OpenTopoDataClient.HttpClientName,
