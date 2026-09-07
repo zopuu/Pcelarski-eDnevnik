@@ -20,4 +20,15 @@ internal static class HivePersistenceErrors {
             postgresException.ConstraintName ==
                 IdentificationNumberUniqueIndex;
     }
+
+    public static bool IsSerializationFailure(
+        Exception exception) {
+        var postgresException =
+            exception as PostgresException ??
+            exception.InnerException
+                as PostgresException;
+
+        return postgresException?.SqlState ==
+            PostgresErrorCodes.SerializationFailure;
+    }
 }

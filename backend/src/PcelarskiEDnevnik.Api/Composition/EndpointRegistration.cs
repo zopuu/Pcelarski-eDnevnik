@@ -8,7 +8,9 @@ using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Features;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens;
+using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Relocations;
 using PcelarskiEDnevnik.Modules.Identity.Web;
@@ -28,7 +30,9 @@ internal static class EndpointRegistration {
         app.MapUpdateMyProfileEndpoint();
         app.MapColoniesEndpoints();
         app.MapHivesEndpoints();
+        app.MapHiveInsulationEndpoints();
         app.MapQueensEndpoints();
+        app.MapSyrupFeedingEndpoints();
         app.MapForageObservationsEndpoints();
         app.MapRelocationsEndpoints();
 

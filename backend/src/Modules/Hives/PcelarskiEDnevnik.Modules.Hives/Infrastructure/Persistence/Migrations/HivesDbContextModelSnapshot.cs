@@ -479,8 +479,30 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<bool>("Eps")
+                        .HasColumnType("boolean")
+                        .HasColumnName("eps");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("operation");
+
+                    b.Property<bool>("Paper")
+                        .HasColumnType("boolean")
+                        .HasColumnName("paper");
+
+                    b.Property<bool>("Xps")
+                        .HasColumnType("boolean")
+                        .HasColumnName("xps");
+
                     b.ToTable("hive_insulation", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_insulation_operation", "\"operation\" IN (\n    'Add',\n    'Remove'\n)");
+
+                            t.HasCheckConstraint("ck_hive_insulation_type_selected", "\"paper\" OR \"eps\" OR \"xps\"");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
@@ -534,8 +556,31 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<string>("Additives")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("additives");
+
+                    b.Property<int>("QuantityMl")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity_ml");
+
+                    b.Property<decimal>("SugarParts")
+                        .HasColumnType("numeric")
+                        .HasColumnName("sugar_parts");
+
+                    b.Property<decimal>("WaterParts")
+                        .HasColumnType("numeric")
+                        .HasColumnName("water_parts");
+
                     b.ToTable("syrup_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_syrup_feedings_quantity_positive", "quantity_ml > 0");
+
+                            t.HasCheckConstraint("ck_syrup_feedings_sugar_parts_positive", "sugar_parts > 0");
+
+                            t.HasCheckConstraint("ck_syrup_feedings_water_parts_positive", "water_parts > 0");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });

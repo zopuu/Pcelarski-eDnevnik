@@ -18,6 +18,12 @@ public sealed class HivesDbContext(
     public DbSet<HiveAction> HiveActions =>
         Set<HiveAction>();
 
+    public DbSet<HiveInsulation> HiveInsulations =>
+        Set<HiveInsulation>();
+
+    public DbSet<SyrupFeeding> SyrupFeedings =>
+        Set<SyrupFeeding>();
+
     public DbSet<Colony> Colonies =>
         Set<Colony>();
 
