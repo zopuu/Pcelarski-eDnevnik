@@ -27,6 +27,9 @@ public sealed class HivesDbContext(
     public DbSet<PattyFeeding> PattyFeedings =>
         Set<PattyFeeding>();
 
+    public DbSet<HoneyFrameFeeding> HoneyFrameFeedings =>
+        Set<HoneyFrameFeeding>();
+
     public DbSet<Colony> Colonies =>
         Set<Colony>();
 
