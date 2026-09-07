@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Colonies;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Queens;
-using System.Reflection.Emit;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 
@@ -14,8 +14,12 @@ public sealed class HivesDbContext(
 
     public DbSet<HiveStay> HiveStays =>
         Set<HiveStay>();
+
+    public DbSet<HiveAction> HiveActions =>
+        Set<HiveAction>();
+
     public DbSet<Colony> Colonies =>
-    Set<Colony>();
+        Set<Colony>();
 
     public DbSet<ColonyStay> ColonyStays =>
         Set<ColonyStay>();

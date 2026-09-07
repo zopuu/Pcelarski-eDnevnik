@@ -134,6 +134,52 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActionGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("action_group_id");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_id");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_url");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTimeOffset>("PerformedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("performed_at");
+
+                    b.Property<Guid>("PerformedByBeekeeperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("performed_by_beekeeper_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActionGroupId")
+                        .HasDatabaseName("ix_hive_actions_action_group_id")
+                        .HasFilter("\"action_group_id\" IS NOT NULL");
+
+                    b.HasIndex("HiveId", "PerformedAt")
+                        .HasDatabaseName("ix_hive_actions_hive_id_performed_at");
+
+                    b.ToTable("hive_actions", "hives");
+
+                    b.UseTptMappingStrategy();
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", b =>
                 {
                     b.Property<Guid>("Id")
@@ -330,7 +376,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("queens", "hives", t =>
                         {
-                            t.HasCheckConstraint("ck_queens_origin", "\"origin\" IN (\r\n    'Purchased',\n    'Produced',\n    'Unknown'\n)");
+                            t.HasCheckConstraint("ck_queens_origin", "\"origin\" IN (\n    'Purchased',\n    'Produced',\n    'Unknown'\n)");
 
                             t.HasCheckConstraint("ck_queens_status", "\"status\" IN (\r\n    'Active',\r\n    'Dead',\n    'Killed',\n    'Missing',\n    'Sold',\n    'Removed'\n)");
                         });
@@ -412,9 +458,97 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_queen_stays_end_reason", "\"end_reason\" IS NULL\r\nOR \"end_reason\" IN (\r\n    'Replaced',\r\n    'Dead',\r\n    'Killed',\r\n    'Missing',\r\n    'Removed',\r\n    'Swarmed',\n    'ColonyEnded',\n    'Other',\n    'Transferred',\n    'ColonyWithoutQueen'\n)");
 
-                            t.HasCheckConstraint("ck_queen_stays_introduction_method", "\"introduction_method\" IN (\r\n    'Placement',\r\n    'Caged',\r\n    'Direct',\r\n    'Unknown',\r\n    'Other'\r\n)");
+                            t.HasCheckConstraint("ck_queen_stays_introduction_method", "\"introduction_method\" IN (\n    'Placement',\r\n    'Caged',\r\n    'Direct',\r\n    'Unknown',\r\n    'Other'\r\n)");
 
                             t.HasCheckConstraint("ck_queen_stays_introduction_outcome", "\"introduction_outcome\" IS NULL\r\nOR \"introduction_outcome\" IN (\r\n    'Accepted',\r\n    'Killed',\r\n    'Missing',\r\n    'Unverified',\r\n    'Other'\r\n)");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("hive_inspections", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("hive_insulation", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("hive_maintenance", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("honey_frame_feedings", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("patty_feedings", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("super_management", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("syrup_feedings", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", b =>
+                {
+                    b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
+
+                    b.ToTable("varroa_treatments", "hives", t =>
+                        {
+                            t.Property("Id")
+                                .HasColumnName("action_id");
                         });
                 });
 
@@ -426,6 +560,15 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
+                        .WithMany()
+                        .HasForeignKey("HiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", b =>
+                {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
                         .WithMany()
                         .HasForeignKey("HiveId")
@@ -454,6 +597,78 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("QueenId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618
