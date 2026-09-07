@@ -303,6 +303,17 @@ export function ApiaryHivesScreen({
     });
   };
 
+  const handleStayHistoryPress = () => {
+    setIsMoreOpen(false);
+
+    router.push({
+      pathname: '/apiaries/[apiaryId]/stays',
+      params: {
+        apiaryId,
+      },
+    });
+  };
+
   const handleScanPress = () => {
     Alert.alert(
       'Skeniranje',
@@ -715,6 +726,21 @@ export function ApiaryHivesScreen({
         }}
         title="Pčelinjak"
         actions={[
+          {
+            key: 'stay-history',
+
+            label: 'Boravci',
+
+            icon:
+              'time-outline',
+
+            accessibilityLabel:
+              'Prikaži istoriju boravaka pčelinjaka',
+
+            onPress:
+              handleStayHistoryPress,
+          },
+
           {
             key: 'edit',
 

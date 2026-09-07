@@ -7,6 +7,7 @@ using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.GetAll;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.GetById;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.Update;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.GetCurrent;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays.GetHistory;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.ApiaryStays;
 
@@ -25,6 +26,7 @@ public static class ApiaryStaysEndpoints {
         group.MapUpdateApiaryStayEndpoint();
         group.MapDeleteApiaryStayEndpoint();
         group.MapGetCurrentApiaryStayEndpoint();
+        group.MapGetApiaryStayHistoryEndpoint();
 
         return endpoints;
     }

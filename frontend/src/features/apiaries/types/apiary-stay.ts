@@ -35,3 +35,20 @@ export type CurrentApiaryStay = {
     | string
     | null;
 };
+
+export type ApiaryStayHistoryItem = {
+  id: string;
+  locationName: string | null;
+  altitudeMeters: number | null;
+  startedAtUtc: string;
+  endedAtUtc: string | null;
+  orientation: HiveEntranceOrientation | null;
+  isActive: boolean;
+  daysSpent: number;
+};
+
+export type ApiaryStayHistoryPage = {
+  items: ApiaryStayHistoryItem[];
+  page: number;
+  hasNextPage: boolean;
+};

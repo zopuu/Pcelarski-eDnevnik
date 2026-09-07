@@ -20,6 +20,15 @@ export const apiaryQueryKeys = {
       'current',
     ] as const,
 
+  stayHistory: (
+    apiaryId: string,
+  ) =>
+    [
+      'apiary-stays',
+      apiaryId,
+      'history',
+    ] as const,
+
   locations: () =>
     [
       'locations',
