@@ -5,14 +5,25 @@ import {
   Text,
   View,
 } from 'react-native';
+import {
+  useMemo,
+  useState,
+} from 'react';
 
 import {
   ApiaryCard,
 } from '@/features/apiaries/components/apiary-card';
+import {
+  ApiaryListFilters,
+} from '@/features/apiaries/components/apiary-list-filters';
 
 import {
   useApiaries,
 } from '@/features/apiaries/hooks/use-apiaries';
+import type {
+  ApiaryStatus,
+  ApiaryType,
+} from '@/features/apiaries/types/apiary';
 
 import {
   useMyProfile,
@@ -52,6 +63,11 @@ export function HomeScreen() {
     isLoading: areApiariesLoading,
     isError: areApiariesError,
   } = useApiaries();
+  const [nameSearch, setNameSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] =
+    useState<ApiaryStatus | null>(null);
+  const [selectedType, setSelectedType] =
+    useState<ApiaryType | null>(null);
 
   const {
     data: profile,
@@ -66,6 +82,30 @@ export function HomeScreen() {
       : profile?.firstName
         ? `Dobro došli, ${profile.firstName}`
         : 'Dobro došli';
+
+  const filteredApiaries = useMemo(() => {
+    const normalizedSearch = nameSearch
+      .trim()
+      .toLocaleLowerCase();
+
+    return apiaries.filter((apiary) => {
+      const matchesName = !normalizedSearch ||
+        apiary.name
+          ?.toLocaleLowerCase()
+          .includes(normalizedSearch);
+      const matchesStatus = !selectedStatus ||
+        apiary.status === selectedStatus;
+      const matchesType = !selectedType ||
+        apiary.type === selectedType;
+
+      return matchesName && matchesStatus && matchesType;
+    });
+  }, [
+    apiaries,
+    nameSearch,
+    selectedStatus,
+    selectedType,
+  ]);
 
   const showComingSoon = (
     feature: string,
@@ -216,7 +256,7 @@ export function HomeScreen() {
         ) : (
           <FlatList
             data={
-              apiaries
+              filteredApiaries
             }
             keyExtractor={(
               apiary,
@@ -258,14 +298,27 @@ export function HomeScreen() {
                   text-muted
                 "
                 >
-                  {apiaries.length ===
-                    0
+                  {apiaries.length === 0
                     ? 'Još nemate pčelinjaka'
-                    : apiaries.length ===
-                      1
-                      ? '1 pčelinjak'
-                      : `${apiaries.length} pčelinjaka`}
+                    : filteredApiaries.length === apiaries.length
+                      ? apiaries.length === 1
+                        ? '1 pčelinjak'
+                        : `${apiaries.length} pčelinjaka`
+                      : `${filteredApiaries.length} od ${apiaries.length} pčelinjaka`}
                 </Text>
+
+                {apiaries.length > 0 && (
+                  <View className="mt-5">
+                    <ApiaryListFilters
+                      nameSearch={nameSearch}
+                      onNameSearchChange={setNameSearch}
+                      selectedStatus={selectedStatus}
+                      onStatusChange={setSelectedStatus}
+                      selectedType={selectedType}
+                      onTypeChange={setSelectedType}
+                    />
+                  </View>
+                )}
               </View>
             }
             ListEmptyComponent={
@@ -286,12 +339,9 @@ export function HomeScreen() {
                   text-muted
                 "
                 >
-                  Još nemate
-                  evidentiranih
-                  pčelinjaka.
-                  Dodajte prvi
-                  pomoću centralnog
-                  dugmeta Pčelinjak.
+                  {apiaries.length === 0
+                    ? 'Još nemate evidentiranih pčelinjaka. Dodajte prvi pomoću centralnog dugmeta Pčelinjak.'
+                    : 'Nema pčelinjaka za izabrane filtere. Promenite filtere da biste videli druge pčelinjake.'}
                 </Text>
               </View>
             }
