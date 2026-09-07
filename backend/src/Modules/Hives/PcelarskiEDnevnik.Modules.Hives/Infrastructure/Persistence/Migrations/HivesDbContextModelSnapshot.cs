@@ -534,8 +534,27 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<string>("Manufacturer")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("manufacturer");
+
+                    b.Property<int>("MassG")
+                        .HasColumnType("integer")
+                        .HasColumnName("mass_g");
+
+                    b.Property<string>("PattyType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("patty_type");
+
                     b.ToTable("patty_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_patty_feedings_mass_positive", "mass_g > 0");
+
+                            t.HasCheckConstraint("ck_patty_feedings_patty_type", "\"patty_type\" IN (\n    'SUGAR',\n    'PROTEIN',\n    'HONEY',\n    'MEDICATED',\n    'INVERT_SUGAR',\n    'OTHER'\n)");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
