@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import { LinearGradient } from 'expo-linear-gradient';
 import {
+  Image,
+} from 'expo-image';
+import {
   Pressable,
   StyleSheet,
   Text,
@@ -12,9 +15,11 @@ import {
 import Svg, { Path } from 'react-native-svg';
 
 import { colors } from '@/shared/theme/colors';
+import { environment } from '@/shared/config/environment';
 
 type ApiaryCardProps = {
   name: string | null;
+  imageUrl: string | null;
   onPress: () => void;
 };
 
@@ -116,6 +121,7 @@ function HoneycombPattern({
 
 export function ApiaryCard({
   name,
+  imageUrl,
   onPress,
 }: ApiaryCardProps) {
   const displayName =
@@ -197,23 +203,32 @@ export function ApiaryCard({
         style={styles.middleGlow}
       />
 
-      {/* Right round accent */}
-      <View
-        pointerEvents="none"
-        style={styles.rightCircle}
-      />
-
-      {/* Hive icon box */}
-      <View
-        pointerEvents="none"
-        style={styles.iconBox}
-      >
-        <MaterialDesignIcons
-          name="beehive-outline"
-          size={36}
-          color="#B06D08"
+      {imageUrl ? (
+        <Image
+          pointerEvents="none"
+          source={`${environment.apiUrl}${imageUrl}`}
+          contentFit="cover"
+          style={styles.rightImage}
         />
-      </View>
+      ) : (
+        <>
+          <View
+            pointerEvents="none"
+            style={styles.rightCircle}
+          />
+
+          <View
+            pointerEvents="none"
+            style={styles.iconBox}
+          >
+          <MaterialDesignIcons
+            name="beehive-outline"
+            size={36}
+            color="#B06D08"
+          />
+          </View>
+        </>
+      )}
 
       {/* Bottom fade for title */}
       <LinearGradient
@@ -299,6 +314,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+
+  rightImage: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '47%',
   },
 
   bottomFade: {

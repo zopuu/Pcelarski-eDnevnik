@@ -5,8 +5,12 @@ import type {
 import type {
   HiveEntranceOrientation
 } from './apiary-stay';
+import type {
+  ApiaryImageUpload,
+} from './apiary-image';
 
 export interface CreateApiaryRequest {
+  image?: ApiaryImageUpload | null;
   identificationNumber:
     string | null;
 
@@ -52,6 +56,9 @@ export interface CreateApiaryResponse {
     string | null;
 
   name:
+    string | null;
+
+  imageUrl:
     string | null;
 
   type:

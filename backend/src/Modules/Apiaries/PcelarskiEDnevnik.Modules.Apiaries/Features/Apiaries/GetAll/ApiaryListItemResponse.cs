@@ -6,6 +6,7 @@ public sealed record ApiaryListItemResponse(
     Guid Id,
     string? IdentificationNumber,
     string? Name,
+    string? ImageUrl,
     ApiaryType? Type,
     ApiaryStatus? Status,
     DateTimeOffset CreatedAtUtc);

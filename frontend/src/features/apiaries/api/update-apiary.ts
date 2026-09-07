@@ -6,14 +6,33 @@ import type {
   UpdateApiaryRequest,
   UpdateApiaryResponse,
 } from '../types/update-apiary';
+import {
+  appendApiaryImage,
+} from './apiary-image-form-data';
 
-export function updateApiary(
+export async function updateApiary(
   apiaryId: string,
   request: UpdateApiaryRequest,
 ): Promise<UpdateApiaryResponse> {
-  return apiClient.put<UpdateApiaryResponse>(
+  const formData = new FormData();
+
+  if (request.identificationNumber) {
+    formData.append('IdentificationNumber', request.identificationNumber);
+  }
+
+  if (request.name) {
+    formData.append('Name', request.name);
+  }
+
+  if (request.type) {
+    formData.append('Type', request.type);
+  }
+
+  await appendApiaryImage(formData, request.image);
+
+  return apiClient.put<UpdateApiaryResponse, FormData>(
     `/api/apiaries/${apiaryId}`,
-    request,
+    formData,
     {
       authenticated: true,
     },

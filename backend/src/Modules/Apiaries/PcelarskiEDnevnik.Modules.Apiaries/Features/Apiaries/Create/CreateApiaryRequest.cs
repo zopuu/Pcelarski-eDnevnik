@@ -17,6 +17,8 @@ public sealed record CreateApiaryRequest {
     [EnumDataType(typeof(ApiaryType))]
     public ApiaryType? Type { get; init; }
 
+    public Microsoft.AspNetCore.Http.IFormFile? Image { get; init; }
+
     [Required]
     public required CreateInitialApiaryStayRequest InitialStay {
         get;

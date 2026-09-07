@@ -17,6 +17,9 @@ import {
 import {
   useApiary,
 } from '@/features/apiaries/hooks/use-apiary';
+import {
+  ApiaryHeaderImage,
+} from '@/features/apiaries/components/apiary-header-image';
 
 import {
   HiveCard,
@@ -482,30 +485,38 @@ export function ApiaryHivesScreen({
                 </Text>
               </Pressable>
 
-              <Text
-                className="
-                  text-xs
-                  font-bold
-                  uppercase
-                  tracking-widest
-                  text-muted
-                "
-              >
-                Pčelinjak
-              </Text>
+              <View className="flex-row items-start justify-between gap-4">
+                <View className="flex-1 pt-1">
+                  <Text
+                    className="
+                      text-xs
+                      font-bold
+                      uppercase
+                      tracking-widest
+                      text-muted
+                    "
+                  >
+                    Pčelinjak
+                  </Text>
 
-              <Text
-                numberOfLines={2}
-                className="
-                  mt-1
-                  text-3xl
-                  font-bold
-                  tracking-tight
-                  text-foreground
-                "
-              >
-                {displayName}
-              </Text>
+                  <Text
+                    numberOfLines={3}
+                    className="
+                      mt-1
+                      text-3xl
+                      font-bold
+                      tracking-tight
+                      text-foreground
+                    "
+                  >
+                    {displayName}
+                  </Text>
+                </View>
+
+                <ApiaryHeaderImage
+                  imageUrl={apiary.imageUrl}
+                />
+              </View>
 
               <View
                 className="

@@ -41,6 +41,10 @@ internal sealed class ApiaryConfiguration
             .HasConversion<string>()
             .HasMaxLength(30);
 
+        builder.Property(x => x.ImagePath)
+            .HasColumnName("image_path")
+            .HasMaxLength(255);
+
         builder.Property(x => x.CreatedAtUtc)
             .HasColumnName("created_at_utc")
             .IsRequired();

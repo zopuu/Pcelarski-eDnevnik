@@ -41,6 +41,9 @@ import {
 import {
   useUpdateApiary,
 } from '@/features/apiaries/hooks/use-update-apiary';
+import {
+  ApiaryImagePicker,
+} from '@/features/apiaries/components/apiary-image-picker';
 
 import {
   useLocation,
@@ -57,6 +60,9 @@ import type {
 import type {
   HiveEntranceOrientation,
 } from '@/features/apiaries/types/apiary-stay';
+import type {
+  ApiaryImageUpload,
+} from '@/features/apiaries/types/apiary-image';
 
 import {
   colors,
@@ -197,6 +203,8 @@ export function EditApiaryScreen({
 
   const updateMutation =
     useUpdateApiary();
+  const [image, setImage] =
+    useState<ApiaryImageUpload | null>(null);
 
   const {
     control,
@@ -375,6 +383,7 @@ export function EditApiaryScreen({
               location.id,
 
             apiary: {
+              image,
               name:
                 optionalText(
                   values.name,
@@ -436,6 +445,9 @@ export function EditApiaryScreen({
     isApiaryLoading ||
     isStayLoading ||
     isLocationLoading;
+
+  const hasChanges =
+    isDirty || image !== null;
 
   if (isLoading) {
     return (
@@ -744,6 +756,12 @@ export function EditApiaryScreen({
           )}
         />
 
+        <ApiaryImagePicker
+          value={image}
+          imageUrl={apiary.imageUrl}
+          onChange={setImage}
+        />
+
         <Text
           className="
             mb-1
@@ -861,7 +879,7 @@ export function EditApiaryScreen({
             updateMutation
               .isPending ||
             isElevationLoading ||
-            !isDirty
+            !hasChanges
           }
           onPress={
             handleSubmit(
@@ -879,7 +897,7 @@ export function EditApiaryScreen({
               updateMutation
                 .isPending ||
               isElevationLoading ||
-              !isDirty
+              !hasChanges
                 ? 'opacity-60'
                 : ''
             }

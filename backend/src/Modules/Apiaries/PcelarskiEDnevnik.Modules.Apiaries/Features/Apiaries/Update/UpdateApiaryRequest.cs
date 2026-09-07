@@ -20,4 +20,6 @@ public sealed record UpdateApiaryRequest {
         typeof(ApiaryType),
         ErrorMessage = "Invalid apiary type.")]
     public ApiaryType? Type { get; init; }
+
+    public Microsoft.AspNetCore.Http.IFormFile? Image { get; init; }
 }

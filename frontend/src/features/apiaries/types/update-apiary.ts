@@ -8,7 +8,11 @@ import type {
 import type {
   UpdateLocationRequest,
 } from './location';
+import type {
+  ApiaryImageUpload,
+} from './apiary-image';
 export type UpdateApiaryRequest = {
+  image?: ApiaryImageUpload | null;
   identificationNumber:
     | string
     | null;
@@ -30,6 +34,10 @@ export type UpdateApiaryResponse = {
     | null;
 
   name:
+    | string
+    | null;
+
+  imageUrl:
     | string
     | null;
 

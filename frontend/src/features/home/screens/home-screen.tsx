@@ -302,6 +302,9 @@ export function HomeScreen() {
                 name={
                   item.name
                 }
+                imageUrl={
+                  item.imageUrl
+                }
                 onPress={() => {
                   router.push({
                     pathname:

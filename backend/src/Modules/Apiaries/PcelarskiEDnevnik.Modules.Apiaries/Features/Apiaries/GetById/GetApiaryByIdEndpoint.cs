@@ -33,6 +33,9 @@ public static class GetApiaryByIdEndpoint {
                                     x.Id,
                                     x.IdentificationNumber,
                                     x.Name,
+                                    x.ImagePath == null
+                                        ? null
+                                        : "/uploads/" + x.ImagePath,
                                     x.Type,
                                     x.Status,
                                     x.CreatedAtUtc,

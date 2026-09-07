@@ -3,6 +3,9 @@ import {
   MissingAccessTokenError,
   ProblemDetails,
 } from '@/shared/api/api-error';
+import {
+  fetch,
+} from 'expo/fetch';
 import { environment } from '@/shared/config/environment';
 
 type HttpMethod =
@@ -121,7 +124,11 @@ export async function apiRequest<TResponse>(
     ...options.headers,
   };
 
-  if (body !== undefined) {
+  const isFormData =
+    typeof FormData !== 'undefined' &&
+    body instanceof FormData;
+
+  if (body !== undefined && !isFormData) {
     headers['Content-Type'] =
       'application/json';
   }
@@ -142,7 +149,9 @@ export async function apiRequest<TResponse>(
   const requestBody =
     body === undefined
       ? undefined
-      : JSON.stringify(body);
+      : isFormData
+        ? body
+        : JSON.stringify(body);
   let response = await fetch(
     buildUrl(path),
     {

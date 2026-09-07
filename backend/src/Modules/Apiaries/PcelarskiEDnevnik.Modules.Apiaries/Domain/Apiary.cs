@@ -11,7 +11,8 @@ public sealed class Apiary {
     string? identificationNumber,
     string? name,
     ApiaryType? type,
-    ApiaryStatus? status) {
+    ApiaryStatus? status,
+    string? imagePath = null) {
         if (ownerBeekeeperId == Guid.Empty) {
             throw new ArgumentException(
                 "Owner beekeeper ID cannot be empty.",
@@ -31,6 +32,7 @@ public sealed class Apiary {
 
         Type = type;
         Status = status;
+        ImagePath = NormalizeOptionalText(imagePath);
 
         CreatedAtUtc =
             DateTimeOffset.UtcNow;
@@ -48,6 +50,8 @@ public sealed class Apiary {
 
     public ApiaryStatus? Status { get; private set; }
 
+    public string? ImagePath { get; private set; }
+
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
     public DateTimeOffset? UpdatedAtUtc { get; private set; }
@@ -57,13 +61,15 @@ public sealed class Apiary {
     string? identificationNumber = null,
     string? name = null,
     ApiaryType? type = null,
-    ApiaryStatus? status = null) {
+    ApiaryStatus? status = null,
+    string? imagePath = null) {
         return new Apiary(
             ownerBeekeeperId,
             identificationNumber,
             name,
             type,
-            status);
+            status,
+            imagePath);
     }
     public void Update(
     string? identificationNumber,
@@ -72,6 +78,11 @@ public sealed class Apiary {
         IdentificationNumber = NormalizeOptionalText(identificationNumber);
         Name = NormalizeOptionalText(name);
         Type = type;
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+
+    public void UpdateImagePath(string? imagePath) {
+        ImagePath = NormalizeOptionalText(imagePath);
         UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
     private static string? NormalizeOptionalText(

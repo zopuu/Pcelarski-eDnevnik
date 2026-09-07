@@ -5,19 +5,23 @@ using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Errors;
+using PcelarskiEDnevnik.SharedKernel.Storage;
+using Microsoft.AspNetCore.Mvc;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Update;
 
 public static class UpdateApiaryEndpoint {
     public static IEndpointRouteBuilder MapUpdateApiaryEndpoint(
         this IEndpointRouteBuilder endpoints) {
-        endpoints.MapPut(
+        var endpoint = endpoints.MapPut(
             "/{id:guid}",
             async (
                 Guid id,
-                UpdateApiaryRequest request,
+                [FromForm] UpdateApiaryRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
+                IImageStorage imageStorage,
                 CancellationToken cancellationToken) => {
                     var beekeeperId =
                         await currentBeekeeper.GetBeekeeperIdAsync(
@@ -35,10 +39,30 @@ public static class UpdateApiaryEndpoint {
                         return Results.NotFound();
                     }
 
+                    if (!ApiaryImageUpload.TryValidate(
+                            request.Image,
+                            out var imageFileExtension,
+                            out var imageError)) {
+                        return Results.ValidationProblem(
+                            new Dictionary<string, string[]> {
+                                ["image"] = [imageError!]
+                            });
+                    }
+
                     apiary.Update(
                         request.IdentificationNumber,
                         request.Name,
                         request.Type);
+
+                    var imagePath = await ApiaryImageUpload.SaveAsync(
+                        request.Image,
+                        imageFileExtension,
+                        imageStorage,
+                        cancellationToken);
+
+                    if (imagePath is not null) {
+                        apiary.UpdateImagePath(imagePath);
+                    }
 
                     try {
                         await dbContext.SaveChangesAsync(
@@ -60,6 +84,7 @@ public static class UpdateApiaryEndpoint {
                             apiary.Id,
                             apiary.IdentificationNumber,
                             apiary.Name,
+                            ApiaryImageUpload.ToImageUrl(apiary.ImagePath),
                             apiary.Type,
                             apiary.Status,
                             apiary.CreatedAtUtc,
@@ -67,6 +92,8 @@ public static class UpdateApiaryEndpoint {
 
                     return Results.Ok(response);
                 });
+
+        endpoint.DisableAntiforgery();
 
         return endpoints;
     }

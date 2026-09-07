@@ -32,6 +32,12 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
+Directory.CreateDirectory(
+    app.Environment.WebRootPath
+    ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"));
+
+app.UseStaticFiles();
+
 app.UseCors(
     ApiServiceRegistration.FrontendCorsPolicy);
 

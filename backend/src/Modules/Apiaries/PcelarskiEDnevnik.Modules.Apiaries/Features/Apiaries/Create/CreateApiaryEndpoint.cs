@@ -6,31 +6,52 @@ using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.SharedKernel.Errors;
+using PcelarskiEDnevnik.SharedKernel.Storage;
+using Microsoft.AspNetCore.Mvc;
 namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Create;
 
 
 public static class CreateApiaryEndpoint {
     public static IEndpointRouteBuilder MapCreateApiaryEndpoint(
         this IEndpointRouteBuilder endpoints) {
-        endpoints.MapPost(
+        var endpoint = endpoints.MapPost(
             "/",
             async (
-                CreateApiaryRequest request,
+                [FromForm] CreateApiaryRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 ApiariesDbContext dbContext,
+                IImageStorage imageStorage,
                 CancellationToken cancellationToken) => {
                     var beekeeperId =
                         await currentBeekeeper.GetBeekeeperIdAsync(
                             cancellationToken);
+
+                    if (!ApiaryImageUpload.TryValidate(
+                            request.Image,
+                            out var imageFileExtension,
+                            out var imageError)) {
+                        return Results.ValidationProblem(
+                            new Dictionary<string, string[]> {
+                                ["image"] = [imageError!]
+                            });
+                    }
+
                     var stayRequest = request.InitialStay;
                     var locationRequest = stayRequest.Location;
+
+                    var imagePath = await ApiaryImageUpload.SaveAsync(
+                        request.Image,
+                        imageFileExtension,
+                        imageStorage,
+                        cancellationToken);
 
                     var apiary = Apiary.Create(
                         beekeeperId,
                         request.IdentificationNumber,
                         request.Name,
                         request.Type,
-                        ApiaryStatus.Active);
+                        ApiaryStatus.Active,
+                        imagePath);
 
                     var location = ApiaryLocation.Create(
                         beekeeperId,
@@ -73,6 +94,7 @@ public static class CreateApiaryEndpoint {
                             apiary.Id,
                             apiary.IdentificationNumber,
                             apiary.Name,
+                            ApiaryImageUpload.ToImageUrl(apiary.ImagePath),
                             apiary.Type,
                             apiary.Status,
                             apiary.CreatedAtUtc);
@@ -82,6 +104,8 @@ public static class CreateApiaryEndpoint {
                         response);
                 });
 
-                return endpoints;
+        endpoint.DisableAntiforgery();
+
+        return endpoints;
     }
 }

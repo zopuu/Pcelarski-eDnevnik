@@ -30,6 +30,9 @@ import {
 import {
   useCreateApiary,
 } from '@/features/apiaries/hooks/use-create-apiary';
+import {
+  ApiaryImagePicker,
+} from '@/features/apiaries/components/apiary-image-picker';
 
 import {
   createApiarySchema,
@@ -42,6 +45,9 @@ import type {
 import type {
   CreateApiaryRequest,
 } from '@/features/apiaries/types/create-apiary';
+import type {
+  ApiaryImageUpload,
+} from '@/features/apiaries/types/apiary-image';
 import type {
   HiveEntranceOrientation,
 } from '@/features/apiaries/types/apiary-stay';
@@ -146,6 +152,8 @@ const orientationOptions: {
 export function CreateApiaryScreen() {
   const createMutation =
     useCreateApiary();
+  const [image, setImage] =
+    useState<ApiaryImageUpload | null>(null);
 
   const {
     control,
@@ -262,6 +270,7 @@ export function CreateApiaryScreen() {
     ) => {
       const request:
         CreateApiaryRequest = {
+        image,
         name:
           optionalText(
             values.name,
@@ -510,6 +519,11 @@ export function CreateApiaryScreen() {
               </View>
             </View>
           )}
+        />
+
+        <ApiaryImagePicker
+          value={image}
+          onChange={setImage}
         />
 
         <Text

@@ -38,6 +38,11 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .HasColumnType("character varying(14)")
                         .HasColumnName("identification_number");
 
+                    b.Property<string>("ImagePath")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_path");
+
                     b.Property<string>("Name")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")

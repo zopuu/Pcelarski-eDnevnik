@@ -2,6 +2,8 @@
 using PcelarskiEDnevnik.Api.OpenApi;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.Api.ErrorHandling;
+using PcelarskiEDnevnik.Api.Storage;
+using PcelarskiEDnevnik.SharedKernel.Storage;
 
 namespace PcelarskiEDnevnik.Api.Composition;
 
@@ -33,6 +35,7 @@ internal static class ApiServiceRegistration {
         services.AddDataProtection();
         services.AddValidation();
         services.AddHttpContextAccessor();
+        services.AddSingleton<IImageStorage, LocalImageStorage>();
 
         services.AddScoped<
             ICurrentUserContext,
