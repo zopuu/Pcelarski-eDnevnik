@@ -36,6 +36,9 @@ public sealed class HivesDbContext(
     public DbSet<HiveMaintenance> HiveMaintenances =>
         Set<HiveMaintenance>();
 
+    public DbSet<HiveInspection> HiveInspections =>
+        Set<HiveInspection>();
+
     public DbSet<Colony> Colonies =>
         Set<Colony>();
 

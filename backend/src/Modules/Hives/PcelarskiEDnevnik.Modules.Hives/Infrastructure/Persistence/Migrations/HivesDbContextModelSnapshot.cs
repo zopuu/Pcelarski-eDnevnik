@@ -468,8 +468,251 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<short?>("BeeCoveredFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("bee_covered_frame_count");
+
+                    b.Property<int?>("BroodCoveragePercentage")
+                        .HasColumnType("integer")
+                        .HasColumnName("brood_coverage_percentage");
+
+                    b.Property<short?>("BroodFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("brood_frame_count");
+
+                    b.Property<string>("BroodPattern")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("brood_pattern");
+
+                    b.Property<short?>("BroodQuality")
+                        .HasColumnType("smallint")
+                        .HasColumnName("brood_quality");
+
+                    b.Property<string>("BroodStage")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("brood_stage");
+
+                    b.Property<short?>("CappedBroodFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("capped_brood_frame_count");
+
+                    b.Property<short?>("ColonyStrength")
+                        .HasColumnType("smallint")
+                        .HasColumnName("colony_strength");
+
+                    b.Property<short?>("DeadBeeLevel")
+                        .HasColumnType("smallint")
+                        .HasColumnName("dead_bee_level");
+
+                    b.Property<string>("Disease")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("disease");
+
+                    b.Property<string>("DiseaseOther")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("disease_other");
+
+                    b.Property<short?>("DroneBroodExtent")
+                        .HasColumnType("smallint")
+                        .HasColumnName("drone_brood_extent");
+
+                    b.Property<bool?>("DroneBroodPresent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("drone_brood_present");
+
+                    b.Property<short?>("DroneWorkerBalance")
+                        .HasColumnType("smallint")
+                        .HasColumnName("drone_worker_balance");
+
+                    b.Property<bool?>("ExcessMoisturePresent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("excess_moisture_present");
+
+                    b.Property<short?>("FoodStoreAssessment")
+                        .HasColumnType("smallint")
+                        .HasColumnName("food_store_assessment");
+
+                    b.Property<bool?>("HasSwarmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_swarmed");
+
+                    b.Property<short?>("HoneyFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("honey_frame_count");
+
+                    b.Property<short?>("HoneyStoresRating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("honey_stores_rating");
+
+                    b.Property<string>("InspectionType")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("inspection_type");
+
+                    b.Property<short?>("LarvaePresence")
+                        .HasColumnType("smallint")
+                        .HasColumnName("larvae_presence");
+
+                    b.Property<bool?>("MoldPresent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("mold_present");
+
+                    b.Property<short?>("Odor")
+                        .HasColumnType("smallint")
+                        .HasColumnName("odor");
+
+                    b.Property<short?>("OpenBroodFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("open_brood_frame_count");
+
+                    b.Property<short?>("OverallConditionRating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("overall_condition_rating");
+
+                    b.Property<string>("Pest")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("pest");
+
+                    b.Property<string>("PestOther")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("pest_other");
+
+                    b.Property<short?>("PollenFrameCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("pollen_frame_count");
+
+                    b.Property<short?>("PollenStoreAssessment")
+                        .HasColumnType("smallint")
+                        .HasColumnName("pollen_store_assessment");
+
+                    b.Property<short?>("PollenStoresRating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("pollen_stores_rating");
+
+                    b.Property<short?>("PopulationRating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("population_rating");
+
+                    b.Property<string>("Predator")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("predator");
+
+                    b.Property<string>("PredatorOther")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("predator_other");
+
+                    b.Property<short?>("QueenCellCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("queen_cell_count");
+
+                    b.Property<short?>("QueenCellStage")
+                        .HasColumnType("smallint")
+                        .HasColumnName("queen_cell_stage");
+
+                    b.Property<bool?>("QueenMarked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("queen_marked");
+
+                    b.Property<bool?>("QueenSeen")
+                        .HasColumnType("boolean")
+                        .HasColumnName("queen_seen");
+
+                    b.Property<short?>("StarvationRisk")
+                        .HasColumnType("smallint")
+                        .HasColumnName("starvation_risk");
+
+                    b.Property<short?>("SwarmingTendency")
+                        .HasColumnType("smallint")
+                        .HasColumnName("swarming_tendency");
+
+                    b.Property<short?>("TemperamentRating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("temperament_rating");
+
+                    b.Property<short?>("VarroaLevel")
+                        .HasColumnType("smallint")
+                        .HasColumnName("varroa_level");
+
                     b.ToTable("hive_inspections", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_inspections_bee_covered_frame_count_non_negative", "\"bee_covered_frame_count\" IS NULL OR \"bee_covered_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_brood_coverage_percentage_range", "\"brood_coverage_percentage\" IS NULL OR \"brood_coverage_percentage\" BETWEEN 0 AND 100");
+
+                            t.HasCheckConstraint("ck_hive_inspections_brood_frame_count_non_negative", "\"brood_frame_count\" IS NULL OR \"brood_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_brood_pattern", "\"brood_pattern\" IS NULL OR \"brood_pattern\" IN (\n    'COMPACT',\n    'SPOTTY',\n    'MOTTLED',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_brood_quality_range", "\"brood_quality\" IS NULL OR \"brood_quality\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_brood_stage", "\"brood_stage\" IS NULL OR \"brood_stage\" IN (\n    'EGGS',\n    'LARVAE',\n    'CAPPED',\n    'MIXED'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_capped_brood_frame_count_non_negative", "\"capped_brood_frame_count\" IS NULL OR \"capped_brood_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_colony_strength_range", "\"colony_strength\" IS NULL OR \"colony_strength\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_dead_bee_level_range", "\"dead_bee_level\" IS NULL OR \"dead_bee_level\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_disease", "\"disease\" IS NULL OR \"disease\" IN (\n    'AMERICAN_FOULBROOD',\n    'EUROPEAN_FOULBROOD',\n    'NOSEMA',\n    'CHALKBROOD',\n    'SACBROOD',\n    'DEFORMED_WING_VIRUS',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_disease_other_consistency", "(\n    \"disease\" IS NULL\n    AND \"disease_other\" IS NULL\n) OR (\n    \"disease\" = 'OTHER'\n    AND \"disease_other\" IS NOT NULL\n    AND char_length(btrim(\"disease_other\")) BETWEEN 1 AND 100\n) OR (\n    \"disease\" IS NOT NULL\n    AND \"disease\" <> 'OTHER'\n    AND \"disease_other\" IS NULL\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_drone_brood_extent_range", "\"drone_brood_extent\" IS NULL OR \"drone_brood_extent\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_drone_worker_balance_range", "\"drone_worker_balance\" IS NULL OR \"drone_worker_balance\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_food_store_assessment_range", "\"food_store_assessment\" IS NULL OR \"food_store_assessment\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_honey_frame_count_non_negative", "\"honey_frame_count\" IS NULL OR \"honey_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_honey_stores_rating_range", "\"honey_stores_rating\" IS NULL OR \"honey_stores_rating\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_inspection_type", "\"inspection_type\" IS NULL OR \"inspection_type\" IN (\n    'FIRST_SPRING',\n    'SPRING_ROUTINE',\n    'SWARM_CONTROL',\n    'FIRST_SUMMER',\n    'SUMMER_ROUTINE',\n    'POST_HARVEST',\n    'AUTUMN_ROUTINE',\n    'PRE_WINTER',\n    'QUEEN_CHECK',\n    'HEALTH_CHECK',\n    'EMERGENCY',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_larvae_presence_range", "\"larvae_presence\" IS NULL OR \"larvae_presence\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_odor_range", "\"odor\" IS NULL OR \"odor\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_open_brood_frame_count_non_negative", "\"open_brood_frame_count\" IS NULL OR \"open_brood_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_overall_condition_rating_range", "\"overall_condition_rating\" IS NULL OR \"overall_condition_rating\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_pest", "\"pest\" IS NULL OR \"pest\" IN (\n    'VARROA_MITE',\n    'WAX_MOTH',\n    'SMALL_HIVE_BEETLE',\n    'BEE_LOUSE',\n    'ANTS',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_pest_other_consistency", "(\n    \"pest\" IS NULL\n    AND \"pest_other\" IS NULL\n) OR (\n    \"pest\" = 'OTHER'\n    AND \"pest_other\" IS NOT NULL\n    AND char_length(btrim(\"pest_other\")) BETWEEN 1 AND 100\n) OR (\n    \"pest\" IS NOT NULL\n    AND \"pest\" <> 'OTHER'\n    AND \"pest_other\" IS NULL\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_pollen_frame_count_non_negative", "\"pollen_frame_count\" IS NULL OR \"pollen_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_pollen_store_assessment_range", "\"pollen_store_assessment\" IS NULL OR \"pollen_store_assessment\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_pollen_stores_rating_range", "\"pollen_stores_rating\" IS NULL OR \"pollen_stores_rating\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_population_rating_range", "\"population_rating\" IS NULL OR \"population_rating\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_predator", "\"predator\" IS NULL OR \"predator\" IN (\n    'WASP',\n    'HORNET',\n    'MOUSE',\n    'BIRD',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_predator_other_consistency", "(\n    \"predator\" IS NULL\n    AND \"predator_other\" IS NULL\n) OR (\n    \"predator\" = 'OTHER'\n    AND \"predator_other\" IS NOT NULL\n    AND char_length(btrim(\"predator_other\")) BETWEEN 1 AND 100\n) OR (\n    \"predator\" IS NOT NULL\n    AND \"predator\" <> 'OTHER'\n    AND \"predator_other\" IS NULL\n)");
+
+                            t.HasCheckConstraint("ck_hive_inspections_queen_cell_count_non_negative", "\"queen_cell_count\" IS NULL OR \"queen_cell_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_inspections_queen_cell_stage_range", "\"queen_cell_stage\" IS NULL OR \"queen_cell_stage\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_starvation_risk_range", "\"starvation_risk\" IS NULL OR \"starvation_risk\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_swarming_tendency_range", "\"swarming_tendency\" IS NULL OR \"swarming_tendency\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_temperament_rating_range", "\"temperament_rating\" IS NULL OR \"temperament_rating\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_hive_inspections_varroa_level_range", "\"varroa_level\" IS NULL OR \"varroa_level\" BETWEEN 1 AND 5");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
