@@ -512,8 +512,37 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<decimal?>("CostAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("cost_amount");
+
+                    b.Property<string>("CurrencyCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency_code");
+
+                    b.Property<string>("MaintenanceType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("maintenance_type");
+
+                    b.Property<string>("ServiceProvider")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("service_provider");
+
                     b.ToTable("hive_maintenance", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_maintenance_cost_amount_non_negative", "\"cost_amount\" IS NULL OR \"cost_amount\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_maintenance_cost_currency_pair", "(\n    \"cost_amount\" IS NULL\n    AND \"currency_code\" IS NULL\n) OR (\n    \"cost_amount\" IS NOT NULL\n    AND \"currency_code\" IS NOT NULL\n)");
+
+                            t.HasCheckConstraint("ck_hive_maintenance_currency_code_format", "\"currency_code\" IS NULL OR \"currency_code\" ~ '^[A-Z]{3}$'");
+
+                            t.HasCheckConstraint("ck_hive_maintenance_maintenance_type", "\"maintenance_type\" IN (\n    'PAINTING',\n    'FLOOR_REPAIR',\n    'LID_REPLACEMENT',\n    'ENTRANCE_REPLACEMENT',\n    'VARROA_SCREEN_INSTALLATION',\n    'DISINFECTION',\n    'REPAIR',\n    'OTHER'\n)");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
@@ -523,8 +552,21 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<int>("FrameCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("frame_count");
+
+                    b.Property<string>("FrameSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("frame_source");
+
                     b.ToTable("honey_frame_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_honey_frame_feedings_frame_count_maximum", "frame_count <= 20");
+
+                            t.HasCheckConstraint("ck_honey_frame_feedings_frame_count_positive", "frame_count > 0");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
@@ -609,8 +651,37 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
+                    b.Property<string>("ApplicationMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("application_method");
+
+                    b.Property<decimal>("DoseAmount")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)")
+                        .HasColumnName("dose_amount");
+
+                    b.Property<string>("DoseUnit")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("dose_unit");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("product_name");
+
                     b.ToTable("varroa_treatments", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_varroa_treatments_application_method", "\"application_method\" IN (\n    'STRIPS',\n    'FUMIGATION',\n    'TRICKLING',\n    'VAPORIZATION',\n    'SPRAYING',\n    'OTHER'\n)");
+
+                            t.HasCheckConstraint("ck_varroa_treatments_dose_amount_positive", "dose_amount > 0");
+
+                            t.HasCheckConstraint("ck_varroa_treatments_dose_unit", "\"dose_unit\" IN (\n    'ML',\n    'STRIPS',\n    'G'\n)");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });

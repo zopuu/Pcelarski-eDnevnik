@@ -9,10 +9,12 @@ using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Features;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance;
 using PcelarskiEDnevnik.Modules.Hives.Features.HoneyFrameFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.PattyFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings;
+using PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Relocations;
 using PcelarskiEDnevnik.Modules.Identity.Web;
@@ -33,10 +35,12 @@ internal static class EndpointRegistration {
         app.MapColoniesEndpoints();
         app.MapHivesEndpoints();
         app.MapHiveInsulationEndpoints();
+        app.MapHiveMaintenanceEndpoints();
         app.MapHoneyFrameFeedingEndpoints();
         app.MapPattyFeedingEndpoints();
         app.MapQueensEndpoints();
         app.MapSyrupFeedingEndpoints();
+        app.MapVarroaTreatmentEndpoints();
         app.MapForageObservationsEndpoints();
         app.MapRelocationsEndpoints();
 

@@ -30,6 +30,12 @@ public sealed class HivesDbContext(
     public DbSet<HoneyFrameFeeding> HoneyFrameFeedings =>
         Set<HoneyFrameFeeding>();
 
+    public DbSet<VarroaTreatment> VarroaTreatments =>
+        Set<VarroaTreatment>();
+
+    public DbSet<HiveMaintenance> HiveMaintenances =>
+        Set<HiveMaintenance>();
+
     public DbSet<Colony> Colonies =>
         Set<Colony>();
 
