@@ -92,6 +92,12 @@ export type HiveActionHistoryItem =
       type: 'superManagement';
       summary: {
         $summaryType: 'superManagement';
+        affectedSuperCount: number;
+        addedSuperCount: number;
+        addedFrameCount: number;
+        removeForHarvestCount: number;
+        removeAndArchiveCount: number;
+        harvestableFrameCount: number;
       };
     });
 

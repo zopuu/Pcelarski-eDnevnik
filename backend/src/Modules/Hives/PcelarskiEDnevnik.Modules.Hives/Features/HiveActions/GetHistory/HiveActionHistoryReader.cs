@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
 
@@ -340,22 +341,56 @@ internal sealed class HiveActionHistoryReader(
         if (idsByType.TryGetValue(
                 HiveActionType.SuperManagement,
                 out var superManagementIds)) {
-            var ids =
-                await dbContext.SuperManagements
+            var managementItems =
+                await (
+                    from item in dbContext.SuperManagementItems.AsNoTracking()
+                    join hiveSuper in dbContext.HiveSupers.AsNoTracking()
+                        on item.HiveSuperId equals hiveSuper.Id
+                    where superManagementIds.Contains(item.SuperManagementId)
+                    select new {
+                        item.SuperManagementId,
+                        item.HiveSuperId,
+                        item.Operation,
+                        hiveSuper.FrameCount
+                    })
+                .ToListAsync(cancellationToken);
+
+            var removedSuperIds = managementItems
+                .Where(item => item.Operation != SuperManagementOperation.AddToHive)
+                .Select(item => item.HiveSuperId)
+                .Distinct()
+                .ToArray();
+            var harvestableFramesBySuperId = removedSuperIds.Length == 0
+                ? new Dictionary<Guid, int>()
+                : await dbContext.HiveSuperStays
                     .AsNoTracking()
-                    .Where(
-                        action =>
-                            superManagementIds.Contains(
-                                action.Id))
-                    .Select(
-                        action =>
-                            action.Id)
-                    .ToListAsync(
+                    .Where(stay =>
+                        removedSuperIds.Contains(stay.HiveSuperId) &&
+                        stay.EndedOn != null &&
+                        stay.HarvestableFrameCount != null)
+                    .GroupBy(stay => stay.HiveSuperId)
+                    .Select(group => new {
+                        HiveSuperId = group.Key,
+                        HarvestableFrameCount = group.Max(stay => stay.HarvestableFrameCount) ?? 0
+                    })
+                    .ToDictionaryAsync(
+                        row => row.HiveSuperId,
+                        row => row.HarvestableFrameCount,
                         cancellationToken);
 
-            foreach (var id in ids) {
-                summaries[id] =
-                    new SuperManagementHistorySummary();
+            foreach (var group in managementItems.GroupBy(item => item.SuperManagementId)) {
+                var items = group.ToList();
+                var added = items.Where(item => item.Operation == SuperManagementOperation.AddToHive).ToList();
+                var forHarvest = items.Where(item => item.Operation == SuperManagementOperation.RemoveForHarvest).ToList();
+                var archived = items.Count(item => item.Operation == SuperManagementOperation.RemoveAndArchive);
+
+                summaries[group.Key] = new SuperManagementHistorySummary(
+                    items.Count,
+                    added.Count,
+                    added.Sum(item => item.FrameCount),
+                    forHarvest.Count,
+                    archived,
+                    forHarvest.Sum(item => harvestableFramesBySuperId.GetValueOrDefault(item.HiveSuperId)));
             }
         }
 

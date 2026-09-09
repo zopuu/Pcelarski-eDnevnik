@@ -230,7 +230,7 @@ function ActionSummary({ action }: { action: HiveActionHistoryItem }) {
     case 'maintenance':
       return null;
     case 'superManagement':
-      return null;
+      return <SuperManagementSummary action={action} />;
   }
 }
 
@@ -316,6 +316,19 @@ function InsulationSummary({
   return <SummaryRow label="Materijali" value={getInsulationMaterials(action)} />;
 }
 
+function SuperManagementSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'superManagement' }>;
+}) {
+  return (
+    <SummaryRow
+      label="Obuhvaćeno"
+      value={getSuperManagementDescription(action)}
+    />
+  );
+}
+
 function SummaryRow({
   label,
   value,
@@ -352,7 +365,12 @@ function getActionTitle(action: HiveActionHistoryItem) {
     case 'maintenance':
       return 'Održavanje';
     case 'superManagement':
-      return 'Upravljanje medištima';
+      const superSummary = getSuperManagementSummary(action);
+      if (!superSummary.available) return 'Upravljanje nastavcima';
+      if (superSummary.addedSuperCount > 0) return 'Dodavanje nastavaka';
+      if (superSummary.removeForHarvestCount > 0 && superSummary.removeAndArchiveCount > 0) return 'Skidanje nastavaka';
+      if (superSummary.removeForHarvestCount > 0) return 'Skidanje nastavaka za vrcanje';
+      return 'Arhiviranje nastavaka';
   }
 }
 
@@ -373,8 +391,57 @@ function getActionDescription(action: HiveActionHistoryItem) {
     case 'maintenance':
       return getMaintenanceTypeLabel(action.summary.maintenanceType);
     case 'superManagement':
-      return 'Evidentirano upravljanje medištima';
+      return getSuperManagementDescription(action);
   }
+}
+
+function getSuperManagementDescription(
+  action: Extract<HiveActionHistoryItem, { type: 'superManagement' }>,
+) {
+  const summary = getSuperManagementSummary(action);
+  if (!summary.available) return 'Detalji upravljanja nastavcima nisu dostupni.';
+  if (summary.addedSuperCount > 0) {
+    return `${summary.affectedSuperCount} ${getSuperWord(summary.affectedSuperCount)} · ${summary.addedFrameCount} ${getFrameWord(summary.addedFrameCount)}`;
+  }
+  if (summary.removeForHarvestCount > 0 && summary.removeAndArchiveCount > 0) {
+    return `${summary.affectedSuperCount} ${getSuperWord(summary.affectedSuperCount)} · ${summary.removeForHarvestCount} za vrcanje · ${summary.removeAndArchiveCount} ${summary.removeAndArchiveCount === 1 ? 'arhiviran' : 'arhivirana'} · ${summary.harvestableFrameCount} ${getFrameWord(summary.harvestableFrameCount)} za vrcanje`;
+  }
+  if (summary.removeForHarvestCount > 0) {
+    return `${summary.affectedSuperCount} ${getSuperWord(summary.affectedSuperCount)} · ${summary.harvestableFrameCount} ${getFrameWord(summary.harvestableFrameCount)} za vrcanje`;
+  }
+  return `${summary.affectedSuperCount} ${getSuperWord(summary.affectedSuperCount)}`;
+}
+
+function getSuperManagementSummary(
+  action: Extract<HiveActionHistoryItem, { type: 'superManagement' }>,
+) {
+  // Accept either API casing while a mobile client and API host are upgraded independently.
+  const source = action.summary as typeof action.summary & Record<string, unknown>;
+  const getCount = (camelCase: keyof typeof action.summary, pascalCase: string) => {
+    const value = source[camelCase] ?? source[pascalCase];
+    return typeof value === 'number' ? value : 0;
+  };
+  const available =
+    typeof source.affectedSuperCount === 'number' ||
+    typeof source.AffectedSuperCount === 'number';
+
+  return {
+    available,
+    affectedSuperCount: getCount('affectedSuperCount', 'AffectedSuperCount'),
+    addedSuperCount: getCount('addedSuperCount', 'AddedSuperCount'),
+    addedFrameCount: getCount('addedFrameCount', 'AddedFrameCount'),
+    removeForHarvestCount: getCount('removeForHarvestCount', 'RemoveForHarvestCount'),
+    removeAndArchiveCount: getCount('removeAndArchiveCount', 'RemoveAndArchiveCount'),
+    harvestableFrameCount: getCount('harvestableFrameCount', 'HarvestableFrameCount'),
+  };
+}
+
+function getSuperWord(count: number) {
+  return count === 1 ? 'nastavak' : count < 5 ? 'nastavka' : 'nastavaka';
+}
+
+function getFrameWord(count: number) {
+  return count === 1 ? 'ram' : 'ramova';
 }
 
 function getActionIcon(action: HiveActionHistoryItem) {

@@ -57,6 +57,9 @@ import {
 import {
     QueenMarkingColorSwatch,
 } from '@/features/queens/components/queen-marking-color-swatch';
+import {
+    useHiveSupers,
+} from '@/features/hive-supers/hooks/use-hive-supers';
 
 type HiveDetailsScreenProps = {
     hiveId: string;
@@ -219,6 +222,10 @@ export function HiveDetailsScreen({
         );
     const currentColonyQuery =
         useCurrentColony(
+            hiveId,
+        );
+    const hiveSupersQuery =
+        useHiveSupers(
             hiveId,
         );
 
@@ -804,57 +811,24 @@ export function HiveDetailsScreen({
                             value={formatDate(
                                 hive.purchaseDate,
                             )}
+                        />
+
+                        <InfoRow
+                            label="Trenutni broj nastavaka"
+                            value={
+                                hiveSupersQuery.isError
+                                    ? '—'
+                                    : hiveSupersQuery.isLoading
+                                    ? '…'
+                                    : String(
+                                        hiveSupersQuery
+                                            .data
+                                            ?.length ??
+                                        0,
+                                    )
+                            }
                             last
                         />
-                    </DetailsCard>
-
-                    <SectionTitle>
-                        Nastavci
-                    </SectionTitle>
-
-                    <DetailsCard>
-                        <View
-                            className="
-                flex-row
-                items-center
-                justify-between
-                gap-4
-                py-1
-              "
-                        >
-                            <View>
-                                <Text
-                                    className="
-                    text-sm
-                    font-semibold
-                    text-muted
-                  "
-                                >
-                                    Trenutno na košnici
-                                </Text>
-
-                                <Text
-                                    className="
-                    mt-1
-                    text-xs
-                    text-muted
-                  "
-                                >
-                                    Upravljanje nastavcima
-                                    još nije implementirano.
-                                </Text>
-                            </View>
-
-                            <Text
-                                className="
-                  text-4xl
-                  font-bold
-                  text-foreground
-                "
-                            >
-                                —
-                            </Text>
-                        </View>
                     </DetailsCard>
 
                     <SectionTitle>
@@ -886,6 +860,7 @@ export function HiveDetailsScreen({
                                     : '—'
                             }
                         />
+
                     </View>
 
                     <SectionTitle>
@@ -1209,6 +1184,32 @@ export function HiveDetailsScreen({
                                 router.push({
                                     pathname:
                                         '/hives/[hiveId]/maintenance/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
+                            'super-management',
+
+                        label:
+                            'Upravljanje nastavcima',
+
+                        icon:
+                            'layers-outline',
+
+                        accessibilityLabel:
+                            'Upravljaj nastavcima košnice',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/supers',
 
                                     params: {
                                         hiveId,

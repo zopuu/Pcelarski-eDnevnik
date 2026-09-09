@@ -71,19 +71,17 @@ public static class AddHiveSupersEndpoint {
 
         var hiveSupers =
             new List<HiveSuper>(
-                request.SuperCount);
+                request.Supers.Count);
 
         var hiveSuperStays =
             new List<HiveSuperStay>(
-                request.SuperCount);
+                request.Supers.Count);
 
         var managementItems =
             new List<SuperManagementItem>(
-                request.SuperCount);
+                request.Supers.Count);
 
-        for (var i = 0;
-             i < request.SuperCount;
-             i++) {
+        foreach (var requestedSuper in request.Supers) {
             /*
              * Hive type comes from the hive.
              *
@@ -95,8 +93,8 @@ public static class AddHiveSupersEndpoint {
                 HiveSuper.Create(
                     ownerBeekeeperId: beekeeperId,
                     type: hive.Type,
-                    frameCount: request.FrameCount,
-                    colorHex: request.ColorHex);
+                    frameCount: requestedSuper.FrameCount,
+                    colorHex: requestedSuper.ColorHex);
 
             var stay =
                 HiveSuperStay.Create(
@@ -153,7 +151,7 @@ public static class AddHiveSupersEndpoint {
                                 super.Type,
                                 super.Status,
                                 super.FrameCount,
-                                super.ColorHex))
+                                super.ColorHex!))
                     .ToList());
 
         return Results.Created(

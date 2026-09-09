@@ -90,5 +90,11 @@ public sealed record MaintenanceHistorySummary(
     string? ServiceProvider)
     : HiveActionHistorySummary;
 
-public sealed record SuperManagementHistorySummary
+public sealed record SuperManagementHistorySummary(
+    int AffectedSuperCount,
+    int AddedSuperCount,
+    int AddedFrameCount,
+    int RemoveForHarvestCount,
+    int RemoveAndArchiveCount,
+    int HarvestableFrameCount)
     : HiveActionHistorySummary;
