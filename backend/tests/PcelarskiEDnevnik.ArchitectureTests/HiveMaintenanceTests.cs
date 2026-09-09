@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.Record;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.Update;

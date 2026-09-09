@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Errors;

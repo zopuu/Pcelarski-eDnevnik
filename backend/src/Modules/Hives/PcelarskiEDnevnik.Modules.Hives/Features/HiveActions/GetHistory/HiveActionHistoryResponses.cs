@@ -1,5 +1,10 @@
 using System.Text.Json.Serialization;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveActions.GetHistory;
 

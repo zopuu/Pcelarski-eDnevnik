@@ -1,4 +1,4 @@
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.Record;

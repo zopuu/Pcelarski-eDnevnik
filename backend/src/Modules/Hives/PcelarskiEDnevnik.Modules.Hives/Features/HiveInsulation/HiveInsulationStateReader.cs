@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation;

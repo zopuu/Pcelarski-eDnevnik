@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation.Record;
 
 namespace PcelarskiEDnevnik.ArchitectureTests;

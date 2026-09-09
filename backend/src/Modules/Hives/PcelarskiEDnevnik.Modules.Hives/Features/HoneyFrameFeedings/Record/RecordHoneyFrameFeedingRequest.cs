@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HoneyFrameFeedings.Record;
 

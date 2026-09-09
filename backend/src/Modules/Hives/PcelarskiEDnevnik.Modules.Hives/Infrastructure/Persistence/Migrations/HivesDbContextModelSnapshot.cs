@@ -189,6 +189,160 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                     b.UseTptMappingStrategy();
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.HiveSuper", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ColorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("color_hex");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<int>("FrameCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("frame_count");
+
+                    b.Property<Guid>("OwnerBeekeeperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_beekeeper_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerBeekeeperId", "Status")
+                        .HasDatabaseName("ix_hive_supers_owner_beekeeper_id_status");
+
+                    b.ToTable("hive_supers", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_hive_supers_color_hex", "\"color_hex\" IS NULL\r\nOR \"color_hex\" ~ '^#[0-9A-Fa-f]{6}$'");
+
+                            t.HasCheckConstraint("ck_hive_supers_frame_count", "\"frame_count\" >= 1");
+
+                            t.HasCheckConstraint("ck_hive_supers_status", "\"status\" IN (\r\n    'OnHive',\r\n    'ReadyForHarvest',\r\n    'Archived'\r\n)");
+
+                            t.HasCheckConstraint("ck_hive_supers_type", "\"type\" IN (\r\n    'DadantBlatt',\r\n    'LangstrothRoot',\r\n    'AlbertiZnidersic',\r\n    'Farrar',\r\n    'Nucleus',\r\n    'Other'\r\n)");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.HiveSuperStay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly?>("EndedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("ended_on");
+
+                    b.Property<int?>("HarvestableFrameCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("harvestable_frame_count");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_id");
+
+                    b.Property<Guid>("HiveSuperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_super_id");
+
+                    b.Property<int?>("RemainingHarvestableFrameCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("remaining_harvestable_frame_count");
+
+                    b.Property<DateOnly>("StartedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("started_on");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HiveId")
+                        .HasDatabaseName("ix_hive_super_stays_active_hive")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("HiveSuperId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_hive_super_stays_active_super")
+                        .HasFilter("\"ended_on\" IS NULL");
+
+                    b.HasIndex("HiveId", "StartedOn")
+                        .HasDatabaseName("ix_hive_super_stays_hive_started_on");
+
+                    b.HasIndex("HiveSuperId", "StartedOn")
+                        .HasDatabaseName("ix_hive_super_stays_super_started_on");
+
+                    b.ToTable("hive_super_stays", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_hive_super_stays_dates", "\"ended_on\" IS NULL\r\nOR \"ended_on\" >= \"started_on\"");
+
+                            t.HasCheckConstraint("ck_hive_super_stays_frame_counts_pair", "(\r\n    \"harvestable_frame_count\" IS NULL\r\n    AND\r\n    \"remaining_harvestable_frame_count\" IS NULL\r\n)\r\nOR\r\n(\r\n    \"harvestable_frame_count\" IS NOT NULL\r\n    AND\r\n    \"remaining_harvestable_frame_count\" IS NOT NULL\r\n)");
+
+                            t.HasCheckConstraint("ck_hive_super_stays_harvest_requires_end", "\"harvestable_frame_count\" IS NULL\r\nOR \"ended_on\" IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_hive_super_stays_harvestable_frame_count", "\"harvestable_frame_count\" IS NULL\r\nOR \"harvestable_frame_count\" >= 1");
+
+                            t.HasCheckConstraint("ck_hive_super_stays_remaining_frame_count", "\"remaining_harvestable_frame_count\" IS NULL\r\nOR \"remaining_harvestable_frame_count\" >= 0");
+
+                            t.HasCheckConstraint("ck_hive_super_stays_remaining_not_greater_than_total", "\"remaining_harvestable_frame_count\" IS NULL\r\nOR\r\n\"remaining_harvestable_frame_count\"\r\n    <= \"harvestable_frame_count\"");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagementItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("HiveSuperId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_super_id");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("operation");
+
+                    b.Property<Guid>("SuperManagementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("super_management_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HiveSuperId")
+                        .HasDatabaseName("ix_super_management_items_hive_super_id");
+
+                    b.HasIndex("SuperManagementId", "HiveSuperId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_super_management_items_management_super");
+
+                    b.ToTable("super_management_items", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_super_management_items_operation", "\"operation\" IN (\r\n    'AddToHive',\r\n    'RemoveForHarvest',\r\n    'RemoveAndArchive'\r\n)");
+                        });
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", b =>
                 {
                     b.Property<Guid>("Id")
@@ -498,7 +652,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                     b.ToView("hive_actions", "hives");
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection.HiveInspection", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -754,7 +908,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation.HiveInsulation", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -789,7 +943,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance.HiveMaintenance", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -831,7 +985,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding.HoneyFrameFeeding", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -857,7 +1011,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding.PattyFeeding", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -889,7 +1043,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagement", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -902,7 +1056,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding.SyrupFeeding", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -938,7 +1092,7 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment.VarroaTreatment", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
 
@@ -1004,6 +1158,40 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.HiveSuperStay", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
+                        .WithMany()
+                        .HasForeignKey("HiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hive_super_stays_hive");
+
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.HiveSuper", null)
+                        .WithMany()
+                        .HasForeignKey("HiveSuperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hive_super_stays_super");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagementItem", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.HiveSuper", null)
+                        .WithMany()
+                        .HasForeignKey("HiveSuperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_super_management_items_super");
+
+                    b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagement", null)
+                        .WithMany()
+                        .HasForeignKey("SuperManagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_super_management_items_management");
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.HiveStay", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.Hives.Hive", null)
@@ -1028,74 +1216,74 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection.HiveInspection", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection.HiveInspection", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation.HiveInsulation", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation.HiveInsulation", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance.HiveMaintenance", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance.HiveMaintenance", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding.HoneyFrameFeeding", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding.HoneyFrameFeeding", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding.PattyFeeding", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding.PattyFeeding", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagement", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement.SuperManagement", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding.SyrupFeeding", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding.SyrupFeeding", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", b =>
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment.VarroaTreatment", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction", null)
                         .WithOne()
-                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VarroaTreatment", "Id")
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment.VarroaTreatment", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

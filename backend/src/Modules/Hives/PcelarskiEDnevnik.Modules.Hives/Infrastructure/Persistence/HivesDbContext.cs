@@ -1,6 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInsulation;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveMaintenance;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.PattyFeeding;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SyrupFeeding;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Queens;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
@@ -55,6 +63,14 @@ public sealed class HivesDbContext(
         Set<Queen>();
     public DbSet<QueenStay> QueenStays =>
         Set<QueenStay>();
+    public DbSet<HiveSuper> HiveSupers =>
+    Set<HiveSuper>();
+
+    public DbSet<HiveSuperStay> HiveSuperStays =>
+        Set<HiveSuperStay>();
+
+    public DbSet<SuperManagementItem> SuperManagementItems =>
+        Set<SuperManagementItem>();
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder) {

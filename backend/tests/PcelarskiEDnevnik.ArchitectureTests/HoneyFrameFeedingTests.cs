@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HoneyFrameFeeding;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Features.HoneyFrameFeedings.Record;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;

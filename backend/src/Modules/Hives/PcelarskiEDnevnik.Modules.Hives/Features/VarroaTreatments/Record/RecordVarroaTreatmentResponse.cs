@@ -1,4 +1,4 @@
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.VaroaTreatment;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments.Record;
 
