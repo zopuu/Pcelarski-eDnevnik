@@ -248,17 +248,20 @@ public sealed class SyrupFeedingTests {
                 history.Items);
 
         Assert.Equal(
-            HiveActionHistoryKind.SyrupFeeding,
-            historyItem.Kind);
+            HiveActionType.SyrupFeeding,
+            historyItem.Type);
+        var summary =
+            Assert.IsType<SyrupFeedingHistorySummary>(
+                historyItem.Summary);
         Assert.Equal(
             750,
-            historyItem.QuantityMl);
+            summary.QuantityMl);
         Assert.Equal(
             2m,
-            historyItem.SugarParts);
+            summary.SugarParts);
         Assert.Equal(
             1m,
-            historyItem.WaterParts);
+            summary.WaterParts);
 
         var detailResult =
             await GetSyrupFeedingByIdEndpoint

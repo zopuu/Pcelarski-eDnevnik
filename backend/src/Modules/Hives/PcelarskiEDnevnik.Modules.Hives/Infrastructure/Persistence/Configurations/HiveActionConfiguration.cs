@@ -27,6 +27,25 @@ internal sealed class HiveActionConfiguration
             .ValueGeneratedNever();
 
         builder.Property(
+                x => x.ActionType)
+            .HasColumnName(
+                "action_type")
+            .HasColumnType(
+                "character varying(30)")
+            .HasConversion<string>()
+            .HasMaxLength(30)
+            .IsRequired();
+
+        builder.ToTable(
+            "hive_actions",
+            "hives",
+            table => {
+                table.HasCheckConstraint(
+                    "ck_hive_actions_action_type",
+                    "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+            });
+
+        builder.Property(
                 x => x.HiveId)
             .HasColumnName(
                 "hive_id")

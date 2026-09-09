@@ -144,6 +144,12 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("action_group_id");
 
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("action_type");
+
                     b.Property<Guid>("HiveId")
                         .HasColumnType("uuid")
                         .HasColumnName("hive_id");
@@ -175,7 +181,10 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                     b.HasIndex("HiveId", "PerformedAt")
                         .HasDatabaseName("ix_hive_actions_hive_id_performed_at");
 
-                    b.ToTable("hive_actions", "hives");
+                    b.ToTable("hive_actions", "hives", t =>
+                        {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+                        });
 
                     b.UseTptMappingStrategy();
                 });
@@ -464,6 +473,31 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels.HiveActionTimelineRow", b =>
+                {
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("action_type");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_id");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("PerformedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("performed_at");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("hive_actions", "hives");
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveInspection", b =>
                 {
                     b.HasBaseType("PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.HiveAction");
@@ -643,6 +677,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("hive_inspections", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_hive_inspections_bee_covered_frame_count_non_negative", "\"bee_covered_frame_count\" IS NULL OR \"bee_covered_frame_count\" >= 0");
 
                             t.HasCheckConstraint("ck_hive_inspections_brood_coverage_percentage_range", "\"brood_coverage_percentage\" IS NULL OR \"brood_coverage_percentage\" BETWEEN 0 AND 100");
@@ -742,6 +778,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("hive_insulation", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_hive_insulation_operation", "\"operation\" IN (\n    'Add',\n    'Remove'\n)");
 
                             t.HasCheckConstraint("ck_hive_insulation_type_selected", "\"paper\" OR \"eps\" OR \"xps\"");
@@ -778,6 +816,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("hive_maintenance", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_hive_maintenance_cost_amount_non_negative", "\"cost_amount\" IS NULL OR \"cost_amount\" >= 0");
 
                             t.HasCheckConstraint("ck_hive_maintenance_cost_currency_pair", "(\n    \"cost_amount\" IS NULL\n    AND \"currency_code\" IS NULL\n) OR (\n    \"cost_amount\" IS NOT NULL\n    AND \"currency_code\" IS NOT NULL\n)");
@@ -806,6 +846,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("honey_frame_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_honey_frame_feedings_frame_count_maximum", "frame_count <= 20");
 
                             t.HasCheckConstraint("ck_honey_frame_feedings_frame_count_positive", "frame_count > 0");
@@ -836,6 +878,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("patty_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_patty_feedings_mass_positive", "mass_g > 0");
 
                             t.HasCheckConstraint("ck_patty_feedings_patty_type", "\"patty_type\" IN (\n    'SUGAR',\n    'PROTEIN',\n    'HONEY',\n    'MEDICATED',\n    'INVERT_SUGAR',\n    'OTHER'\n)");
@@ -851,6 +895,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("super_management", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.Property("Id")
                                 .HasColumnName("action_id");
                         });
@@ -879,6 +925,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("syrup_feedings", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_syrup_feedings_quantity_positive", "quantity_ml > 0");
 
                             t.HasCheckConstraint("ck_syrup_feedings_sugar_parts_positive", "sugar_parts > 0");
@@ -919,6 +967,8 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.Migrations
 
                     b.ToTable("varroa_treatments", "hives", t =>
                         {
+                            t.HasCheckConstraint("ck_hive_actions_action_type", "\"action_type\" IN ('Inspection', 'VarroaTreatment', 'SyrupFeeding', 'PattyFeeding', 'HoneyFrameFeeding', 'Insulation', 'Maintenance', 'SuperManagement')");
+
                             t.HasCheckConstraint("ck_varroa_treatments_application_method", "\"application_method\" IN (\n    'STRIPS',\n    'FUMIGATION',\n    'TRICKLING',\n    'VAPORIZATION',\n    'SPRAYING',\n    'OTHER'\n)");
 
                             t.HasCheckConstraint("ck_varroa_treatments_dose_amount_positive", "dose_amount > 0");

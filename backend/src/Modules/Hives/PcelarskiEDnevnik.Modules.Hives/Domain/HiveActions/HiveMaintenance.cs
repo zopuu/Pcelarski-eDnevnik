@@ -15,6 +15,7 @@ public sealed class HiveMaintenance : HiveAction {
         string? currencyCode,
         string? serviceProvider)
         : base(
+            HiveActionType.Maintenance,
             hiveId,
             performedAt,
             performedByBeekeeperId,

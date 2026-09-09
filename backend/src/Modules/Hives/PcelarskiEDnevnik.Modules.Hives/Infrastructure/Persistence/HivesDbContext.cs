@@ -3,6 +3,7 @@ using PcelarskiEDnevnik.Modules.Hives.Domain.Colonies;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Queens;
+using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 
@@ -17,6 +18,9 @@ public sealed class HivesDbContext(
 
     public DbSet<HiveAction> HiveActions =>
         Set<HiveAction>();
+
+    internal DbSet<HiveActionTimelineRow> HiveActionTimelineRows =>
+        Set<HiveActionTimelineRow>();
 
     public DbSet<HiveInsulation> HiveInsulations =>
         Set<HiveInsulation>();
@@ -38,6 +42,9 @@ public sealed class HivesDbContext(
 
     public DbSet<HiveInspection> HiveInspections =>
         Set<HiveInspection>();
+
+    public DbSet<SuperManagement> SuperManagements =>
+        Set<SuperManagement>();
 
     public DbSet<Colony> Colonies =>
         Set<Colony>();

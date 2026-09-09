@@ -12,6 +12,7 @@ public sealed class HiveInspection : HiveAction {
         string? notes,
         HiveInspectionDetails details)
         : base(
+            HiveActionType.Inspection,
             hiveId,
             performedAt,
             performedByBeekeeperId,

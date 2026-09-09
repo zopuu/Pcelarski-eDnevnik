@@ -5,12 +5,19 @@ public abstract class HiveAction {
     }
 
     protected HiveAction(
+        HiveActionType actionType,
         Guid hiveId,
         DateTimeOffset performedAt,
         Guid performedByBeekeeperId,
         Guid? actionGroupId,
         string? imageUrl,
         string? notes) {
+        if (!Enum.IsDefined(
+                actionType)) {
+            throw new ArgumentOutOfRangeException(
+                nameof(actionType));
+        }
+
         if (hiveId == Guid.Empty) {
             throw new ArgumentException(
                 "Hive ID cannot be empty.",
@@ -25,6 +32,9 @@ public abstract class HiveAction {
 
         Id =
             Guid.NewGuid();
+
+        ActionType =
+            actionType;
 
         HiveId =
             hiveId;
@@ -52,6 +62,11 @@ public abstract class HiveAction {
     }
 
     public Guid Id {
+        get;
+        private set;
+    }
+
+    public HiveActionType ActionType {
         get;
         private set;
     }

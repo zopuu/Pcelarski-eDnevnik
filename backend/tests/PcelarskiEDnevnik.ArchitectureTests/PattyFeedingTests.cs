@@ -248,17 +248,20 @@ public sealed class PattyFeedingTests {
                 history.Items);
 
         Assert.Equal(
-            HiveActionHistoryKind.PattyFeeding,
-            historyItem.Kind);
+            HiveActionType.PattyFeeding,
+            historyItem.Type);
+        var summary =
+            Assert.IsType<PattyFeedingHistorySummary>(
+                historyItem.Summary);
         Assert.Equal(
             750,
-            historyItem.MassG);
+            summary.MassG);
         Assert.Equal(
             PattyType.PROTEIN,
-            historyItem.PattyType);
+            summary.PattyType);
         Assert.Equal(
             "Bee Food",
-            historyItem.Manufacturer);
+            summary.Manufacturer);
 
         var detailResult =
             await GetPattyFeedingByIdEndpoint

@@ -16,6 +16,7 @@ public sealed class SyrupFeeding : HiveAction {
         decimal waterParts,
         string? additives)
         : base(
+            HiveActionType.SyrupFeeding,
             hiveId,
             performedAt,
             performedByBeekeeperId,

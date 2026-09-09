@@ -16,6 +16,7 @@ public sealed class HiveInsulation : HiveAction {
         bool eps,
         bool xps)
         : base(
+            HiveActionType.Insulation,
             hiveId,
             performedAt,
             performedByBeekeeperId,

@@ -7,9 +7,9 @@ export function useHiveActionHistory(hiveId: string) {
   return useInfiniteQuery({
     queryKey: hiveActionQueryKeys.history(hiveId),
     queryFn: ({ pageParam }) => getHiveActionHistory(hiveId, pageParam),
-    initialPageParam: 1,
+    initialPageParam: null as string | null,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNextPage ? lastPage.page + 1 : undefined,
+      lastPage.nextCursor ?? undefined,
     enabled: Boolean(hiveId),
   });
 }

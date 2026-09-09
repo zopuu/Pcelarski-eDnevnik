@@ -15,6 +15,7 @@ public sealed class PattyFeeding : HiveAction {
         PattyType pattyType,
         string? manufacturer)
         : base(
+            HiveActionType.PattyFeeding,
             hiveId,
             performedAt,
             performedByBeekeeperId,

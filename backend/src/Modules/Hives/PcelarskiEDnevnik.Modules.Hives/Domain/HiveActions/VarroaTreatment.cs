@@ -16,6 +16,7 @@ public sealed class VarroaTreatment : HiveAction {
         decimal doseAmount,
         VarroaDoseUnit doseUnit)
         : base(
+            HiveActionType.VarroaTreatment,
             hiveId,
             performedAt,
             performedByBeekeeperId,

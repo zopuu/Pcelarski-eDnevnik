@@ -14,6 +14,7 @@ public sealed class HoneyFrameFeeding : HiveAction {
         int frameCount,
         string? frameSource)
         : base(
+            HiveActionType.HoneyFrameFeeding,
             hiveId,
             performedAt,
             performedByBeekeeperId,

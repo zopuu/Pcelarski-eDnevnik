@@ -96,8 +96,8 @@ export function HiveActionHistoryScreen({
               Istorija aktivnosti
             </Text>
             <Text className="mt-1 text-sm leading-5 text-muted">
-              Pregledi, prihrane i tretmani protiv varoe, od najnovijeg ka
-              najstarijem.
+              Pregledi, prihrane, tretmani i radovi na košnici, od najnovijeg
+              ka najstarijem.
             </Text>
           </View>
         }
@@ -137,19 +137,16 @@ function HiveActionTimelineItem({
   isFirst: boolean;
   isLast: boolean;
 }) {
-  const isInspection = action.kind === 'inspection';
-  const isSyrupFeeding = action.kind === 'syrupFeeding';
-  const isPattyFeeding = action.kind === 'pattyFeeding';
+  const isInspection = action.type === 'inspection';
+  const hasDetailScreen =
+    isInspection ||
+    action.type === 'varroaTreatment' ||
+    action.type === 'syrupFeeding' ||
+    action.type === 'pattyFeeding';
   const ratingClassName = isInspection
-    ? getRatingBorderClassName(action.overallConditionRating)
+    ? getRatingBorderClassName(action.summary.overallConditionRating)
     : 'border-primary';
-  const title = isInspection
-    ? getInspectionTypeLabel(action.inspectionType)
-    : isSyrupFeeding
-      ? 'Prihrana sirupom'
-      : isPattyFeeding
-        ? 'Prihrana pogačom'
-        : 'Tretman protiv varoe';
+  const title = getActionTitle(action);
 
   return (
     <View className="flex-row">
@@ -179,47 +176,17 @@ function HiveActionTimelineItem({
       </View>
 
       <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Otvori: ${title}`}
-        onPress={() => {
-          router.push(
-            isInspection
-              ? {
-                  pathname: '/hives/[hiveId]/inspections/[inspectionId]',
-                  params: { hiveId, inspectionId: action.id },
-                }
-              : isSyrupFeeding
-                ? {
-                    pathname: '/hives/[hiveId]/syrup-feedings/[feedingId]',
-                    params: { hiveId, feedingId: action.id },
-                  }
-                : isPattyFeeding
-                  ? {
-                      pathname: '/hives/[hiveId]/patty-feedings/[feedingId]',
-                      params: { hiveId, feedingId: action.id },
-                    }
-                  : {
-                      pathname:
-                        '/hives/[hiveId]/varroa-treatments/[treatmentId]',
-                      params: { hiveId, treatmentId: action.id },
-                    },
-          );
-        }}
+        accessibilityRole={hasDetailScreen ? 'button' : undefined}
+        accessibilityLabel={hasDetailScreen ? `Otvori: ${title}` : undefined}
+        disabled={!hasDetailScreen}
+        onPress={() => openActionDetail(hiveId, action)}
         className={`mb-5 flex-1 rounded-3xl border-2 bg-surface px-4 py-4 ${ratingClassName}`}
         style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
       >
         <View className="flex-row items-start">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
             <Ionicons
-              name={
-                isInspection
-                  ? 'search-outline'
-                  : isSyrupFeeding
-                    ? 'water-outline'
-                    : isPattyFeeding
-                      ? 'nutrition-outline'
-                      : 'bug-outline'
-              }
+              name={getActionIcon(action)}
               size={21}
               color={colors.primary}
             />
@@ -227,45 +194,57 @@ function HiveActionTimelineItem({
           <View className="ml-3 flex-1">
             <Text className="text-base font-bold text-foreground">{title}</Text>
             <Text className="mt-1 text-sm text-muted">
-              {isInspection
-                ? 'Pregled košnice'
-                : isSyrupFeeding
-                  ? formatSyrupFeedingSummary(action)
-                  : isPattyFeeding
-                    ? formatPattyFeedingSummary(action)
-                    : formatTreatmentSummary(action)}
+              {getActionDescription(action)}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+          {hasDetailScreen && (
+            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+          )}
         </View>
 
-        {isInspection ? (
-          <InspectionSummary action={action} />
-        ) : isSyrupFeeding ? (
-          <SyrupFeedingSummary action={action} />
-        ) : isPattyFeeding ? (
-          <PattyFeedingSummary action={action} />
-        ) : (
-          <TreatmentSummary action={action} />
-        )}
+        <ActionSummary action={action} />
       </Pressable>
     </View>
   );
 }
 
-function InspectionSummary({ action }: { action: HiveActionHistoryItem }) {
+function ActionSummary({ action }: { action: HiveActionHistoryItem }) {
+  switch (action.type) {
+    case 'inspection':
+      return <InspectionSummary action={action} />;
+    case 'varroaTreatment':
+      return <TreatmentSummary action={action} />;
+    case 'syrupFeeding':
+      return <SyrupFeedingSummary action={action} />;
+    case 'pattyFeeding':
+      return <PattyFeedingSummary action={action} />;
+    case 'honeyFrameFeeding':
+      return <HoneyFrameFeedingSummary action={action} />;
+    case 'insulation':
+      return <InsulationSummary action={action} />;
+    case 'maintenance':
+      return <MaintenanceSummary action={action} />;
+    case 'superManagement':
+      return null;
+  }
+}
+
+function InspectionSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'inspection' }>;
+}) {
   return (
     <>
       <View className="mt-4 flex-row items-center justify-between border-t border-border pt-3">
         <Text className="text-sm text-muted">Opšta ocena</Text>
         <Text className="text-base font-bold text-foreground">
-          {action.overallConditionRating === null
+          {action.summary.overallConditionRating === null
             ? 'Nije ocenjena'
-            : `${action.overallConditionRating}/5`}
+            : `${action.summary.overallConditionRating}/5`}
         </Text>
       </View>
-
-      {action.hasHealthIssue && (
+      {action.summary.hasHealthIssue && (
         <View className="mt-3 flex-row items-center self-start rounded-full bg-error/10 px-3 py-1.5">
           <Ionicons name="medkit-outline" size={15} color={colors.error} />
           <Text className="ml-1.5 text-xs font-bold text-error">
@@ -277,64 +256,191 @@ function InspectionSummary({ action }: { action: HiveActionHistoryItem }) {
   );
 }
 
-function TreatmentSummary({ action }: { action: HiveActionHistoryItem }) {
-  return (
-    <View className="mt-4 flex-row items-center justify-between border-t border-border pt-3">
-      <Text className="text-sm text-muted">Doza po košnici</Text>
-      <Text className="text-base font-bold text-foreground">
-        {formatTreatmentDose(action)}
-      </Text>
-    </View>
-  );
+function TreatmentSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'varroaTreatment' }>;
+}) {
+  return <SummaryRow label="Doza po košnici" value={formatTreatmentDose(action)} />;
 }
 
-function SyrupFeedingSummary({ action }: { action: HiveActionHistoryItem }) {
-  return (
-    <View className="mt-4 border-t border-border pt-3">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-sm text-muted">Dato sirupa</Text>
-        <Text className="text-base font-bold text-foreground">
-          {formatSyrupQuantity(action.quantityMl)}
-        </Text>
-      </View>
-      <View className="mt-2 flex-row items-center justify-between">
-        <Text className="text-sm text-muted">Odnos šećer : voda</Text>
-        <Text className="text-sm font-semibold text-foreground">
-          {formatSyrupRatio(action)}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function PattyFeedingSummary({ action }: { action: HiveActionHistoryItem }) {
+function SyrupFeedingSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'syrupFeeding' }>;
+}) {
   return (
     <View className="mt-4 border-t border-border pt-3">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-sm text-muted">Dato pogače</Text>
-        <Text className="text-base font-bold text-foreground">
-          {formatPattyMass(action.massG)}
-        </Text>
-      </View>
-      <View className="mt-2 flex-row items-center justify-between">
-        <Text className="text-sm text-muted">Vrsta</Text>
-        <Text className="text-sm font-semibold text-foreground">
-          {getPattyTypeLabel(action.pattyType)}
-        </Text>
-      </View>
+      <SummaryRow label="Dato sirupa" value={formatSyrupQuantity(action.summary.quantityMl)} compact />
+      <SummaryRow label="Odnos šećer : voda" value={formatSyrupRatio(action)} compact />
     </View>
   );
 }
 
-function formatTreatmentSummary(action: HiveActionHistoryItem) {
-  return action.productName ?? 'Evidentiran tretman';
+function PattyFeedingSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'pattyFeeding' }>;
+}) {
+  return (
+    <View className="mt-4 border-t border-border pt-3">
+      <SummaryRow label="Dato pogače" value={formatPattyMass(action.summary.massG)} compact />
+      <SummaryRow label="Vrsta" value={getPattyTypeLabel(action.summary.pattyType)} compact />
+    </View>
+  );
 }
 
-function formatTreatmentDose(action: HiveActionHistoryItem) {
-  if (action.doseAmount === null || action.doseUnit === null) {
-    return '—';
+function HoneyFrameFeedingSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'honeyFrameFeeding' }>;
+}) {
+  return <SummaryRow label="Dodati ramovi" value={`${action.summary.frameCount}`} />;
+}
+
+function InsulationSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'insulation' }>;
+}) {
+  return <SummaryRow label="Materijali" value={getInsulationMaterials(action)} />;
+}
+
+function MaintenanceSummary({
+  action,
+}: {
+  action: Extract<HiveActionHistoryItem, { type: 'maintenance' }>;
+}) {
+  return (
+    <SummaryRow
+      label="Trošak"
+      value={
+        action.summary.costAmount === null
+          ? 'Nije unet'
+          : `${new Intl.NumberFormat('sr-Latn-RS', {
+              maximumFractionDigits: 2,
+            }).format(action.summary.costAmount)} ${action.summary.currencyCode ?? ''}`
+      }
+    />
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  compact = false,
+}: {
+  label: string;
+  value: string;
+  compact?: boolean;
+}) {
+  return (
+    <View
+      className={`${compact ? 'mt-2' : 'mt-4 border-t border-border pt-3'} flex-row items-center justify-between`}
+    >
+      <Text className="text-sm text-muted">{label}</Text>
+      <Text className="text-sm font-semibold text-foreground">{value}</Text>
+    </View>
+  );
+}
+
+function getActionTitle(action: HiveActionHistoryItem) {
+  switch (action.type) {
+    case 'inspection':
+      return getInspectionTypeLabel(action.summary.inspectionType);
+    case 'varroaTreatment':
+      return 'Tretman protiv varoe';
+    case 'syrupFeeding':
+      return 'Prihrana sirupom';
+    case 'pattyFeeding':
+      return 'Prihrana pogačom';
+    case 'honeyFrameFeeding':
+      return 'Prihrana ramovima meda';
+    case 'insulation':
+      return 'Izolacija košnice';
+    case 'maintenance':
+      return 'Održavanje košnice';
+    case 'superManagement':
+      return 'Upravljanje medištima';
   }
+}
 
+function getActionDescription(action: HiveActionHistoryItem) {
+  switch (action.type) {
+    case 'inspection':
+      return 'Pregled košnice';
+    case 'varroaTreatment':
+      return action.summary.productName;
+    case 'syrupFeeding':
+      return `Dato ${formatSyrupQuantity(action.summary.quantityMl)} · ${formatSyrupRatio(action)}`;
+    case 'pattyFeeding':
+      return `${formatPattyMass(action.summary.massG)} · ${action.summary.manufacturer || getPattyTypeLabel(action.summary.pattyType)}`;
+    case 'honeyFrameFeeding':
+      return action.summary.frameSource || 'Evidentirana prihrana ramovima';
+    case 'insulation':
+      return action.summary.operation === 'add' ? 'Dodavanje izolacije' : 'Uklanjanje izolacije';
+    case 'maintenance':
+      return action.summary.serviceProvider || 'Evidentirano održavanje';
+    case 'superManagement':
+      return 'Evidentirano upravljanje medištima';
+  }
+}
+
+function getActionIcon(action: HiveActionHistoryItem) {
+  switch (action.type) {
+    case 'inspection':
+      return 'search-outline' as const;
+    case 'varroaTreatment':
+      return 'bug-outline' as const;
+    case 'syrupFeeding':
+      return 'water-outline' as const;
+    case 'pattyFeeding':
+      return 'nutrition-outline' as const;
+    case 'honeyFrameFeeding':
+      return 'albums-outline' as const;
+    case 'insulation':
+      return 'layers-outline' as const;
+    case 'maintenance':
+      return 'construct-outline' as const;
+    case 'superManagement':
+      return 'grid-outline' as const;
+  }
+}
+
+function openActionDetail(hiveId: string, action: HiveActionHistoryItem) {
+  switch (action.type) {
+    case 'inspection':
+      router.push({
+        pathname: '/hives/[hiveId]/inspections/[inspectionId]',
+        params: { hiveId, inspectionId: action.id },
+      });
+      return;
+    case 'syrupFeeding':
+      router.push({
+        pathname: '/hives/[hiveId]/syrup-feedings/[feedingId]',
+        params: { hiveId, feedingId: action.id },
+      });
+      return;
+    case 'pattyFeeding':
+      router.push({
+        pathname: '/hives/[hiveId]/patty-feedings/[feedingId]',
+        params: { hiveId, feedingId: action.id },
+      });
+      return;
+    case 'varroaTreatment':
+      router.push({
+        pathname: '/hives/[hiveId]/varroa-treatments/[treatmentId]',
+        params: { hiveId, treatmentId: action.id },
+      });
+      return;
+    default:
+      return;
+  }
+}
+
+function formatTreatmentDose(
+  action: Extract<HiveActionHistoryItem, { type: 'varroaTreatment' }>,
+) {
   const unitLabels = {
     ml: 'ml',
     strips: 'trake',
@@ -343,46 +449,37 @@ function formatTreatmentDose(action: HiveActionHistoryItem) {
 
   return `${new Intl.NumberFormat('sr-Latn-RS', {
     maximumFractionDigits: 2,
-  }).format(action.doseAmount)} ${unitLabels[action.doseUnit]}`;
+  }).format(action.summary.doseAmount)} ${unitLabels[action.summary.doseUnit]}`;
 }
 
-function formatSyrupFeedingSummary(action: HiveActionHistoryItem) {
-  return `Dato ${formatSyrupQuantity(action.quantityMl)} · ${formatSyrupRatio(action)}`;
-}
-
-function formatPattyFeedingSummary(action: HiveActionHistoryItem) {
-  const type = getPattyTypeLabel(action.pattyType);
-  const manufacturer = action.manufacturer?.trim();
-
-  return `${formatPattyMass(action.massG)} · ${manufacturer || type}`;
-}
-
-function formatPattyMass(massG: number | null) {
-  if (massG === null) {
-    return '—';
-  }
-
+function formatPattyMass(massG: number) {
   return `${new Intl.NumberFormat('sr-Latn-RS').format(massG)} g`;
 }
 
-function formatSyrupQuantity(quantityMl: number | null) {
-  if (quantityMl === null) {
-    return '—';
-  }
-
+function formatSyrupQuantity(quantityMl: number) {
   return `${new Intl.NumberFormat('sr-Latn-RS').format(quantityMl)} ml`;
 }
 
-function formatSyrupRatio(action: HiveActionHistoryItem) {
-  if (action.sugarParts === null || action.waterParts === null) {
-    return '—';
-  }
-
+function formatSyrupRatio(
+  action: Extract<HiveActionHistoryItem, { type: 'syrupFeeding' }>,
+) {
   const formatter = new Intl.NumberFormat('sr-Latn-RS', {
     maximumFractionDigits: 4,
   });
 
-  return `${formatter.format(action.sugarParts)} : ${formatter.format(action.waterParts)}`;
+  return `${formatter.format(action.summary.sugarParts)} : ${formatter.format(action.summary.waterParts)}`;
+}
+
+function getInsulationMaterials(
+  action: Extract<HiveActionHistoryItem, { type: 'insulation' }>,
+) {
+  return [
+    action.summary.paper ? 'papir' : null,
+    action.summary.eps ? 'EPS' : null,
+    action.summary.xps ? 'XPS' : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 function getRatingBorderClassName(rating: number | null) {
@@ -409,8 +506,7 @@ function EmptyState() {
         Još nema evidentiranih aktivnosti.
       </Text>
       <Text className="mt-1 text-center text-sm leading-5 text-muted">
-        Pregledi, prihrane i tretmani protiv varoe koje zabeležite za ovu
-        košnicu biće prikazani ovde.
+        Aktivnosti koje zabeležite za ovu košnicu biće prikazane ovde.
       </Text>
     </View>
   );

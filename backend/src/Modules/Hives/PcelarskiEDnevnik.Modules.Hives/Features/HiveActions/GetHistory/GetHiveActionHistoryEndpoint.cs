@@ -2,19 +2,17 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveActions.GetHistory;
 
 public static class GetHiveActionHistoryEndpoint {
-    private const int DefaultPageSize = 20;
-    private const int MaximumPageSize = 50;
+    private const int DefaultLimit = 20;
+    private const int MaximumLimit = 50;
 
-    public static RouteGroupBuilder
-        MapGetHiveActionHistoryEndpoint(
-            this RouteGroupBuilder group) {
+    public static RouteGroupBuilder MapGetHiveActionHistoryEndpoint(
+        this RouteGroupBuilder group) {
         group.MapGet(
                 "/{hiveId:guid}/actions",
                 HandleAsync)
@@ -33,23 +31,17 @@ public static class GetHiveActionHistoryEndpoint {
         ICurrentBeekeeperContext currentBeekeeper,
         HivesDbContext dbContext,
         CancellationToken cancellationToken,
-        int page = 1,
-        int pageSize = DefaultPageSize) {
-        if (page < 1 ||
-            pageSize < 1 ||
-            pageSize > MaximumPageSize ||
-            page > (int.MaxValue - 1) / pageSize) {
+        string? cursor = null,
+        int limit = DefaultLimit) {
+        var validationErrors =
+            ValidateRequest(
+                cursor,
+                limit,
+                out var decodedCursor);
+
+        if (validationErrors is not null) {
             return Results.ValidationProblem(
-                new Dictionary<string, string[]> {
-                    ["page"] =
-                    [
-                        "Page must be at least 1."
-                    ],
-                    ["pageSize"] =
-                    [
-                        $"Page size must be between 1 and {MaximumPageSize}."
-                    ]
-                });
+                validationErrors);
         }
 
         var beekeeperId =
@@ -70,219 +62,52 @@ public static class GetHiveActionHistoryEndpoint {
             return Results.NotFound();
         }
 
-        var offset = checked((page - 1) * pageSize);
-        var itemsRequiredFromEachSource = checked(offset + pageSize + 1);
-
-        // The enum properties are stored as varchar values. Projecting them
-        // through a SQL UNION loses their EF value converters, so each source
-        // is materialized independently before the small, bounded merge.
-        var inspections =
-            await dbContext.HiveInspections
-                .AsNoTracking()
-                .Where(
-                    inspection =>
-                        inspection.HiveId == hiveId)
-                .OrderByDescending(
-                    inspection =>
-                        inspection.PerformedAt)
-                .ThenByDescending(
-                    inspection =>
-                        inspection.Id)
-                .Select(
-                    inspection =>
-                        new HiveActionHistoryItemResponse(
-                            inspection.Id,
-                            inspection.PerformedAt,
-                            HiveActionHistoryKind.Inspection,
-                            inspection.InspectionType,
-                            inspection.OverallConditionRating,
-                            inspection.Disease != null ||
-                                inspection.Pest != null ||
-                                inspection.Predator != null ||
-                                inspection.MoldPresent == true ||
-                                inspection.ExcessMoisturePresent == true,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null))
-                .Take(
-                    itemsRequiredFromEachSource)
-                .ToListAsync(
+        var page =
+            await new HiveActionHistoryReader(
+                    dbContext)
+                .ReadAsync(
+                    hiveId,
+                    limit,
+                    decodedCursor,
                     cancellationToken);
-
-        var treatments =
-            await dbContext.VarroaTreatments
-                .AsNoTracking()
-                .Where(
-                    treatment =>
-                        treatment.HiveId == hiveId)
-                .OrderByDescending(
-                    treatment =>
-                        treatment.PerformedAt)
-                .ThenByDescending(
-                    treatment =>
-                        treatment.Id)
-                .Select(
-                    treatment =>
-                        new HiveActionHistoryItemResponse(
-                            treatment.Id,
-                            treatment.PerformedAt,
-                            HiveActionHistoryKind.VarroaTreatment,
-                            null,
-                            null,
-                            null,
-                            treatment.ProductName,
-                            treatment.ApplicationMethod,
-                            treatment.DoseAmount,
-                            treatment.DoseUnit,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null))
-                .Take(
-                    itemsRequiredFromEachSource)
-                .ToListAsync(
-                    cancellationToken);
-
-        var syrupFeedings =
-            await dbContext.SyrupFeedings
-                .AsNoTracking()
-                .Where(
-                    feeding =>
-                        feeding.HiveId == hiveId)
-                .OrderByDescending(
-                    feeding =>
-                        feeding.PerformedAt)
-                .ThenByDescending(
-                    feeding =>
-                        feeding.Id)
-                .Select(
-                    feeding =>
-                        new HiveActionHistoryItemResponse(
-                            feeding.Id,
-                            feeding.PerformedAt,
-                            HiveActionHistoryKind.SyrupFeeding,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            feeding.QuantityMl,
-                            feeding.SugarParts,
-                            feeding.WaterParts,
-                            null,
-                            null,
-                            null))
-                .Take(
-                    itemsRequiredFromEachSource)
-                .ToListAsync(
-                    cancellationToken);
-
-        var pattyFeedings =
-            await dbContext.PattyFeedings
-                .AsNoTracking()
-                .Where(
-                    feeding =>
-                        feeding.HiveId == hiveId)
-                .OrderByDescending(
-                    feeding =>
-                        feeding.PerformedAt)
-                .ThenByDescending(
-                    feeding =>
-                        feeding.Id)
-                .Select(
-                    feeding =>
-                        new HiveActionHistoryItemResponse(
-                            feeding.Id,
-                            feeding.PerformedAt,
-                            HiveActionHistoryKind.PattyFeeding,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            feeding.MassG,
-                            feeding.PattyType,
-                            feeding.Manufacturer))
-                .Take(
-                    itemsRequiredFromEachSource)
-                .ToListAsync(
-                    cancellationToken);
-
-        var actions =
-            inspections
-                .Concat(
-                    treatments)
-                .Concat(
-                    syrupFeedings)
-                .Concat(
-                    pattyFeedings)
-                .OrderByDescending(
-                    action =>
-                        action.PerformedAt)
-                .ThenByDescending(
-                    action =>
-                        action.Id)
-                .Skip(
-                    offset)
-                .Take(
-                    pageSize + 1)
-                .ToList();
-
-        var hasNextPage =
-            actions.Count > pageSize;
 
         return Results.Ok(
-            new HiveActionHistoryPageResponse(
-                actions.Take(
-                        pageSize)
-                    .ToList(),
-                page,
-                hasNextPage));
+            page);
+    }
+
+    private static Dictionary<string, string[]>? ValidateRequest(
+        string? cursor,
+        int limit,
+        out HiveActionHistoryCursor? decodedCursor) {
+        var errors =
+            new Dictionary<string, string[]>();
+
+        decodedCursor = null;
+
+        if (limit < 1 ||
+            limit > MaximumLimit) {
+            errors["limit"] =
+            [
+                $"Limit must be between 1 and {MaximumLimit}."
+            ];
+        }
+
+        if (cursor is not null) {
+            if (!HiveActionHistoryCursorCodec.TryDecode(
+                    cursor,
+                    out var parsedCursor)) {
+                errors["cursor"] =
+                [
+                    "Cursor is invalid."
+                ];
+            } else {
+                decodedCursor =
+                    parsedCursor;
+            }
+        }
+
+        return errors.Count == 0
+            ? null
+            : errors;
     }
 }
-
-public enum HiveActionHistoryKind {
-    Inspection,
-    VarroaTreatment,
-    SyrupFeeding,
-    PattyFeeding
-}
-
-public sealed record HiveActionHistoryItemResponse(
-    Guid Id,
-    DateTimeOffset PerformedAt,
-    HiveActionHistoryKind Kind,
-    HiveInspectionType? InspectionType,
-    short? OverallConditionRating,
-    bool? HasHealthIssue,
-    string? ProductName,
-    VarroaApplicationMethod? ApplicationMethod,
-    decimal? DoseAmount,
-    VarroaDoseUnit? DoseUnit,
-    int? QuantityMl,
-    decimal? SugarParts,
-    decimal? WaterParts,
-    int? MassG,
-    PattyType? PattyType,
-    string? Manufacturer);
-
-public sealed record HiveActionHistoryPageResponse(
-    IReadOnlyList<HiveActionHistoryItemResponse> Items,
-    int Page,
-    bool HasNextPage);

@@ -216,15 +216,18 @@ public sealed class VarroaTreatmentTests {
                 history.Items);
 
         Assert.Equal(
-            HiveActionHistoryKind.VarroaTreatment,
-            historyItem.Kind);
+            HiveActionType.VarroaTreatment,
+            historyItem.Type);
         Assert.Equal(
             treatment.Id,
             historyItem.Id);
+        var summary =
+            Assert.IsType<VarroaTreatmentHistorySummary>(
+                historyItem.Summary);
         Assert.Equal(
             "Api-Bioxal",
-            historyItem.ProductName);
-        Assert.Equal(5m, historyItem.DoseAmount);
+            summary.ProductName);
+        Assert.Equal(5m, summary.DoseAmount);
 
         var detailResult =
             await GetVarroaTreatmentByIdEndpoint
@@ -294,6 +297,113 @@ public sealed class VarroaTreatmentTests {
             await dbContext.VarroaTreatments
                 .AsNoTracking()
                 .ToListAsync());
+    }
+
+    [Fact]
+    public async Task History_UsesCursorPaginationAndRejectsMalformedCursor() {
+        var beekeeperId =
+            Guid.NewGuid();
+
+        await using var dbContext =
+            CreateDbContext();
+
+        var hive =
+            CreateHive(
+                beekeeperId,
+                "Hive A");
+        var performedAt =
+            DateTimeOffset.UtcNow;
+        var olderTreatment =
+            VarroaTreatment.Create(
+                hive.Id,
+                performedAt,
+                beekeeperId,
+                actionGroupId: null,
+                imageUrl: null,
+                notes: null,
+                productName: "Older",
+                applicationMethod:
+                    VarroaApplicationMethod.TRICKLING,
+                doseAmount: 5m,
+                doseUnit:
+                    VarroaDoseUnit.ML);
+        var newerTreatment =
+            VarroaTreatment.Create(
+                hive.Id,
+                performedAt.AddMinutes(1),
+                beekeeperId,
+                actionGroupId: null,
+                imageUrl: null,
+                notes: null,
+                productName: "Newer",
+                applicationMethod:
+                    VarroaApplicationMethod.TRICKLING,
+                doseAmount: 5m,
+                doseUnit:
+                    VarroaDoseUnit.ML);
+
+        dbContext.Hives.Add(hive);
+        dbContext.VarroaTreatments.AddRange(
+            olderTreatment,
+            newerTreatment);
+        await dbContext.SaveChangesAsync();
+
+        var currentBeekeeper =
+            new TestCurrentBeekeeperContext(
+                beekeeperId);
+        var firstResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None,
+                    limit: 1);
+        var firstPage =
+            Assert.IsType<HiveActionHistoryPageResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        firstResult)
+                    .Value);
+
+        Assert.Equal(
+            newerTreatment.Id,
+            Assert.Single(firstPage.Items).Id);
+        Assert.NotNull(firstPage.NextCursor);
+
+        var secondResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None,
+                    cursor: firstPage.NextCursor,
+                    limit: 1);
+        var secondPage =
+            Assert.IsType<HiveActionHistoryPageResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        secondResult)
+                    .Value);
+
+        Assert.Equal(
+            olderTreatment.Id,
+            Assert.Single(secondPage.Items).Id);
+        Assert.Null(secondPage.NextCursor);
+
+        var invalidCursorResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None,
+                    cursor: "invalid");
+
+        Assert.Equal(
+            StatusCodes.Status400BadRequest,
+            Assert.IsAssignableFrom<IStatusCodeHttpResult>(
+                    invalidCursorResult)
+                .StatusCode);
     }
 
     [Fact]
@@ -531,6 +641,64 @@ public sealed class VarroaTreatmentTests {
         Assert.Contains(
             "ck_varroa_treatments_dose_unit",
             constraintNames);
+    }
+
+    [Fact]
+    public void HistoryBaseQuery_UsesOnlyHiveActionsTable() {
+        using var dbContext =
+            CreateRelationalDbContext();
+
+        var hiveActionEntityType =
+            dbContext.GetService<IDesignTimeModel>()
+                .Model
+                .FindEntityType(
+                    typeof(HiveAction));
+        var actionTypeProperty =
+            hiveActionEntityType?.FindProperty(
+                nameof(HiveAction.ActionType));
+
+        Assert.NotNull(actionTypeProperty);
+        Assert.Equal(
+            "action_type",
+            actionTypeProperty.GetColumnName());
+        Assert.Contains(
+            "ck_hive_actions_action_type",
+            hiveActionEntityType!
+                .GetCheckConstraints()
+                .Select(
+                    constraint =>
+                        constraint.Name));
+
+        var sql =
+            new HiveActionHistoryReader(
+                    dbContext)
+                .CreateBaseTimelineQuery(
+                    Guid.NewGuid(),
+                    cursor: null)
+                .OrderByDescending(
+                    action =>
+                        action.PerformedAt)
+                .ThenByDescending(
+                    action =>
+                        action.Id)
+                .Take(21)
+                .ToQueryString();
+
+        Assert.Contains(
+            "hive_actions",
+            sql);
+        Assert.DoesNotContain(
+            "varroa_treatments",
+            sql);
+        Assert.DoesNotContain(
+            "syrup_feedings",
+            sql);
+        Assert.DoesNotContain(
+            "patty_feedings",
+            sql);
+        Assert.DoesNotContain(
+            "hive_inspections",
+            sql);
     }
 
     private static HivesDbContext CreateDbContext() {
