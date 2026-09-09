@@ -783,6 +783,18 @@ export function ApiaryHivesScreen({
         title="Akcije nad pčelinjakom"
         actions={[
           {
+            key: 'honey-frame-feeding',
+            label: 'Prihrana ramovima meda',
+            icon: 'albums-outline',
+            accessibilityLabel: 'Evidentiraj prihranu ramovima meda',
+            onPress: () => {
+              router.push({
+                pathname: '/apiaries/[apiaryId]/honey-frame-feedings/create',
+                params: { apiaryId },
+              } as never);
+            },
+          },
+          {
             key: 'patty-feeding',
             label: 'Prihrana pogačom',
             icon: 'nutrition-outline',

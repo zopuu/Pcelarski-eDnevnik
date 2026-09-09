@@ -142,7 +142,8 @@ function HiveActionTimelineItem({
     isInspection ||
     action.type === 'varroaTreatment' ||
     action.type === 'syrupFeeding' ||
-    action.type === 'pattyFeeding';
+    action.type === 'pattyFeeding' ||
+    action.type === 'honeyFrameFeeding';
   const ratingClassName = isInspection
     ? getRatingBorderClassName(action.summary.overallConditionRating)
     : 'border-primary';
@@ -295,7 +296,12 @@ function HoneyFrameFeedingSummary({
 }: {
   action: Extract<HiveActionHistoryItem, { type: 'honeyFrameFeeding' }>;
 }) {
-  return <SummaryRow label="Dodati ramovi" value={`${action.summary.frameCount}`} />;
+  return (
+    <SummaryRow
+      label="Dato ramova"
+      value={formatFrames(action.summary.frameCount)}
+    />
+  );
 }
 
 function InsulationSummary({
@@ -376,7 +382,7 @@ function getActionDescription(action: HiveActionHistoryItem) {
     case 'pattyFeeding':
       return `${formatPattyMass(action.summary.massG)} · ${action.summary.manufacturer || getPattyTypeLabel(action.summary.pattyType)}`;
     case 'honeyFrameFeeding':
-      return action.summary.frameSource || 'Evidentirana prihrana ramovima';
+      return 'Evidentirana prihrana ramovima meda';
     case 'insulation':
       return action.summary.operation === 'add' ? 'Dodavanje izolacije' : 'Uklanjanje izolacije';
     case 'maintenance':
@@ -427,6 +433,12 @@ function openActionDetail(hiveId: string, action: HiveActionHistoryItem) {
         params: { hiveId, feedingId: action.id },
       });
       return;
+    case 'honeyFrameFeeding':
+      router.push({
+        pathname: '/hives/[hiveId]/honey-frame-feedings/[feedingId]',
+        params: { hiveId, feedingId: action.id },
+      });
+      return;
     case 'varroaTreatment':
       router.push({
         pathname: '/hives/[hiveId]/varroa-treatments/[treatmentId]',
@@ -454,6 +466,12 @@ function formatTreatmentDose(
 
 function formatPattyMass(massG: number) {
   return `${new Intl.NumberFormat('sr-Latn-RS').format(massG)} g`;
+}
+
+function formatFrames(frameCount: number) {
+  return `${frameCount} ${
+    frameCount === 1 ? 'ram' : frameCount >= 2 && frameCount <= 4 ? 'rama' : 'ramova'
+  }`;
 }
 
 function formatSyrupQuantity(quantityMl: number) {

@@ -1193,6 +1193,32 @@ export function HiveDetailsScreen({
                 actions={[
                     {
                         key:
+                            'honey-frame-feeding',
+
+                        label:
+                            'Prihrana ramovima meda',
+
+                        icon:
+                            'albums-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj prihranu ramovima meda za košnicu',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/honey-frame-feedings/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
                             'patty-feeding',
 
                         label:
