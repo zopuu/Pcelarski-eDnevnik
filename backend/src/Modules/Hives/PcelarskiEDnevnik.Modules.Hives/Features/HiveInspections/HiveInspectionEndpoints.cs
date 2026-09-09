@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections.GetById;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections.GetHistory;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections.Record;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections;
@@ -12,7 +14,9 @@ public static class HiveInspectionEndpoints {
             .MapGroup("/api/hives")
             .WithTags("Hive Inspections")
             .RequireAuthorization()
-            .MapRecordHiveInspectionEndpoint();
+            .MapRecordHiveInspectionEndpoint()
+            .MapGetHiveInspectionHistoryEndpoint()
+            .MapGetHiveInspectionByIdEndpoint();
 
         return endpoints;
     }

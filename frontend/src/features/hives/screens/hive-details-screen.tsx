@@ -359,9 +359,8 @@ export function HiveDetailsScreen({
 
     const handleHistoryPress =
         () => {
-            Alert.alert(
-                'Istorija aktivnosti',
-                'Ovde će biti hronološka istorija pregleda, prihrana, tretmana i drugih akcija.',
+            router.push(
+                `/hives/${hiveId}/history` as never,
             );
         };
 
@@ -1210,6 +1209,32 @@ export function HiveDetailsScreen({
                                 router.push({
                                     pathname:
                                         '/hives/[hiveId]/inspections/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
+                            'varroa-treatment',
+
+                        label:
+                            'Tretman protiv varoe',
+
+                        icon:
+                            'bug-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj tretman protiv varoe za košnicu',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/varroa-treatments/create',
 
                                     params: {
                                         hiveId,

@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveActions.GetHistory;
+using PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments.Record;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
@@ -155,6 +157,99 @@ public sealed class VarroaTreatmentTests {
                 action =>
                     action.DoseAmount),
             response.TotalDoseAmount);
+    }
+
+    [Fact]
+    public async Task GetHistoryAndById_ReturnOnlyOwnedVarroaTreatment() {
+        var beekeeperId =
+            Guid.NewGuid();
+
+        await using var dbContext =
+            CreateDbContext();
+
+        var hive =
+            CreateHive(
+                beekeeperId,
+                "Hive A");
+
+        var treatment =
+            VarroaTreatment.Create(
+                hive.Id,
+                DateTimeOffset.UtcNow,
+                beekeeperId,
+                actionGroupId: null,
+                imageUrl: null,
+                notes: "  Follow-up after seven days.  ",
+                productName: "  Api-Bioxal  ",
+                applicationMethod:
+                    VarroaApplicationMethod.TRICKLING,
+                doseAmount: 5m,
+                doseUnit:
+                    VarroaDoseUnit.ML);
+
+        dbContext.Hives.Add(
+            hive);
+        dbContext.VarroaTreatments.Add(
+            treatment);
+        await dbContext.SaveChangesAsync();
+
+        var currentBeekeeper =
+            new TestCurrentBeekeeperContext(
+                beekeeperId);
+
+        var historyResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var history =
+            Assert.IsType<HiveActionHistoryPageResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        historyResult)
+                    .Value);
+
+        var historyItem =
+            Assert.Single(
+                history.Items);
+
+        Assert.Equal(
+            HiveActionHistoryKind.VarroaTreatment,
+            historyItem.Kind);
+        Assert.Equal(
+            treatment.Id,
+            historyItem.Id);
+        Assert.Equal(
+            "Api-Bioxal",
+            historyItem.ProductName);
+        Assert.Equal(5m, historyItem.DoseAmount);
+
+        var detailResult =
+            await GetVarroaTreatmentByIdEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    treatment.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var detail =
+            Assert.IsType<VarroaTreatmentDetailsResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        detailResult)
+                    .Value);
+
+        Assert.Equal(
+            treatment.Id,
+            detail.Id);
+        Assert.Equal(
+            "Api-Bioxal",
+            detail.ProductName);
+        Assert.Equal(
+            "Follow-up after seven days.",
+            detail.Notes);
     }
 
     [Fact]

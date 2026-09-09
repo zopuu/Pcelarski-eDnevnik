@@ -119,6 +119,10 @@ export function ApiaryHivesScreen({
     isMoreOpen,
     setIsMoreOpen,
   ] = useState(false);
+  const [
+    isApiaryActionsOpen,
+    setIsApiaryActionsOpen,
+  ] = useState(false);
   const deactivateApiaryMutation =
     useDeactivateApiary();
   const currentStayQuery =
@@ -332,6 +336,10 @@ export function ApiaryHivesScreen({
     });
   };
 
+  const handleApiaryActionsPress = () => {
+    setIsApiaryActionsOpen(true);
+  };
+
   const handleStayHistoryPress = () => {
     setIsMoreOpen(false);
 
@@ -438,18 +446,18 @@ export function ApiaryHivesScreen({
             ]}
             primaryAction={{
               key:
-                'add-hive',
+                'actions',
 
               label:
-                'Košnica',
+                'Akcije',
 
-              icon: 'add',
+              icon: 'construct-outline',
 
               accessibilityLabel:
-                'Dodaj košnicu',
+                'Otvori akcije nad pčelinjakom',
 
               onPress:
-                handleAddHive,
+                handleApiaryActionsPress,
             }}
             rightActions={[
               {
@@ -712,7 +720,7 @@ export function ApiaryHivesScreen({
                 "
               >
                 {hives.length === 0
-                  ? 'Dodajte prvu košnicu pomoću centralnog dugmeta Košnica.'
+                  ? 'Dodajte prvu košnicu iz menija Više.'
                   : 'Promenite filtere da biste videli druge košnice.'}
               </Text>
             </View>
@@ -768,6 +776,28 @@ export function ApiaryHivesScreen({
       </Screen>
 
       <ActionOverflowSheet
+        visible={isApiaryActionsOpen}
+        onClose={() => {
+          setIsApiaryActionsOpen(false);
+        }}
+        title="Akcije nad pčelinjakom"
+        actions={[
+          {
+            key: 'varroa-treatment',
+            label: 'Tretman protiv varoe',
+            icon: 'bug-outline',
+            accessibilityLabel: 'Evidentiraj tretman protiv varoe',
+            onPress: () => {
+              router.push({
+                pathname: '/apiaries/[apiaryId]/varroa-treatments/create',
+                params: { apiaryId },
+              } as never);
+            },
+          },
+        ]}
+      />
+
+      <ActionOverflowSheet
         visible={
           isMoreOpen
         }
@@ -778,6 +808,18 @@ export function ApiaryHivesScreen({
         }}
         title="Pčelinjak"
         actions={[
+          {
+            key: 'add-hive',
+
+            label: 'Dodaj košnicu',
+
+            icon: 'add-circle-outline',
+
+            accessibilityLabel: 'Dodaj košnicu u pčelinjak',
+
+            onPress: handleAddHive,
+          },
+
           {
             key: 'stay-history',
 

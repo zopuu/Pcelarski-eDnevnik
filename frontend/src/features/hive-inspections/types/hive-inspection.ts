@@ -104,3 +104,22 @@ export type RecordHiveInspectionResponse = {
   performedAt: string;
   inspectionType: string | null;
 };
+
+export type HiveInspectionHistoryItem = {
+  id: string;
+  performedAt: string;
+  inspectionType: HiveInspectionType | null;
+  overallConditionRating: number | null;
+  hasHealthIssue: boolean;
+};
+
+export type HiveInspectionHistoryPage = {
+  items: HiveInspectionHistoryItem[];
+  page: number;
+  hasNextPage: boolean;
+};
+
+export type HiveInspectionDetails = RecordHiveInspectionRequest & {
+  id: string;
+  hiveId: string;
+};
