@@ -6,7 +6,8 @@ import type { HiveInspectionType } from '@/features/hive-inspections/types/hive-
 
 export type HiveActionHistoryKind =
   | 'inspection'
-  | 'varroaTreatment';
+  | 'varroaTreatment'
+  | 'syrupFeeding';
 
 export type HiveActionHistoryItem = {
   id: string;
@@ -19,6 +20,9 @@ export type HiveActionHistoryItem = {
   applicationMethod: VarroaApplicationMethod | null;
   doseAmount: number | null;
   doseUnit: VarroaDoseUnit | null;
+  quantityMl: number | null;
+  sugarParts: number | null;
+  waterParts: number | null;
 };
 
 export type HiveActionHistoryPage = {

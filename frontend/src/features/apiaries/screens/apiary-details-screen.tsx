@@ -783,6 +783,18 @@ export function ApiaryHivesScreen({
         title="Akcije nad pčelinjakom"
         actions={[
           {
+            key: 'syrup-feeding',
+            label: 'Prihrana sirupom',
+            icon: 'water-outline',
+            accessibilityLabel: 'Evidentiraj prihranu sirupom',
+            onPress: () => {
+              router.push({
+                pathname: '/apiaries/[apiaryId]/syrup-feedings/create',
+                params: { apiaryId },
+              } as never);
+            },
+          },
+          {
             key: 'varroa-treatment',
             label: 'Tretman protiv varoe',
             icon: 'bug-outline',

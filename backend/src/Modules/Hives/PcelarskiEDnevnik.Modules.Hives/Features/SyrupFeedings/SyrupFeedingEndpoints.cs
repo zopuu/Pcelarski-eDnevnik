@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings.GetFeedingOptions;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings.Record;
 
@@ -25,6 +26,14 @@ public static class SyrupFeedingEndpoints {
                 "Syrup Feedings")
             .RequireAuthorization()
             .MapGetSyrupFeedingOptionsEndpoint();
+
+        endpoints
+            .MapGroup(
+                "/api/hives")
+            .WithTags(
+                "Syrup Feedings")
+            .RequireAuthorization()
+            .MapGetSyrupFeedingByIdEndpoint();
 
         return endpoints;
     }

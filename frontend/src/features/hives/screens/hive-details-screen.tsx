@@ -1193,6 +1193,32 @@ export function HiveDetailsScreen({
                 actions={[
                     {
                         key:
+                            'syrup-feeding',
+
+                        label:
+                            'Prihrana sirupom',
+
+                        icon:
+                            'water-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj prihranu sirupom za košnicu',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/syrup-feedings/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
                             'inspection',
 
                         label:

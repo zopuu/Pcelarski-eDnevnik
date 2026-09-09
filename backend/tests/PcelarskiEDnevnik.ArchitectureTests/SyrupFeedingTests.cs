@@ -1,6 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveActions.GetHistory;
+using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings.Record;
+using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
+using PcelarskiEDnevnik.SharedKernel.Authentication;
 
 namespace PcelarskiEDnevnik.ArchitectureTests;
 
@@ -177,5 +184,136 @@ public sealed class SyrupFeedingTests {
             result =>
                 result.ErrorMessage ==
                     "Every fill percentage must be greater than zero and at most 100.");
+    }
+
+    [Fact]
+    public async Task GetHistoryAndById_ReturnOwnedSyrupFeedingDetails() {
+        var beekeeperId =
+            Guid.NewGuid();
+
+        await using var dbContext =
+            CreateDbContext();
+
+        var hive =
+            Hive.Create(
+                beekeeperId,
+                "Hive A",
+                HiveType.LangstrothRoot,
+                identificationNumber: null,
+                colorHex: null,
+                manufactureDate: null,
+                manufacturer: null,
+                material: null,
+                purchaseDate: null);
+
+        var feeding =
+            SyrupFeeding.Create(
+                hive.Id,
+                DateTimeOffset.UtcNow,
+                beekeeperId,
+                actionGroupId: null,
+                imageUrl: null,
+                notes: "  Spring feeding.  ",
+                quantityMl: 750,
+                sugarParts: 2,
+                waterParts: 1,
+                additives: "  Vitamin C  ");
+
+        dbContext.Hives.Add(
+            hive);
+        dbContext.SyrupFeedings.Add(
+            feeding);
+        await dbContext.SaveChangesAsync();
+
+        var currentBeekeeper =
+            new TestCurrentBeekeeperContext(
+                beekeeperId);
+
+        var historyResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var history =
+            Assert.IsType<HiveActionHistoryPageResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        historyResult)
+                    .Value);
+
+        var historyItem =
+            Assert.Single(
+                history.Items);
+
+        Assert.Equal(
+            HiveActionHistoryKind.SyrupFeeding,
+            historyItem.Kind);
+        Assert.Equal(
+            750,
+            historyItem.QuantityMl);
+        Assert.Equal(
+            2m,
+            historyItem.SugarParts);
+        Assert.Equal(
+            1m,
+            historyItem.WaterParts);
+
+        var detailResult =
+            await GetSyrupFeedingByIdEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    feeding.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var detail =
+            Assert.IsType<SyrupFeedingDetailsResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        detailResult)
+                    .Value);
+
+        Assert.Equal(
+            feeding.Id,
+            detail.Id);
+        Assert.Equal(
+            750,
+            detail.QuantityMl);
+        Assert.Equal(
+            2m,
+            detail.SugarParts);
+        Assert.Equal(
+            1m,
+            detail.WaterParts);
+        Assert.Equal(
+            "Vitamin C",
+            detail.Additives);
+        Assert.Equal(
+            "Spring feeding.",
+            detail.Notes);
+    }
+
+    private static HivesDbContext CreateDbContext() {
+        var options =
+            new DbContextOptionsBuilder<HivesDbContext>()
+                .UseInMemoryDatabase(
+                    Guid.NewGuid()
+                        .ToString())
+                .Options;
+
+        return new HivesDbContext(
+            options);
+    }
+
+    private sealed class TestCurrentBeekeeperContext(
+        Guid beekeeperId)
+        : ICurrentBeekeeperContext {
+        public Task<Guid> GetBeekeeperIdAsync(
+            CancellationToken cancellationToken = default) {
+            return Task.FromResult(
+                beekeeperId);
+        }
     }
 }
