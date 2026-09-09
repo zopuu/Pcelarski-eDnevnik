@@ -1,5 +1,6 @@
 import type { HiveInspectionType } from '@/features/hive-inspections/types/hive-inspection';
 import type { HiveInsulationOperation } from '@/features/hive-insulation/types/hive-insulation';
+import type { HiveMaintenanceType } from '@/features/hive-maintenance/types/hive-maintenance';
 import type { PattyType } from '@/features/patty-feedings/types/patty-feeding';
 import type {
   VarroaApplicationMethod,
@@ -81,7 +82,7 @@ export type HiveActionHistoryItem =
       type: 'maintenance';
       summary: {
         $summaryType: 'maintenance';
-        maintenanceType: string;
+        maintenanceType: HiveMaintenanceType;
         costAmount: number | null;
         currencyCode: string | null;
         serviceProvider: string | null;

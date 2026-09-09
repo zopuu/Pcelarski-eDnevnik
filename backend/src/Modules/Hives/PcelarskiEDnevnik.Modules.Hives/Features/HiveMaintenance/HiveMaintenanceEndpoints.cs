@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.Record;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.Update;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance.GetById;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance;
 
@@ -18,6 +19,14 @@ public static class HiveMaintenanceEndpoints {
             .RequireAuthorization()
             .MapRecordHiveMaintenanceEndpoint()
             .MapUpdateHiveMaintenanceEndpoint();
+
+        endpoints
+            .MapGroup(
+                "/api/hives")
+            .WithTags(
+                "Hive Maintenance")
+            .RequireAuthorization()
+            .MapGetHiveMaintenanceByIdEndpoint();
 
         return endpoints;
     }

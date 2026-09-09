@@ -17,6 +17,8 @@ import { AppHeader } from '@/shared/components/navigation/app-header';
 import { Screen } from '@/shared/components/screen/screen';
 import { colors } from '@/shared/theme/colors';
 
+import { getMaintenanceTypeLabel } from '@/features/hive-maintenance/utils/maintenance-labels';
+
 import { getInspectionTypeLabel } from '../utils/inspection-labels';
 
 type HiveActionHistoryScreenProps = {
@@ -144,7 +146,8 @@ function HiveActionTimelineItem({
     action.type === 'syrupFeeding' ||
     action.type === 'pattyFeeding' ||
     action.type === 'honeyFrameFeeding' ||
-    action.type === 'insulation';
+    action.type === 'insulation' ||
+    action.type === 'maintenance';
   const ratingClassName = isInspection
     ? getRatingBorderClassName(action.summary.overallConditionRating)
     : 'border-primary';
@@ -225,7 +228,7 @@ function ActionSummary({ action }: { action: HiveActionHistoryItem }) {
     case 'insulation':
       return <InsulationSummary action={action} />;
     case 'maintenance':
-      return <MaintenanceSummary action={action} />;
+      return null;
     case 'superManagement':
       return null;
   }
@@ -313,25 +316,6 @@ function InsulationSummary({
   return <SummaryRow label="Materijali" value={getInsulationMaterials(action)} />;
 }
 
-function MaintenanceSummary({
-  action,
-}: {
-  action: Extract<HiveActionHistoryItem, { type: 'maintenance' }>;
-}) {
-  return (
-    <SummaryRow
-      label="Trošak"
-      value={
-        action.summary.costAmount === null
-          ? 'Nije unet'
-          : `${new Intl.NumberFormat('sr-Latn-RS', {
-              maximumFractionDigits: 2,
-            }).format(action.summary.costAmount)} ${action.summary.currencyCode ?? ''}`
-      }
-    />
-  );
-}
-
 function SummaryRow({
   label,
   value,
@@ -366,7 +350,7 @@ function getActionTitle(action: HiveActionHistoryItem) {
     case 'insulation':
       return 'Izolacija košnice';
     case 'maintenance':
-      return 'Održavanje košnice';
+      return 'Održavanje';
     case 'superManagement':
       return 'Upravljanje medištima';
   }
@@ -387,7 +371,7 @@ function getActionDescription(action: HiveActionHistoryItem) {
     case 'insulation':
       return action.summary.operation === 'add' ? 'Dodavanje izolacije' : 'Uklanjanje izolacije';
     case 'maintenance':
-      return action.summary.serviceProvider || 'Evidentirano održavanje';
+      return getMaintenanceTypeLabel(action.summary.maintenanceType);
     case 'superManagement':
       return 'Evidentirano upravljanje medištima';
   }
@@ -408,7 +392,7 @@ function getActionIcon(action: HiveActionHistoryItem) {
     case 'insulation':
       return 'layers-outline' as const;
     case 'maintenance':
-      return 'construct-outline' as const;
+      return 'build-outline' as const;
     case 'superManagement':
       return 'grid-outline' as const;
   }
@@ -449,6 +433,12 @@ function openActionDetail(hiveId: string, action: HiveActionHistoryItem) {
     case 'insulation':
       router.push({
         pathname: '/hives/[hiveId]/insulation/[actionId]',
+        params: { hiveId, actionId: action.id },
+      });
+      return;
+    case 'maintenance':
+      router.push({
+        pathname: '/hives/[hiveId]/maintenance/[actionId]',
         params: { hiveId, actionId: action.id },
       });
       return;

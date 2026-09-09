@@ -1193,6 +1193,32 @@ export function HiveDetailsScreen({
                 actions={[
                     {
                         key:
+                            'maintenance',
+
+                        label:
+                            'Održavanje',
+
+                        icon:
+                            'build-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj održavanje košnice',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/maintenance/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
                             'insulation',
 
                         label:
