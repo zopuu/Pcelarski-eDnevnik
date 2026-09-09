@@ -10,6 +10,8 @@ type QueenHeaderIllustrationProps = {
   markingColorHex:
     | string
     | null;
+
+  size?: number;
 };
 
 const ILLUSTRATION_WIDTH = 134;
@@ -20,7 +22,11 @@ const MARKING_TOP = 29;
 
 export function QueenHeaderIllustration({
   markingColorHex,
+  size = ILLUSTRATION_WIDTH,
 }: QueenHeaderIllustrationProps) {
+  const scale =
+    size / ILLUSTRATION_WIDTH;
+
   return (
     <View
       accessible
@@ -31,8 +37,10 @@ export function QueenHeaderIllustration({
       }
       className="items-center justify-center"
       style={{
-        width: ILLUSTRATION_WIDTH,
-        height: ILLUSTRATION_HEIGHT,
+        width: size,
+        height:
+          ILLUSTRATION_HEIGHT *
+          scale,
       }}
     >
       <Image
@@ -43,8 +51,10 @@ export function QueenHeaderIllustration({
         }
         contentFit="contain"
         style={{
-          width: ILLUSTRATION_WIDTH,
-          height: ILLUSTRATION_HEIGHT,
+          width: size,
+          height:
+            ILLUSTRATION_HEIGHT *
+            scale,
         }}
       />
 
@@ -58,13 +68,21 @@ export function QueenHeaderIllustration({
             backgroundColor:
               markingColorHex,
 
-            left: MARKING_LEFT,
+            left:
+              MARKING_LEFT *
+              scale,
 
-            top: MARKING_TOP,
+            top:
+              MARKING_TOP *
+              scale,
 
-            width: MARKING_SIZE,
+            width:
+              MARKING_SIZE *
+              scale,
 
-            height: MARKING_SIZE,
+            height:
+              MARKING_SIZE *
+              scale,
           }}
         />
       )}

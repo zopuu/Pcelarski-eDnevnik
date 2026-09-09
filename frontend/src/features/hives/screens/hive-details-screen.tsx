@@ -202,6 +202,12 @@ export function HiveDetailsScreen({
     ] =
         useState(false);
 
+    const [
+        isHiveActionsOpen,
+        setIsHiveActionsOpen,
+    ] =
+        useState(false);
+
     const {
         data: hive,
         isLoading,
@@ -346,9 +352,8 @@ export function HiveDetailsScreen({
 
     const handleHiveActionsPress =
         () => {
-            Alert.alert(
-                'Akcije nad košnicom',
-                'Ovde će kasnije biti pregled, prihrana, tretman varoe, upravljanje nastavcima i ostale akcije.',
+            setIsHiveActionsOpen(
+                true,
             );
         };
 
@@ -1175,6 +1180,45 @@ export function HiveDetailsScreen({
                     )}
                 </ScrollView>
             </Screen>
+
+            <ActionOverflowSheet
+                visible={
+                    isHiveActionsOpen
+                }
+                onClose={() => {
+                    setIsHiveActionsOpen(
+                        false,
+                    );
+                }}
+                title="Akcije nad košnicom"
+                actions={[
+                    {
+                        key:
+                            'inspection',
+
+                        label:
+                            'Pregled košnice',
+
+                        icon:
+                            'search-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj pregled košnice',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/inspections/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+                ]}
+            />
 
             <ActionOverflowSheet
                 visible={
