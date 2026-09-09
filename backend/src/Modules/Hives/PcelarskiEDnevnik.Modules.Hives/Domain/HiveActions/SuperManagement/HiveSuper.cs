@@ -48,5 +48,45 @@ namespace PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement {
         public DateTimeOffset CreatedAtUtc { get; private set; }
 
         public DateTimeOffset? UpdatedAtUtc { get; private set; }
+   
+    public void RemoveForHarvest() {
+            EnsureOnHive();
+
+            Status =
+                HiveSuperStatus.ReadyForHarvest;
+
+            UpdatedAtUtc =
+                DateTimeOffset.UtcNow;
+        }
+
+        public void ArchiveWithoutHarvest() {
+            EnsureOnHive();
+
+            Status =
+                HiveSuperStatus.Archived;
+
+            UpdatedAtUtc =
+                DateTimeOffset.UtcNow;
+        }
+
+        public void ArchiveAfterHarvest() {
+            if (Status != HiveSuperStatus.ReadyForHarvest) {
+                throw new InvalidOperationException(
+                    "Only a super ready for harvest can be archived after harvesting.");
+            }
+
+            Status =
+                HiveSuperStatus.Archived;
+
+            UpdatedAtUtc =
+                DateTimeOffset.UtcNow;
+        }
+
+        private void EnsureOnHive() {
+            if (Status != HiveSuperStatus.OnHive) {
+                throw new InvalidOperationException(
+                    "Only a super currently on a hive can be removed.");
+            }
+        }
     }
 }

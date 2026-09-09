@@ -57,80 +57,71 @@ public sealed class HiveSuperStay {
         DateOnly endedOn,
         int harvestableFrameCount) {
         EnsureActive();
+        EnsureValidEndDate(endedOn);
 
-        if (endedOn < StartedOn) {
-            throw new ArgumentOutOfRangeException(
-                nameof(endedOn),
-                endedOn,
-                "End date cannot be before start date.");
-        }
+        SetHarvestFrameCounts(
+            harvestableFrameCount,
+            remainingHarvestableFrameCount: 0);
 
-        if (harvestableFrameCount <
-            HiveSuperStayRules.MinimumHarvestableFrameCount) {
+        EndedOn = endedOn;
+    }
+
+    public void EndAndArchive(
+        DateOnly endedOn) {
+        EnsureActive();
+        EnsureValidEndDate(endedOn);
+
+        EndedOn = endedOn;
+        HarvestableFrameCount = null;
+        RemainingHarvestableFrameCount = null;
+    }
+
+    private void SetHarvestFrameCounts(
+        int harvestableFrameCount,
+        int remainingHarvestableFrameCount) {
+        if (harvestableFrameCount <= 0) {
             throw new ArgumentOutOfRangeException(
                 nameof(harvestableFrameCount),
                 harvestableFrameCount,
                 "Harvestable frame count must be greater than zero.");
         }
 
-        EndedOn = endedOn;
+        if (remainingHarvestableFrameCount < 0) {
+            throw new ArgumentOutOfRangeException(
+                nameof(remainingHarvestableFrameCount),
+                remainingHarvestableFrameCount,
+                "Remaining harvestable frame count cannot be negative.");
+        }
+
+        if (remainingHarvestableFrameCount >
+            harvestableFrameCount) {
+            throw new ArgumentOutOfRangeException(
+                nameof(remainingHarvestableFrameCount),
+                remainingHarvestableFrameCount,
+                "Remaining harvestable frame count cannot exceed harvestable frame count.");
+        }
 
         HarvestableFrameCount =
             harvestableFrameCount;
 
         RemainingHarvestableFrameCount =
-            harvestableFrameCount;
-    }
-
-    public void EndAndArchive(
-        DateOnly endedOn) {
-        EnsureActive();
-
-        if (endedOn < StartedOn) {
-            throw new ArgumentOutOfRangeException(
-                nameof(endedOn),
-                endedOn,
-                "End date cannot be before start date.");
-        }
-
-        EndedOn = endedOn;
-
-        HarvestableFrameCount = null;
-
-        RemainingHarvestableFrameCount = null;
-    }
-
-    public void ConsumeHarvestedFrames(
-        int frameCount) {
-        if (frameCount <
-            HiveSuperStayRules.MinimumHarvestedFrameCount) {
-            throw new ArgumentOutOfRangeException(
-                nameof(frameCount),
-                frameCount,
-                "Harvested frame count must be greater than zero.");
-        }
-
-        if (EndedOn is null ||
-            HarvestableFrameCount is null ||
-            RemainingHarvestableFrameCount is null) {
-            throw new InvalidOperationException(
-                "Hive super stay was not ended for harvest.");
-        }
-
-        if (frameCount >
-            RemainingHarvestableFrameCount.Value) {
-            throw new InvalidOperationException(
-                "Harvested frame count cannot exceed remaining harvestable frame count.");
-        }
-
-        RemainingHarvestableFrameCount -=
-            frameCount;
+            remainingHarvestableFrameCount;
     }
 
     private void EnsureActive() {
         if (!IsActive) {
             throw new InvalidOperationException(
                 "Hive super stay is already ended.");
+        }
+    }
+
+    private void EnsureValidEndDate(
+        DateOnly endedOn) {
+        if (endedOn < StartedOn) {
+            throw new ArgumentOutOfRangeException(
+                nameof(endedOn),
+                endedOn,
+                "End date cannot be before start date.");
         }
     }
 }
