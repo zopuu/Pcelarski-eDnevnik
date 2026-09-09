@@ -3,11 +3,10 @@ import type {
   VarroaDoseUnit,
 } from '@/features/varroa-treatments/types/varroa-treatment';
 import type { HiveInspectionType } from '@/features/hive-inspections/types/hive-inspection';
+import type { PattyType } from '@/features/patty-feedings/types/patty-feeding';
 
 export type HiveActionHistoryKind =
-  | 'inspection'
-  | 'varroaTreatment'
-  | 'syrupFeeding';
+  'inspection' | 'varroaTreatment' | 'syrupFeeding' | 'pattyFeeding';
 
 export type HiveActionHistoryItem = {
   id: string;
@@ -23,6 +22,9 @@ export type HiveActionHistoryItem = {
   quantityMl: number | null;
   sugarParts: number | null;
   waterParts: number | null;
+  massG: number | null;
+  pattyType: PattyType | null;
+  manufacturer: string | null;
 };
 
 export type HiveActionHistoryPage = {

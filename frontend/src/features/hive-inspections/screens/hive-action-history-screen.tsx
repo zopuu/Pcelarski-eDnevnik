@@ -11,6 +11,7 @@ import {
 import { useHiveActionHistory } from '@/features/hive-actions/hooks/use-hive-action-history';
 import type { HiveActionHistoryItem } from '@/features/hive-actions/types/hive-action-history';
 import { useHive } from '@/features/hives/hooks/use-hive';
+import { getPattyTypeLabel } from '@/features/patty-feedings/utils/patty-labels';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
 import { AppHeader } from '@/shared/components/navigation/app-header';
 import { Screen } from '@/shared/components/screen/screen';
@@ -43,8 +44,7 @@ export function HiveActionHistoryScreen({
   const { openDrawer } = useAppDrawer();
   const hiveQuery = useHive(hiveId);
   const historyQuery = useHiveActionHistory(hiveId);
-  const actions =
-    historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const actions = historyQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
   if (hiveQuery.isLoading || historyQuery.isLoading) {
     return <StateScreen label="Učitavanje istorije aktivnosti..." />;
@@ -96,7 +96,8 @@ export function HiveActionHistoryScreen({
               Istorija aktivnosti
             </Text>
             <Text className="mt-1 text-sm leading-5 text-muted">
-              Pregledi, prihrane sirupom i tretmani protiv varoe, od najnovijeg ka najstarijem.
+              Pregledi, prihrane i tretmani protiv varoe, od najnovijeg ka
+              najstarijem.
             </Text>
           </View>
         }
@@ -138,6 +139,7 @@ function HiveActionTimelineItem({
 }) {
   const isInspection = action.kind === 'inspection';
   const isSyrupFeeding = action.kind === 'syrupFeeding';
+  const isPattyFeeding = action.kind === 'pattyFeeding';
   const ratingClassName = isInspection
     ? getRatingBorderClassName(action.overallConditionRating)
     : 'border-primary';
@@ -145,7 +147,9 @@ function HiveActionTimelineItem({
     ? getInspectionTypeLabel(action.inspectionType)
     : isSyrupFeeding
       ? 'Prihrana sirupom'
-      : 'Tretman protiv varoe';
+      : isPattyFeeding
+        ? 'Prihrana pogačom'
+        : 'Tretman protiv varoe';
 
   return (
     <View className="flex-row">
@@ -189,10 +193,16 @@ function HiveActionTimelineItem({
                     pathname: '/hives/[hiveId]/syrup-feedings/[feedingId]',
                     params: { hiveId, feedingId: action.id },
                   }
-                : {
-                    pathname: '/hives/[hiveId]/varroa-treatments/[treatmentId]',
-                    params: { hiveId, treatmentId: action.id },
-                  },
+                : isPattyFeeding
+                  ? {
+                      pathname: '/hives/[hiveId]/patty-feedings/[feedingId]',
+                      params: { hiveId, feedingId: action.id },
+                    }
+                  : {
+                      pathname:
+                        '/hives/[hiveId]/varroa-treatments/[treatmentId]',
+                      params: { hiveId, treatmentId: action.id },
+                    },
           );
         }}
         className={`mb-5 flex-1 rounded-3xl border-2 bg-surface px-4 py-4 ${ratingClassName}`}
@@ -206,7 +216,9 @@ function HiveActionTimelineItem({
                   ? 'search-outline'
                   : isSyrupFeeding
                     ? 'water-outline'
-                    : 'bug-outline'
+                    : isPattyFeeding
+                      ? 'nutrition-outline'
+                      : 'bug-outline'
               }
               size={21}
               color={colors.primary}
@@ -219,7 +231,9 @@ function HiveActionTimelineItem({
                 ? 'Pregled košnice'
                 : isSyrupFeeding
                   ? formatSyrupFeedingSummary(action)
-                  : formatTreatmentSummary(action)}
+                  : isPattyFeeding
+                    ? formatPattyFeedingSummary(action)
+                    : formatTreatmentSummary(action)}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
@@ -229,6 +243,8 @@ function HiveActionTimelineItem({
           <InspectionSummary action={action} />
         ) : isSyrupFeeding ? (
           <SyrupFeedingSummary action={action} />
+        ) : isPattyFeeding ? (
+          <PattyFeedingSummary action={action} />
         ) : (
           <TreatmentSummary action={action} />
         )}
@@ -291,6 +307,25 @@ function SyrupFeedingSummary({ action }: { action: HiveActionHistoryItem }) {
   );
 }
 
+function PattyFeedingSummary({ action }: { action: HiveActionHistoryItem }) {
+  return (
+    <View className="mt-4 border-t border-border pt-3">
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm text-muted">Dato pogače</Text>
+        <Text className="text-base font-bold text-foreground">
+          {formatPattyMass(action.massG)}
+        </Text>
+      </View>
+      <View className="mt-2 flex-row items-center justify-between">
+        <Text className="text-sm text-muted">Vrsta</Text>
+        <Text className="text-sm font-semibold text-foreground">
+          {getPattyTypeLabel(action.pattyType)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function formatTreatmentSummary(action: HiveActionHistoryItem) {
   return action.productName ?? 'Evidentiran tretman';
 }
@@ -313,6 +348,21 @@ function formatTreatmentDose(action: HiveActionHistoryItem) {
 
 function formatSyrupFeedingSummary(action: HiveActionHistoryItem) {
   return `Dato ${formatSyrupQuantity(action.quantityMl)} · ${formatSyrupRatio(action)}`;
+}
+
+function formatPattyFeedingSummary(action: HiveActionHistoryItem) {
+  const type = getPattyTypeLabel(action.pattyType);
+  const manufacturer = action.manufacturer?.trim();
+
+  return `${formatPattyMass(action.massG)} · ${manufacturer || type}`;
+}
+
+function formatPattyMass(massG: number | null) {
+  if (massG === null) {
+    return '—';
+  }
+
+  return `${new Intl.NumberFormat('sr-Latn-RS').format(massG)} g`;
 }
 
 function formatSyrupQuantity(quantityMl: number | null) {
@@ -359,7 +409,8 @@ function EmptyState() {
         Još nema evidentiranih aktivnosti.
       </Text>
       <Text className="mt-1 text-center text-sm leading-5 text-muted">
-        Pregledi, prihrane sirupom i tretmani protiv varoe koje zabeležite za ovu košnicu biće prikazani ovde.
+        Pregledi, prihrane i tretmani protiv varoe koje zabeležite za ovu
+        košnicu biće prikazani ovde.
       </Text>
     </View>
   );

@@ -1193,6 +1193,32 @@ export function HiveDetailsScreen({
                 actions={[
                     {
                         key:
+                            'patty-feeding',
+
+                        label:
+                            'Prihrana pogačom',
+
+                        icon:
+                            'nutrition-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj prihranu pogačom za košnicu',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/patty-feedings/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
                             'syrup-feeding',
 
                         label:

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
 
 public enum PattyType {
@@ -5,6 +7,7 @@ public enum PattyType {
     PROTEIN,
     HONEY,
     MEDICATED,
+    [JsonStringEnumMemberName("invertSugar")]
     INVERT_SUGAR,
     OTHER
 }

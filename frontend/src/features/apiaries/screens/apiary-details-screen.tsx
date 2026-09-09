@@ -783,6 +783,18 @@ export function ApiaryHivesScreen({
         title="Akcije nad pčelinjakom"
         actions={[
           {
+            key: 'patty-feeding',
+            label: 'Prihrana pogačom',
+            icon: 'nutrition-outline',
+            accessibilityLabel: 'Evidentiraj prihranu pogačom',
+            onPress: () => {
+              router.push({
+                pathname: '/apiaries/[apiaryId]/patty-feedings/create',
+                params: { apiaryId },
+              } as never);
+            },
+          },
+          {
             key: 'syrup-feeding',
             label: 'Prihrana sirupom',
             icon: 'water-outline',

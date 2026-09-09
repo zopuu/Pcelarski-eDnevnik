@@ -1,6 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveActions.GetHistory;
+using PcelarskiEDnevnik.Modules.Hives.Features.PattyFeedings.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.PattyFeedings.Record;
+using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
+using PcelarskiEDnevnik.SharedKernel.Authentication;
 
 namespace PcelarskiEDnevnik.ArchitectureTests;
 
@@ -178,5 +185,148 @@ public sealed class PattyFeedingTests {
             result =>
                 result.ErrorMessage ==
                     "Invalid patty type.");
+    }
+
+    [Fact]
+    public async Task GetHistoryAndById_ReturnOwnedPattyFeedingDetails() {
+        var beekeeperId =
+            Guid.NewGuid();
+
+        await using var dbContext =
+            CreateDbContext();
+
+        var hive =
+            Hive.Create(
+                beekeeperId,
+                "Hive A",
+                HiveType.LangstrothRoot,
+                identificationNumber: null,
+                colorHex: null,
+                manufactureDate: null,
+                manufacturer: null,
+                material: null,
+                purchaseDate: null);
+
+        var feeding =
+            PattyFeeding.Create(
+                hive.Id,
+                DateTimeOffset.UtcNow,
+                beekeeperId,
+                actionGroupId: Guid.NewGuid(),
+                imageUrl: null,
+                notes: "  Spring feeding.  ",
+                massG: 750,
+                PattyType.PROTEIN,
+                manufacturer: "  Bee Food  ");
+
+        dbContext.Hives.Add(
+            hive);
+        dbContext.PattyFeedings.Add(
+            feeding);
+        await dbContext.SaveChangesAsync();
+
+        var currentBeekeeper =
+            new TestCurrentBeekeeperContext(
+                beekeeperId);
+
+        var historyResult =
+            await GetHiveActionHistoryEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var history =
+            Assert.IsType<HiveActionHistoryPageResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        historyResult)
+                    .Value);
+
+        var historyItem =
+            Assert.Single(
+                history.Items);
+
+        Assert.Equal(
+            HiveActionHistoryKind.PattyFeeding,
+            historyItem.Kind);
+        Assert.Equal(
+            750,
+            historyItem.MassG);
+        Assert.Equal(
+            PattyType.PROTEIN,
+            historyItem.PattyType);
+        Assert.Equal(
+            "Bee Food",
+            historyItem.Manufacturer);
+
+        var detailResult =
+            await GetPattyFeedingByIdEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    feeding.Id,
+                    currentBeekeeper,
+                    dbContext,
+                    CancellationToken.None);
+
+        var detail =
+            Assert.IsType<PattyFeedingDetailsResponse>(
+                Assert.IsAssignableFrom<IValueHttpResult>(
+                        detailResult)
+                    .Value);
+
+        Assert.Equal(
+            feeding.Id,
+            detail.Id);
+        Assert.Equal(
+            750,
+            detail.MassG);
+        Assert.Equal(
+            PattyType.PROTEIN,
+            detail.PattyType);
+        Assert.Equal(
+            "Bee Food",
+            detail.Manufacturer);
+        Assert.Equal(
+            "Spring feeding.",
+            detail.Notes);
+
+        var otherBeekeeperResult =
+            await GetPattyFeedingByIdEndpoint
+                .HandleAsync(
+                    hive.Id,
+                    feeding.Id,
+                    new TestCurrentBeekeeperContext(
+                        Guid.NewGuid()),
+                    dbContext,
+                    CancellationToken.None);
+
+        Assert.Equal(
+            StatusCodes.Status404NotFound,
+            Assert.IsAssignableFrom<IStatusCodeHttpResult>(
+                    otherBeekeeperResult)
+                .StatusCode);
+    }
+
+    private static HivesDbContext CreateDbContext() {
+        var options =
+            new DbContextOptionsBuilder<HivesDbContext>()
+                .UseInMemoryDatabase(
+                    Guid.NewGuid()
+                        .ToString())
+                .Options;
+
+        return new HivesDbContext(
+            options);
+    }
+
+    private sealed class TestCurrentBeekeeperContext(
+        Guid beekeeperId)
+        : ICurrentBeekeeperContext {
+        public Task<Guid> GetBeekeeperIdAsync(
+            CancellationToken cancellationToken = default) {
+            return Task.FromResult(
+                beekeeperId);
+        }
     }
 }

@@ -107,6 +107,9 @@ public static class GetHiveActionHistoryEndpoint {
                             null,
                             null,
                             null,
+                            null,
+                            null,
+                            null,
                             null))
                 .Take(
                     itemsRequiredFromEachSource)
@@ -138,6 +141,9 @@ public static class GetHiveActionHistoryEndpoint {
                             treatment.ApplicationMethod,
                             treatment.DoseAmount,
                             treatment.DoseUnit,
+                            null,
+                            null,
+                            null,
                             null,
                             null,
                             null))
@@ -173,7 +179,46 @@ public static class GetHiveActionHistoryEndpoint {
                             null,
                             feeding.QuantityMl,
                             feeding.SugarParts,
-                            feeding.WaterParts))
+                            feeding.WaterParts,
+                            null,
+                            null,
+                            null))
+                .Take(
+                    itemsRequiredFromEachSource)
+                .ToListAsync(
+                    cancellationToken);
+
+        var pattyFeedings =
+            await dbContext.PattyFeedings
+                .AsNoTracking()
+                .Where(
+                    feeding =>
+                        feeding.HiveId == hiveId)
+                .OrderByDescending(
+                    feeding =>
+                        feeding.PerformedAt)
+                .ThenByDescending(
+                    feeding =>
+                        feeding.Id)
+                .Select(
+                    feeding =>
+                        new HiveActionHistoryItemResponse(
+                            feeding.Id,
+                            feeding.PerformedAt,
+                            HiveActionHistoryKind.PattyFeeding,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            feeding.MassG,
+                            feeding.PattyType,
+                            feeding.Manufacturer))
                 .Take(
                     itemsRequiredFromEachSource)
                 .ToListAsync(
@@ -185,6 +230,8 @@ public static class GetHiveActionHistoryEndpoint {
                     treatments)
                 .Concat(
                     syrupFeedings)
+                .Concat(
+                    pattyFeedings)
                 .OrderByDescending(
                     action =>
                         action.PerformedAt)
@@ -213,7 +260,8 @@ public static class GetHiveActionHistoryEndpoint {
 public enum HiveActionHistoryKind {
     Inspection,
     VarroaTreatment,
-    SyrupFeeding
+    SyrupFeeding,
+    PattyFeeding
 }
 
 public sealed record HiveActionHistoryItemResponse(
@@ -229,7 +277,10 @@ public sealed record HiveActionHistoryItemResponse(
     VarroaDoseUnit? DoseUnit,
     int? QuantityMl,
     decimal? SugarParts,
-    decimal? WaterParts);
+    decimal? WaterParts,
+    int? MassG,
+    PattyType? PattyType,
+    string? Manufacturer);
 
 public sealed record HiveActionHistoryPageResponse(
     IReadOnlyList<HiveActionHistoryItemResponse> Items,
