@@ -23,8 +23,15 @@ public static class RecordHiveInsulationEndpoint {
                     ICurrentBeekeeperContext currentBeekeeper,
                     HivesDbContext dbContext,
                     CancellationToken cancellationToken) => {
+                    var hiveSelections =
+                        request.Hives!
+                            .ToArray();
+
                     var hiveIds =
-                        request.HiveIds!
+                        hiveSelections
+                            .Select(
+                                hive =>
+                                    hive.HiveId)
                             .ToArray();
 
                     if (hiveIds.ToHashSet().Count !=
@@ -33,7 +40,7 @@ public static class RecordHiveInsulationEndpoint {
                             new Dictionary<
                                 string,
                                 string[]> {
-                                [nameof(request.HiveIds)] =
+                                [nameof(request.Hives)] =
                                 [
                                     "Hive IDs must be unique."
                                 ]
@@ -77,12 +84,12 @@ public static class RecordHiveInsulationEndpoint {
                                 : (Guid?)null;
 
                         var actions =
-                            hiveIds
+                            hiveSelections
                                 .Select(
-                                    hiveId =>
+                                    hive =>
                                         HiveInsulationAction
                                             .Create(
-                                                hiveId,
+                                                hive.HiveId,
                                                 request.PerformedAt!
                                                     .Value,
                                                 beekeeperId,
@@ -91,9 +98,9 @@ public static class RecordHiveInsulationEndpoint {
                                                 request.Notes,
                                                 request.Operation!
                                                     .Value,
-                                                request.Paper,
-                                                request.Eps,
-                                                request.Xps))
+                                                hive.Paper,
+                                                hive.Eps,
+                                                hive.Xps))
                                 .ToArray();
 
                         dbContext.HiveInsulations
@@ -148,24 +155,33 @@ public static class RecordHiveInsulationEndpoint {
         var performedAt =
             request.PerformedAt!.Value;
 
-        var isNotAfterLatestAction =
-            states.Any(
+        var statesByHiveId =
+            states.ToDictionary(
                 state =>
-                    (request.Paper &&
-                     state.LatestPaperPerformedAt
-                         is DateTimeOffset latestPaperPerformedAt &&
-                     performedAt <=
-                     latestPaperPerformedAt) ||
-                    (request.Eps &&
-                     state.LatestEpsPerformedAt
-                         is DateTimeOffset latestEpsPerformedAt &&
-                     performedAt <=
-                     latestEpsPerformedAt) ||
-                    (request.Xps &&
-                     state.LatestXpsPerformedAt
-                         is DateTimeOffset latestXpsPerformedAt &&
-                     performedAt <=
-                     latestXpsPerformedAt));
+                    state.HiveId);
+
+        var isNotAfterLatestAction =
+            request.Hives!.Any(
+                hive => {
+                    var state =
+                        statesByHiveId[hive.HiveId];
+
+                    return (hive.Paper &&
+                            state.LatestPaperPerformedAt
+                                is DateTimeOffset latestPaperPerformedAt &&
+                            performedAt <=
+                            latestPaperPerformedAt) ||
+                           (hive.Eps &&
+                            state.LatestEpsPerformedAt
+                                is DateTimeOffset latestEpsPerformedAt &&
+                            performedAt <=
+                            latestEpsPerformedAt) ||
+                           (hive.Xps &&
+                            state.LatestXpsPerformedAt
+                                is DateTimeOffset latestXpsPerformedAt &&
+                            performedAt <=
+                            latestXpsPerformedAt);
+                });
 
         if (isNotAfterLatestAction) {
             throw new ConflictException(
@@ -176,22 +192,30 @@ public static class RecordHiveInsulationEndpoint {
         var conflicts =
             request.Operation ==
             HiveInsulationOperation.Add
-                ? states.Any(
-                    state =>
-                        (request.Paper &&
-                         state.Paper) ||
-                        (request.Eps &&
-                         state.Eps) ||
-                        (request.Xps &&
-                         state.Xps))
-                : states.Any(
-                    state =>
-                        (request.Paper &&
-                         !state.Paper) ||
-                        (request.Eps &&
-                         !state.Eps) ||
-                        (request.Xps &&
-                         !state.Xps));
+                ? request.Hives!.Any(
+                    hive => {
+                        var state =
+                            statesByHiveId[hive.HiveId];
+
+                        return (hive.Paper &&
+                                state.Paper) ||
+                               (hive.Eps &&
+                                state.Eps) ||
+                               (hive.Xps &&
+                                state.Xps);
+                    })
+                : request.Hives!.Any(
+                    hive => {
+                        var state =
+                            statesByHiveId[hive.HiveId];
+
+                        return (hive.Paper &&
+                                !state.Paper) ||
+                               (hive.Eps &&
+                                !state.Eps) ||
+                               (hive.Xps &&
+                                !state.Xps);
+                    });
 
         if (!conflicts) {
             return;

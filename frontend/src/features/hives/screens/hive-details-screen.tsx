@@ -1193,6 +1193,32 @@ export function HiveDetailsScreen({
                 actions={[
                     {
                         key:
+                            'insulation',
+
+                        label:
+                            'Izolacija košnice',
+
+                        icon:
+                            'layers-outline',
+
+                        accessibilityLabel:
+                            'Evidentiraj izolaciju za košnicu',
+
+                        onPress:
+                            () => {
+                                router.push({
+                                    pathname:
+                                        '/hives/[hiveId]/insulation/create',
+
+                                    params: {
+                                        hiveId,
+                                    },
+                                } as never);
+                            },
+                    },
+
+                    {
+                        key:
                             'honey-frame-feeding',
 
                         label:

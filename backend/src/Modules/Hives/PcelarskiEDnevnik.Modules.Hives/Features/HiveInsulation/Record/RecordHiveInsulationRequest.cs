@@ -25,25 +25,10 @@ public sealed record RecordHiveInsulationRequest
         init;
     }
 
-    public bool Paper {
-        get;
-        init;
-    }
-
-    public bool Eps {
-        get;
-        init;
-    }
-
-    public bool Xps {
-        get;
-        init;
-    }
-
     [Required(
         ErrorMessage =
             "At least one hive must be selected.")]
-    public List<Guid>? HiveIds {
+    public List<RecordHiveInsulationHiveRequest>? Hives {
         get;
         init;
     }
@@ -75,40 +60,68 @@ public sealed record RecordHiveInsulationRequest
                 [nameof(PerformedAt)]);
         }
 
-        if (!Paper &&
-            !Eps &&
-            !Xps) {
-            yield return new ValidationResult(
-                "At least one insulation type must be selected.",
-                [
-                    nameof(Paper),
-                    nameof(Eps),
-                    nameof(Xps)
-                ]);
-        }
-
-        if (HiveIds is null ||
-            HiveIds.Count == 0) {
+        if (Hives is null ||
+            Hives.Count == 0) {
             yield return new ValidationResult(
                 "At least one hive must be selected.",
-                [nameof(HiveIds)]);
+                [nameof(Hives)]);
+
+            yield break;
         }
 
-        if (HiveIds is not null &&
-            HiveIds.Any(
-                hiveId =>
-                    hiveId == Guid.Empty)) {
+        if (Hives.Any(
+                hive =>
+                    hive is null ||
+                    hive.HiveId == Guid.Empty)) {
             yield return new ValidationResult(
                 "Hive IDs cannot be empty.",
-                [nameof(HiveIds)]);
+                [nameof(Hives)]);
         }
 
-        if (HiveIds is not null &&
-            HiveIds.ToHashSet().Count !=
-            HiveIds.Count) {
+        if (Hives.OfType<
+                    RecordHiveInsulationHiveRequest>()
+                .Select(
+                    hive =>
+                        hive.HiveId)
+                .ToHashSet()
+                .Count !=
+            Hives.Count) {
             yield return new ValidationResult(
                 "Hive IDs must be unique.",
-                [nameof(HiveIds)]);
+                [nameof(Hives)]);
         }
+
+        foreach (var hive in Hives.OfType<
+                     RecordHiveInsulationHiveRequest>()) {
+            if (!hive.Paper &&
+                !hive.Eps &&
+                !hive.Xps) {
+                yield return new ValidationResult(
+                    "At least one insulation type must be selected for each hive.",
+                    [nameof(Hives)]);
+            }
+        }
+    }
+}
+
+public sealed record RecordHiveInsulationHiveRequest {
+    public Guid HiveId {
+        get;
+        init;
+    }
+
+    public bool Paper {
+        get;
+        init;
+    }
+
+    public bool Eps {
+        get;
+        init;
+    }
+
+    public bool Xps {
+        get;
+        init;
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation.GetCurrent;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation.Record;
 
@@ -30,7 +31,8 @@ public static class HiveInsulationEndpoints {
                 .RequireAuthorization();
 
         hivesGroup
-            .MapGetCurrentHiveInsulationEndpoint();
+            .MapGetCurrentHiveInsulationEndpoint()
+            .MapGetHiveInsulationByIdEndpoint();
 
         return endpoints;
     }

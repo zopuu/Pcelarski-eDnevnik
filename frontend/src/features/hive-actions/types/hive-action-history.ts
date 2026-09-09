@@ -1,4 +1,5 @@
 import type { HiveInspectionType } from '@/features/hive-inspections/types/hive-inspection';
+import type { HiveInsulationOperation } from '@/features/hive-insulation/types/hive-insulation';
 import type { PattyType } from '@/features/patty-feedings/types/patty-feeding';
 import type {
   VarroaApplicationMethod,
@@ -70,7 +71,7 @@ export type HiveActionHistoryItem =
       type: 'insulation';
       summary: {
         $summaryType: 'insulation';
-        operation: string;
+        operation: HiveInsulationOperation;
         paper: boolean;
         eps: boolean;
         xps: boolean;

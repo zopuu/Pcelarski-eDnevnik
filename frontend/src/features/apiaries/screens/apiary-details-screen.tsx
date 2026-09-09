@@ -783,6 +783,18 @@ export function ApiaryHivesScreen({
         title="Akcije nad pčelinjakom"
         actions={[
           {
+            key: 'insulation',
+            label: 'Izolacija košnica',
+            icon: 'layers-outline',
+            accessibilityLabel: 'Evidentiraj izolaciju košnica',
+            onPress: () => {
+              router.push({
+                pathname: '/apiaries/[apiaryId]/insulation/create',
+                params: { apiaryId },
+              } as never);
+            },
+          },
+          {
             key: 'honey-frame-feeding',
             label: 'Prihrana ramovima meda',
             icon: 'albums-outline',

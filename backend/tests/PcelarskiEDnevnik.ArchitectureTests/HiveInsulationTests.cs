@@ -107,7 +107,7 @@ public sealed class HiveInsulationTests {
     }
 
     [Fact]
-    public void RequestValidation_RejectsMissingSelectionsAndDuplicateHives() {
+    public void RequestValidation_RejectsHiveWithoutSelectionsAndDuplicateHives() {
         var hiveId =
             Guid.NewGuid();
 
@@ -117,10 +117,18 @@ public sealed class HiveInsulationTests {
                     DateTimeOffset.UtcNow,
                 Operation =
                     HiveInsulationOperation.Add,
-                HiveIds =
+                Hives =
                 [
-                    hiveId,
-                    hiveId
+                    new RecordHiveInsulationHiveRequest {
+                        HiveId =
+                            hiveId
+                    },
+                    new RecordHiveInsulationHiveRequest {
+                        HiveId =
+                            hiveId,
+                        Paper =
+                            true
+                    }
                 ]
             };
 
@@ -140,13 +148,57 @@ public sealed class HiveInsulationTests {
             results,
             result =>
                 result.MemberNames.Contains(
-                    nameof(request.Paper)));
+                    nameof(request.Hives)) &&
+                result.ErrorMessage ==
+                    "At least one insulation type must be selected for each hive.");
         Assert.Contains(
             results,
             result =>
                 result.MemberNames.Contains(
-                    nameof(request.HiveIds)) &&
+                    nameof(request.Hives)) &&
                 result.ErrorMessage ==
                     "Hive IDs must be unique.");
+    }
+
+    [Fact]
+    public void RequestValidation_AllowsDifferentMaterialsPerHive() {
+        var request =
+            new RecordHiveInsulationRequest {
+                PerformedAt =
+                    DateTimeOffset.UtcNow,
+                Operation =
+                    HiveInsulationOperation.Add,
+                Hives =
+                [
+                    new RecordHiveInsulationHiveRequest {
+                        HiveId =
+                            Guid.NewGuid(),
+                        Paper =
+                            true,
+                        Xps =
+                            true
+                    },
+                    new RecordHiveInsulationHiveRequest {
+                        HiveId =
+                            Guid.NewGuid(),
+                        Eps =
+                            true
+                    }
+                ]
+            };
+
+        var results =
+            new List<ValidationResult>();
+
+        var isValid =
+            Validator.TryValidateObject(
+                request,
+                new ValidationContext(
+                    request),
+                results,
+                validateAllProperties: true);
+
+        Assert.True(isValid);
+        Assert.Empty(results);
     }
 }

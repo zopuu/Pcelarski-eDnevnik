@@ -143,7 +143,8 @@ function HiveActionTimelineItem({
     action.type === 'varroaTreatment' ||
     action.type === 'syrupFeeding' ||
     action.type === 'pattyFeeding' ||
-    action.type === 'honeyFrameFeeding';
+    action.type === 'honeyFrameFeeding' ||
+    action.type === 'insulation';
   const ratingClassName = isInspection
     ? getRatingBorderClassName(action.summary.overallConditionRating)
     : 'border-primary';
@@ -445,6 +446,12 @@ function openActionDetail(hiveId: string, action: HiveActionHistoryItem) {
         params: { hiveId, treatmentId: action.id },
       });
       return;
+    case 'insulation':
+      router.push({
+        pathname: '/hives/[hiveId]/insulation/[actionId]',
+        params: { hiveId, actionId: action.id },
+      });
+      return;
     default:
       return;
   }
@@ -492,9 +499,9 @@ function getInsulationMaterials(
   action: Extract<HiveActionHistoryItem, { type: 'insulation' }>,
 ) {
   return [
-    action.summary.paper ? 'papir' : null,
-    action.summary.eps ? 'EPS' : null,
-    action.summary.xps ? 'XPS' : null,
+    action.summary.paper ? 'Papir' : null,
+    action.summary.eps ? 'Stiropor' : null,
+    action.summary.xps ? 'Stirodur' : null,
   ]
     .filter(Boolean)
     .join(', ');
