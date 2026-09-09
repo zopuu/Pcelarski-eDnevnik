@@ -21,6 +21,17 @@ namespace PcelarskiEDnevnik.Modules.Hives.Domain.HiveActions.SuperManagement {
             Status = HiveSuperStatus.OnHive;
             CreatedAtUtc = DateTimeOffset.UtcNow;
         }
+        public static HiveSuper Create(
+            Guid ownerBeekeeperId,
+            HiveType type,
+            int frameCount,
+            string? colorHex) {
+            return new HiveSuper(
+                ownerBeekeeperId,
+                type,
+                frameCount,
+                colorHex);
+        }
 
         public Guid Id { get; private set; }
 

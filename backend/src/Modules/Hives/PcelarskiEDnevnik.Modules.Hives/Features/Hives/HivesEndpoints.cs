@@ -6,6 +6,7 @@ using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetAll;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetById;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.Update;
 using PcelarskiEDnevnik.Modules.Hives.Features.Hives.GetStayHistory;
+using PcelarskiEDnevnik.Modules.Hives.Features.SuperManagement.AddSupers;
 
 namespace PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 
@@ -34,6 +35,7 @@ public static class HivesEndpoints {
 
         hivesGroup
             .MapGetHiveStayHistoryEndpoint();
+        hivesGroup.MapAddHiveSupersEndpoint();
 
         return endpoints;
     }
