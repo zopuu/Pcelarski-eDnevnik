@@ -35,6 +35,9 @@ public static class ApiariesModule {
                 client.Timeout =
                     TimeSpan.FromSeconds(10);
             });
+        services.AddScoped<
+            IApiaryAccessChecker,
+            ApiaryAccessChecker>();
 
         return services;
     }

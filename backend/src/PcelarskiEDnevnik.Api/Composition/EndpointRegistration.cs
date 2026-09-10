@@ -17,6 +17,7 @@ using PcelarskiEDnevnik.Modules.Hives.Features.PattyFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments;
+using PcelarskiEDnevnik.Modules.Harvests.Features;
 using PcelarskiEDnevnik.Modules.Identity;
 using PcelarskiEDnevnik.Modules.Relocations;
 using PcelarskiEDnevnik.Modules.Identity.Web;
@@ -47,6 +48,7 @@ internal static class EndpointRegistration {
         app.MapVarroaTreatmentEndpoints();
         app.MapForageObservationsEndpoints();
         app.MapRelocationsEndpoints();
+        app.MapHarvestsEndpoints();
 
         return app;
     }

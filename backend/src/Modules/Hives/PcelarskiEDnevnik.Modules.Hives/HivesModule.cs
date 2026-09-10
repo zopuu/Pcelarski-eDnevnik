@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PcelarskiEDnevnik.Modules.Hives.Contracts.Harvesting;
+using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 
 namespace PcelarskiEDnevnik.Modules.Hives;
@@ -19,6 +21,9 @@ public static class HivesModule {
             options =>
                 options.UseNpgsql(
                     connectionString));
+        services.AddScoped<
+            IHarvestableSuperSourceReader,
+            HarvestableSuperSourceReader>();
 
         return services;
     }
