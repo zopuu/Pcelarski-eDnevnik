@@ -7,74 +7,111 @@ namespace PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
 internal sealed class HarvestableSuperSourceReader(
     HivesDbContext dbContext)
     : IHarvestableSuperSourceReader {
-    public async Task<IReadOnlyList<HarvestableSuperStaySource>>
+    public Task<IReadOnlyList<HarvestableSuperStaySource>>
         ReadAsync(
             Guid beekeeperId,
             CancellationToken cancellationToken) {
+        return ReadCoreAsync(
+            beekeeperId,
+            hiveSuperStayIds: null,
+            availableOnly: true,
+            cancellationToken);
+    }
+
+    public Task<IReadOnlyList<HarvestableSuperStaySource>>
+        ReadByIdsAsync(
+            Guid beekeeperId,
+            IReadOnlyCollection<Guid> hiveSuperStayIds,
+            CancellationToken cancellationToken) {
+        if (hiveSuperStayIds.Count == 0) {
+            return Task.FromResult<
+                IReadOnlyList<HarvestableSuperStaySource>>(
+                []);
+        }
+
+        return ReadCoreAsync(
+            beekeeperId,
+            hiveSuperStayIds,
+            availableOnly: false,
+            cancellationToken);
+    }
+
+    private async Task<
+        IReadOnlyList<HarvestableSuperStaySource>>
+        ReadCoreAsync(
+            Guid beekeeperId,
+            IReadOnlyCollection<Guid>? hiveSuperStayIds,
+            bool availableOnly,
+            CancellationToken cancellationToken) {
+        var query =
+            from superStay in
+                dbContext.HiveSuperStays.AsNoTracking()
+
+            join hiveSuper in
+                dbContext.HiveSupers.AsNoTracking()
+                on superStay.HiveSuperId
+                equals hiveSuper.Id
+
+            join hive in
+                dbContext.Hives.AsNoTracking()
+                on superStay.HiveId
+                equals hive.Id
+
+            where
+                hiveSuper.OwnerBeekeeperId ==
+                beekeeperId
+                &&
+                superStay.EndedOn.HasValue
+                &&
+                superStay.HarvestableFrameCount.HasValue
+                &&
+                superStay
+                    .RemainingHarvestableFrameCount
+                    .HasValue
+
+            select new CandidateRow(
+                superStay.Id,
+                hiveSuper.Id,
+                hive.Id,
+                hive.Label,
+                superStay.StartedOn,
+                superStay.EndedOn,
+                superStay.HarvestableFrameCount,
+                superStay
+                    .RemainingHarvestableFrameCount,
+                hiveSuper.Status);
+
+        if (availableOnly) {
+            query =
+                query.Where(
+                    x =>
+                        x.Status ==
+                        HiveSuperStatus.ReadyForHarvest
+                        &&
+                        x.RemainingHarvestableFrameCount >
+                        0);
+        }
+
+        if (hiveSuperStayIds is not null) {
+            var ids =
+                hiveSuperStayIds
+                    .Distinct()
+                    .ToArray();
+
+            query =
+                query.Where(
+                    x =>
+                        ids.Contains(
+                            x.HiveSuperStayId));
+        }
+
         var candidates =
-            await (
-                from superStay in
-                    dbContext.HiveSuperStays.AsNoTracking()
-
-                join hiveSuper in
-                    dbContext.HiveSupers.AsNoTracking()
-                    on superStay.HiveSuperId
-                    equals hiveSuper.Id
-
-                join hive in
-                    dbContext.Hives.AsNoTracking()
-                    on superStay.HiveId
-                    equals hive.Id
-
-                where
-                    hiveSuper.OwnerBeekeeperId ==
-                    beekeeperId
-                    &&
-                    hiveSuper.Status ==
-                    HiveSuperStatus.ReadyForHarvest
-                    &&
-                    superStay.EndedOn.HasValue
-                    &&
-                    superStay.HarvestableFrameCount.HasValue
-                    &&
-                    superStay.RemainingHarvestableFrameCount
-                        .HasValue
-                    &&
-                    superStay.RemainingHarvestableFrameCount
-                        .Value > 0
-
-                select new {
-                    HiveSuperStayId =
-                        superStay.Id,
-
-                    HiveSuperId =
-                        hiveSuper.Id,
-
-                    HiveId =
-                        hive.Id,
-
-                    HiveLabel =
-                        hive.Label,
-
-                    StartedOn =
-                        superStay.StartedOn,
-
-                    EndedOn =
-                        superStay.EndedOn!.Value,
-
-                    HarvestableFrameCount =
-                        superStay.HarvestableFrameCount!
-                            .Value,
-
-                    RemainingHarvestableFrameCount =
-                        superStay
-                            .RemainingHarvestableFrameCount!
-                            .Value
-                })
+            await query
                 .OrderBy(x => x.StartedOn)
                 .ThenBy(x => x.EndedOn)
                 .ThenBy(x => x.HiveSuperStayId)
-                .ToListAsync(cancellationToken);
+                .ToListAsync(
+                    cancellationToken);
 
         if (candidates.Count == 0) {
             return [];
@@ -87,10 +124,12 @@ internal sealed class HarvestableSuperSourceReader(
                 .ToArray();
 
         var earliestDate =
-            candidates.Min(x => x.StartedOn);
+            candidates.Min(
+                x => x.StartedOn);
 
         var latestDate =
-            candidates.Max(x => x.EndedOn);
+            candidates.Max(
+                x => x.EndedOn!.Value);
 
         var rangeStart =
             AtStartOfDayUtc(
@@ -105,7 +144,8 @@ internal sealed class HarvestableSuperSourceReader(
                 .AsNoTracking()
                 .Where(
                     x =>
-                        hiveIds.Contains(x.HiveId)
+                        hiveIds.Contains(
+                            x.HiveId)
                         &&
                         x.StartedAtUtc <
                         rangeEndExclusive
@@ -124,7 +164,8 @@ internal sealed class HarvestableSuperSourceReader(
                             x.ApiaryId,
                             x.StartedAtUtc,
                             x.EndedAtUtc))
-                .OrderBy(x => x.StartedAtUtc)
+                .OrderBy(
+                    x => x.StartedAtUtc)
                 .ThenBy(x => x.Id)
                 .ToListAsync(
                     cancellationToken);
@@ -135,20 +176,23 @@ internal sealed class HarvestableSuperSourceReader(
                 .ToDictionary(
                     x => x.Key,
                     x =>
-                        (IReadOnlyList<HiveStayHarvestSource>)
+                        (IReadOnlyList<
+                            HiveStayHarvestSource>)
                         x.ToList());
 
         return candidates
             .Select(
                 candidate => {
+                    var endedOn =
+                        candidate.EndedOn!.Value;
+
                     var superStart =
                         AtStartOfDayUtc(
                             candidate.StartedOn);
 
                     var superEndExclusive =
                         AtStartOfDayUtc(
-                            candidate.EndedOn
-                                .AddDays(1));
+                            endedOn.AddDays(1));
 
                     var relevantHiveStays =
                         staysByHive
@@ -169,17 +213,21 @@ internal sealed class HarvestableSuperSourceReader(
                                     ))
                             .ToList();
 
-                    return new HarvestableSuperStaySource(
-                        candidate.HiveSuperStayId,
-                        candidate.HiveSuperId,
-                        candidate.HiveId,
-                        candidate.HiveLabel,
-                        candidate.StartedOn,
-                        candidate.EndedOn,
-                        candidate.HarvestableFrameCount,
-                        candidate
-                            .RemainingHarvestableFrameCount,
-                        relevantHiveStays);
+                    return
+                        new HarvestableSuperStaySource(
+                            candidate.HiveSuperStayId,
+                            candidate.HiveSuperId,
+                            candidate.HiveId,
+                            candidate.HiveLabel,
+                            candidate.StartedOn,
+                            endedOn,
+                            candidate
+                                .HarvestableFrameCount!
+                                .Value,
+                            candidate
+                                .RemainingHarvestableFrameCount!
+                                .Value,
+                            relevantHiveStays);
                 })
             .ToList();
     }
@@ -192,4 +240,15 @@ internal sealed class HarvestableSuperSourceReader(
                 TimeOnly.MinValue),
             TimeSpan.Zero);
     }
+
+    private sealed record CandidateRow(
+        Guid HiveSuperStayId,
+        Guid HiveSuperId,
+        Guid HiveId,
+        string HiveLabel,
+        DateOnly StartedOn,
+        DateOnly? EndedOn,
+        int? HarvestableFrameCount,
+        int? RemainingHarvestableFrameCount,
+        HiveSuperStatus Status);
 }

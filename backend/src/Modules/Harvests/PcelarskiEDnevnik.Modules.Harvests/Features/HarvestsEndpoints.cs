@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Harvests.Features.Create;
 using PcelarskiEDnevnik.Modules.Harvests.Features.GetAvailableGroups;
 
 namespace PcelarskiEDnevnik.Modules.Harvests.Features;
@@ -19,6 +20,9 @@ public static class HarvestsEndpoints {
 
         group
             .MapGetAvailableHarvestGroupsEndpoint();
+
+        group
+            .MapCreateHarvestEndpoint();
 
         return endpoints;
     }

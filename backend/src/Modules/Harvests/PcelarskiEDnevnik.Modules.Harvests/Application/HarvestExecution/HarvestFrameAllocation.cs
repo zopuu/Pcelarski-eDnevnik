@@ -1,8 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
 
-namespace PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution {
-    internal class HarvestFrameAllocation {
-    }
+namespace PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution;
+
+internal sealed record HarvestFrameAllocation(
+    ResolvedHarvestSource Source,
+    int FramesHarvested) {
+    public Guid HiveSuperStayId =>
+        Source.SuperStay.HiveSuperStayId;
+
+    public int ExpectedRemainingFrameCount =>
+        Source.SuperStay
+            .RemainingHarvestableFrameCount;
 }

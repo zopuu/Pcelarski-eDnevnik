@@ -1,123 +1,29 @@
-﻿using PcelarskiEDnevnik.Modules.Apiaries.Contracts.Harvesting;
-using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
-using PcelarskiEDnevnik.Modules.Hives.Contracts.Harvesting;
+﻿using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
 
 namespace PcelarskiEDnevnik.Modules.Harvests.Features.GetAvailableGroups;
 
 internal sealed class
     GetAvailableHarvestGroupsHandler(
-        IHarvestableSuperSourceReader
-            superSourceReader,
-        IApiaryHarvestContextReader
-            apiaryContextReader,
-        HarvestGroupingPolicy policy,
-        HarvestSourceResolver resolver,
-        HarvestSourceGrouper grouper) {
+        HarvestAvailabilityService
+            availabilityService) {
     public async Task<
         GetAvailableHarvestGroupsResponse>
         HandleAsync(
             Guid beekeeperId,
             CancellationToken cancellationToken) {
-        var candidates =
-            await superSourceReader
-                .ReadAsync(
-                    beekeeperId,
-                    cancellationToken);
-
-        if (candidates.Count == 0) {
-            return new
-                GetAvailableHarvestGroupsResponse(
-                    policy.AlgorithmVersion,
-                    [],
-                    []);
-        }
-
-        var apiaryIds =
-            candidates
-                .SelectMany(
-                    x =>
-                        x.HiveStays)
-                .Select(
-                    x =>
-                        x.ApiaryId)
-                .Distinct()
-                .ToArray();
-
-        var startedOn =
-            candidates.Min(
-                x =>
-                    x.StartedOn);
-
-        var endedOn =
-            candidates.Max(
-                x =>
-                    x.EndedOn);
-
-        var apiaryContext =
-            await apiaryContextReader
-                .ReadAsync(
-                    beekeeperId,
-                    apiaryIds,
-                    startedOn,
-                    endedOn,
-                    cancellationToken);
-
-        var index =
-            new HarvestSourceDataIndex(
-                apiaryContext);
-
-        var resolvedSources =
-            new List<
-                ResolvedHarvestSource>(
-                candidates.Count);
-
-        var issues =
-            new List<
-                HarvestSourceIssueResponse>();
-
-        foreach (var candidate in candidates) {
-            var result =
-                resolver.Resolve(
-                    candidate,
-                    index);
-
-            if (result.Source is not null) {
-                resolvedSources.Add(
-                    result.Source);
-
-                continue;
-            }
-
-            if (result.Issue is not null) {
-                issues.Add(
-                    new HarvestSourceIssueResponse(
-                        result.Issue
-                            .HiveSuperStayId,
-                        result.Issue.Code,
-                        result.Issue.Message));
-            }
-        }
-
-        if (resolvedSources.Count == 0) {
-            return new
-                GetAvailableHarvestGroupsResponse(
-                    policy.AlgorithmVersion,
-                    [],
-                    issues);
-        }
-
-        var groups =
-            grouper.Group(
-                resolvedSources,
-                index);
+        var snapshot =
+            await availabilityService.GetAsync(
+                beekeeperId,
+                cancellationToken);
 
         var responses =
-            groups
+            snapshot.Groups
                 .Select(
                     group =>
                         MapGroup(
                             group,
-                            policy))
+                            snapshot
+                                .AlgorithmVersion))
                 .OrderByDescending(
                     x =>
                         x.PeriodEndedOn)
@@ -129,9 +35,19 @@ internal sealed class
                         x.GroupKey)
                 .ToList();
 
+        var issues =
+            snapshot.Issues
+                .Select(
+                    x =>
+                        new HarvestSourceIssueResponse(
+                            x.HiveSuperStayId,
+                            x.Code,
+                            x.Message))
+                .ToList();
+
         return new
             GetAvailableHarvestGroupsResponse(
-                policy.AlgorithmVersion,
+                snapshot.AlgorithmVersion,
                 responses,
                 issues);
     }
@@ -140,7 +56,7 @@ internal sealed class
         AvailableHarvestGroupResponse
         MapGroup(
             HarvestSourceGroup group,
-            HarvestGroupingPolicy policy) {
+            string algorithmVersion) {
         var sources =
             group.Sources;
 
@@ -169,22 +85,17 @@ internal sealed class
             var locations =
                 segments
                     .SelectMany(
-                        x =>
-                            x.Sources)
+                        x => x.Sources)
                     .Select(
-                        x =>
-                            x.Location)
+                        x => x.Location)
                     .GroupBy(
                         x => x.Id)
                     .Select(
-                        x =>
-                            x.First())
+                        x => x.First())
                     .OrderBy(
-                        x =>
-                            x.Name)
+                        x => x.Name)
                     .ThenBy(
-                        x =>
-                            x.Id)
+                        x => x.Id)
                     .Select(
                         x =>
                             new
@@ -200,11 +111,9 @@ internal sealed class
                     HarvestGroupExposureSegmentResponse(
                         index,
                         segments.Min(
-                            x =>
-                                x.StartedOn),
+                            x => x.StartedOn),
                         segments.Max(
-                            x =>
-                                x.EndedOn),
+                            x => x.EndedOn),
                         segments.Min(
                             x =>
                                 x.DurationDays),
@@ -248,11 +157,8 @@ internal sealed class
         return new
             AvailableHarvestGroupResponse(
                 HarvestGroupKeyBuilder.Build(
-                    policy.AlgorithmVersion,
-                    sources.Select(
-                        x =>
-                            x.SuperStay
-                                .HiveSuperStayId)),
+                    algorithmVersion,
+                    group),
                 sources.Min(
                     x =>
                         x.SuperStay

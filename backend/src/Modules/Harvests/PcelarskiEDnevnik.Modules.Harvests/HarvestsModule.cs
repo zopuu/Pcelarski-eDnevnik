@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution;
 using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
+using PcelarskiEDnevnik.Modules.Harvests.Features.Create;
 using PcelarskiEDnevnik.Modules.Harvests.Features.GetAvailableGroups;
 using PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence;
 
@@ -56,6 +58,29 @@ public static class HarvestsModule {
 
         services.AddScoped<
             HarvestSourceGrouper>();
+
+        services.AddScoped<
+            GetAvailableHarvestGroupsHandler>();
+        services.AddScoped<
+    HarvestSourceSetResolver>();
+
+        services.AddScoped<
+            HarvestAvailabilityService>();
+
+        services.AddScoped<
+            HarvestFrameAllocator>();
+
+        services.AddScoped<
+            HoneyBatchMatcher>();
+
+        services.AddScoped<
+            HarvestFrameInventory>();
+
+        services.AddScoped<
+            HarvestWriteTransaction>();
+
+        services.AddScoped<
+            CreateHarvestHandler>();
 
         services.AddScoped<
             GetAvailableHarvestGroupsHandler>();

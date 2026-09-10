@@ -5,6 +5,12 @@ public interface IHarvestableSuperSourceReader {
         ReadAsync(
             Guid beekeeperId,
             CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<HarvestableSuperStaySource>>
+        ReadByIdsAsync(
+            Guid beekeeperId,
+            IReadOnlyCollection<Guid> hiveSuperStayIds,
+            CancellationToken cancellationToken);
 }
 
 public sealed record HarvestableSuperStaySource(

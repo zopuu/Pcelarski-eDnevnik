@@ -32,11 +32,10 @@ internal sealed class HarvestSourceCompatibility(
             var rightSegment =
                 right.EffectiveExposureSegments[i];
 
-            if (!areaCompatibility
-                    .AreEquivalent(
-                        leftSegment,
-                        rightSegment,
-                        index)) {
+            if (!areaCompatibility.AreEquivalent(
+                    leftSegment,
+                    rightSegment,
+                    index)) {
                 return false;
             }
 
@@ -46,6 +45,27 @@ internal sealed class HarvestSourceCompatibility(
                     rightSegment.StartedOn,
                     rightSegment.EndedOn)) {
                 return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool AreAllCompatible(
+        IReadOnlyList<ResolvedHarvestSource>
+            sources,
+        HarvestSourceDataIndex index) {
+        for (var i = 0; i < sources.Count; i++) {
+            for (
+                var j = i + 1;
+                j < sources.Count;
+                j++) {
+                if (!AreCompatible(
+                        sources[i],
+                        sources[j],
+                        index)) {
+                    return false;
+                }
             }
         }
 

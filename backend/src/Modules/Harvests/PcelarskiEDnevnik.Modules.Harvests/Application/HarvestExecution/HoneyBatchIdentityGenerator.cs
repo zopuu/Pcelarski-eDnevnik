@@ -1,8 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution;
 
-namespace PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution {
-    internal class HoneyBatchIdentityGenerator {
+internal sealed record GeneratedHoneyBatchIdentity(
+    string Name,
+    string BatchCode);
+
+internal static class HoneyBatchIdentityGenerator {
+    public static GeneratedHoneyBatchIdentity
+        Generate(
+            DateOnly harvestedOn) {
+        var suffix =
+            Guid.NewGuid()
+                .ToString("N")[..8]
+                .ToUpperInvariant();
+
+        var batchCode =
+            $"HB-{harvestedOn.Year}-{suffix}";
+
+        return new GeneratedHoneyBatchIdentity(
+            batchCode,
+            batchCode);
     }
 }
