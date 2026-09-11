@@ -37,4 +37,5 @@ public sealed record ForageProfileHarvestSource(
 
 public sealed record ForageProfileItemHarvestSource(
     string ForageType,
-    decimal Percentage);
+    decimal Percentage,
+    short Intensity);

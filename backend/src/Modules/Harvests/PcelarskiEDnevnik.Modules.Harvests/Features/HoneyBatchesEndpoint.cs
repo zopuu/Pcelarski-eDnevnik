@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Calculate;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Laboratory;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Manual;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Finalize;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetAll;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetById;
@@ -22,6 +25,9 @@ public static class HoneyBatchesEndpoints {
         group.MapGetHoneyBatchesEndpoint();
         group.MapGetHoneyBatchByIdEndpoint();
         group.MapFinalizeHoneyBatchEndpoint();
+        group.MapCalculateHoneyBatchCompositionEndpoint();
+        group.MapManualHoneyBatchCompositionEndpoint();
+        group.MapLaboratoryHoneyBatchCompositionEndpoint();
 
         return endpoints;
     }

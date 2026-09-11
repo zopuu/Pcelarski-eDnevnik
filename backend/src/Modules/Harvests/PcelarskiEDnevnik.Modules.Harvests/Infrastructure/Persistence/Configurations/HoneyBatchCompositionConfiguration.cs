@@ -30,7 +30,12 @@ internal sealed class HoneyBatchCompositionConfiguration
             .HasMaxLength(
                 HoneyHarvestRules
                     .AlgorithmVersionMaxLength)
-            .IsRequired();
+            .IsRequired(false);
+
+        builder.Property(x => x.EvidenceReference)
+            .HasColumnName("evidence_reference")
+            .HasMaxLength(
+                HoneyHarvestRules.EvidenceReferenceMaxLength);
 
         builder.Property(x => x.DeterminedAt)
             .HasColumnName("determined_at")
@@ -60,5 +65,11 @@ internal sealed class HoneyBatchCompositionConfiguration
                 })
             .HasDatabaseName(
                 "ix_honey_batch_compositions_batch_determined_at");
+
+        builder.HasIndex(x => x.HoneyBatchId)
+            .IsUnique()
+            .HasFilter("determination_method = 'Calculated'")
+            .HasDatabaseName(
+                "ux_honey_batch_compositions_calculated_batch");
     }
 }

@@ -15,7 +15,7 @@ internal sealed class HoneyBatchCompositionItemConfiguration
             table => {
                 table.HasCheckConstraint(
                     "ck_honey_batch_composition_items_percentage",
-                    "percentage >= 0 AND percentage <= 100");
+                    "percentage > 0 AND percentage <= 100");
             });
 
         builder.HasKey(x => x.Id)

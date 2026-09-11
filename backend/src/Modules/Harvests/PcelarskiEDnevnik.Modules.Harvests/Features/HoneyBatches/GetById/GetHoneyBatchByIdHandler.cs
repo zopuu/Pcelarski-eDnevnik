@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Harvests
     .Application.HarvestSources;
+using PcelarskiEDnevnik.Modules.Harvests.Domain;
 using PcelarskiEDnevnik.Modules.Harvests
     .Features.Common;
 using PcelarskiEDnevnik.Modules.Harvests
@@ -192,6 +193,10 @@ internal sealed class GetHoneyBatchByIdHandler(
             harvestResponses,
             sourceResponses,
             currentComposition,
+            batch.Status == HoneyBatchStatus.Finalized
+            && currentComposition is null,
+            batch.Status == HoneyBatchStatus.Finalized,
+            batch.Status == HoneyBatchStatus.Finalized,
             HarvestSourceDetailsMapper
                 .MapIssues(
                     sourceSet.Issues));
@@ -221,7 +226,8 @@ internal sealed class GetHoneyBatchByIdHandler(
                             x.Id,
                             x.AlgorithmVersion,
                             x.DeterminedAt,
-                            x.DeterminationMethod
+                            x.DeterminationMethod,
+                            x.EvidenceReference
                         })
                 .FirstOrDefaultAsync(
                     cancellationToken);
@@ -261,6 +267,7 @@ internal sealed class GetHoneyBatchByIdHandler(
             composition.DeterminedAt,
             composition.DeterminationMethod
                 .ToString(),
+            composition.EvidenceReference,
             items);
     }
 }

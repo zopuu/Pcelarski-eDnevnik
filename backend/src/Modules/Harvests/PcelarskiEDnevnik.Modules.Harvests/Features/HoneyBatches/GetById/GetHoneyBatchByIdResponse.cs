@@ -24,6 +24,9 @@ public sealed record GetHoneyBatchByIdResponse(
         Sources,
     HoneyBatchCompositionResponse?
         CurrentComposition,
+    bool CanCalculateComposition,
+    bool CanManuallyDetermineComposition,
+    bool CanLaboratoryDetermineComposition,
     IReadOnlyList<
         HarvestSourceResolutionIssueResponse>
         SourceIssues);
@@ -38,9 +41,10 @@ public sealed record HoneyBatchHarvestResponse(
 
 public sealed record HoneyBatchCompositionResponse(
     Guid Id,
-    string AlgorithmVersion,
+    string? AlgorithmVersion,
     DateTimeOffset DeterminedAt,
     string DeterminationMethod,
+    string? EvidenceReference,
     IReadOnlyList<
         HoneyBatchCompositionItemResponse>
         Items);

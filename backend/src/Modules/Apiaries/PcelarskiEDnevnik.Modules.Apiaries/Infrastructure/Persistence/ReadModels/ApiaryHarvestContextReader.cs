@@ -172,7 +172,8 @@ internal sealed class ApiaryHarvestContextReader(
                         new {
                             x.ForageProfileId,
                             x.ForageType,
-                            x.Percentage
+                            x.Percentage,
+                            x.Intensity
                         })
                 .ToListAsync(
                     cancellationToken);
@@ -192,7 +193,8 @@ internal sealed class ApiaryHarvestContextReader(
                                         ForageProfileItemHarvestSource(
                                             item.ForageType
                                                 .ToString(),
-                                            item.Percentage))
+                                            item.Percentage,
+                                            item.Intensity))
                             .ToList());
 
         var forageProfiles =

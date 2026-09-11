@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution;
+using PcelarskiEDnevnik.Modules.Harvests.Application.Composition;
 using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
 using PcelarskiEDnevnik.Modules.Harvests.Features.Create;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Finalize;
@@ -10,6 +11,10 @@ using PcelarskiEDnevnik.Modules.Harvests.Features.GetAvailableGroups;
 using PcelarskiEDnevnik.Modules.Harvests.Features.GetById;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetAll;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetById;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Calculate;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Common;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Laboratory;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Composition.Manual;
 using PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence;
 
 namespace PcelarskiEDnevnik.Modules.Harvests;
@@ -19,6 +24,8 @@ public static class HarvestsModule {
         AddHarvestsModule(
             this IServiceCollection services,
             IConfiguration configuration) {
+        services.AddSingleton<TimeProvider>(TimeProvider.System);
+
         services.AddDbContext<
             HarvestsDbContext>(
             options => {
@@ -45,6 +52,18 @@ public static class HarvestsModule {
 
         services.AddScoped<
             HarvestGroupingPolicy>();
+
+        services
+            .AddOptions<HoneyCompositionOptions>()
+            .Bind(configuration.GetSection(HoneyCompositionOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                x => !string.IsNullOrWhiteSpace(x.AlgorithmVersion),
+                "Honey composition algorithm version is required.")
+            .ValidateOnStart();
+
+        services.AddScoped<HoneyCompositionPolicy>();
+        services.AddScoped<HoneyBatchCompositionCalculator>();
 
         services.AddScoped<
             ForageProfileSimilarityCalculator>();
@@ -103,6 +122,11 @@ public static class HarvestsModule {
 
         services.AddScoped<
             FinalizeHoneyBatchHandler>();
+
+        services.AddScoped<HoneyBatchCompositionWriter>();
+        services.AddScoped<CalculateHoneyBatchCompositionHandler>();
+        services.AddScoped<ManualHoneyBatchCompositionHandler>();
+        services.AddScoped<LaboratoryHoneyBatchCompositionHandler>();
 
         return services;
     }

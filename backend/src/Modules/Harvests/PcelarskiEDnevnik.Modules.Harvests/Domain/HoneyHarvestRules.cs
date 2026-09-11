@@ -13,11 +13,13 @@ public static class HoneyHarvestRules {
 
     public const int AlgorithmVersionMaxLength = 20;
 
+    public const int EvidenceReferenceMaxLength = 1000;
+
     public const int DeterminationMethodMaxLength = 20;
 
-    public const int ForageTypeMaxLength = 20;
+    public const int ForageTypeMaxLength = 100;
 
-    public const int MinimumPercentage = 0;
+    public const int MinimumPercentage = 1;
 
     public const int MaximumPercentage = 100;
 }

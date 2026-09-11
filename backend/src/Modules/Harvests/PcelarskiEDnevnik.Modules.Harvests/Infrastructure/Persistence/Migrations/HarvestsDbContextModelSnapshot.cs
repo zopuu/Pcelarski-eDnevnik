@@ -18,7 +18,7 @@ namespace PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence.Migratio
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("harvests")
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -103,7 +103,6 @@ namespace PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence.Migratio
                         .HasColumnName("id");
 
                     b.Property<string>("AlgorithmVersion")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("algorithm_version");
@@ -118,12 +117,22 @@ namespace PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence.Migratio
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("determined_at");
 
+                    b.Property<string>("EvidenceReference")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("evidence_reference");
+
                     b.Property<Guid>("HoneyBatchId")
                         .HasColumnType("uuid")
                         .HasColumnName("honey_batch_id");
 
                     b.HasKey("Id")
                         .HasName("pk_honey_batch_compositions");
+
+                    b.HasIndex("HoneyBatchId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_honey_batch_compositions_calculated_batch")
+                        .HasFilter("determination_method = 'Calculated'");
 
                     b.HasIndex("HoneyBatchId", "DeterminedAt")
                         .HasDatabaseName("ix_honey_batch_compositions_batch_determined_at");
@@ -139,8 +148,8 @@ namespace PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence.Migratio
 
                     b.Property<string>("ForageType")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("forage_type");
 
                     b.Property<Guid>("HoneyBatchCompositionId")
@@ -165,7 +174,7 @@ namespace PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence.Migratio
 
                     b.ToTable("honey_batch_composition_items", "harvests", t =>
                         {
-                            t.HasCheckConstraint("ck_honey_batch_composition_items_percentage", "percentage >= 0 AND percentage <= 100");
+                            t.HasCheckConstraint("ck_honey_batch_composition_items_percentage", "percentage > 0 AND percentage <= 100");
                         });
                 });
 

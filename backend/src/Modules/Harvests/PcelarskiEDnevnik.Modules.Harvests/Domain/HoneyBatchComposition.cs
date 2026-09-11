@@ -7,10 +7,10 @@ public sealed class HoneyBatchComposition {
     private HoneyBatchComposition(
         Guid id,
         Guid honeyBatchId,
-        string algorithmVersion,
+        string? algorithmVersion,
         DateTimeOffset determinedAt,
-        HoneyCompositionDeterminationMethod
-            determinationMethod) {
+        HoneyCompositionDeterminationMethod determinationMethod,
+        string? evidenceReference) {
         HoneyDomainGuards.AgainstEmptyGuid(
             id,
             nameof(id));
@@ -22,12 +22,32 @@ public sealed class HoneyBatchComposition {
         Id = id;
         HoneyBatchId = honeyBatchId;
 
-        AlgorithmVersion =
-            HoneyDomainGuards.RequiredText(
-                algorithmVersion,
-                HoneyHarvestRules
-                    .AlgorithmVersionMaxLength,
-                nameof(algorithmVersion));
+        switch (determinationMethod) {
+            case HoneyCompositionDeterminationMethod.Calculated:
+                AlgorithmVersion = HoneyDomainGuards.RequiredText(
+                    algorithmVersion!,
+                    HoneyHarvestRules.AlgorithmVersionMaxLength,
+                    nameof(algorithmVersion));
+                EvidenceReference = null;
+                break;
+
+            case HoneyCompositionDeterminationMethod.Manual:
+                AlgorithmVersion = null;
+                EvidenceReference = null;
+                break;
+
+            case HoneyCompositionDeterminationMethod.Laboratory:
+                AlgorithmVersion = null;
+                EvidenceReference = HoneyDomainGuards.RequiredText(
+                    evidenceReference!,
+                    HoneyHarvestRules.EvidenceReferenceMaxLength,
+                    nameof(evidenceReference));
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(determinationMethod));
+        }
 
         DeterminedAt = determinedAt;
         DeterminationMethod = determinationMethod;
@@ -43,10 +63,15 @@ public sealed class HoneyBatchComposition {
         private set;
     }
 
-    public string AlgorithmVersion {
+    public string? AlgorithmVersion {
         get;
         private set;
-    } = null!;
+    }
+
+    public string? EvidenceReference {
+        get;
+        private set;
+    }
 
     public DateTimeOffset DeterminedAt {
         get;
@@ -59,17 +84,41 @@ public sealed class HoneyBatchComposition {
         private set;
     }
 
-    public static HoneyBatchComposition Create(
+    public static HoneyBatchComposition CreateCalculated(
         Guid honeyBatchId,
         string algorithmVersion,
-        DateTimeOffset determinedAt,
-        HoneyCompositionDeterminationMethod
-            determinationMethod) {
+        DateTimeOffset determinedAt) {
         return new HoneyBatchComposition(
             Guid.NewGuid(),
             honeyBatchId,
             algorithmVersion,
             determinedAt,
-            determinationMethod);
+            HoneyCompositionDeterminationMethod.Calculated,
+            null);
+    }
+
+    public static HoneyBatchComposition CreateManual(
+        Guid honeyBatchId,
+        DateTimeOffset determinedAt) {
+        return new HoneyBatchComposition(
+            Guid.NewGuid(),
+            honeyBatchId,
+            null,
+            determinedAt,
+            HoneyCompositionDeterminationMethod.Manual,
+            null);
+    }
+
+    public static HoneyBatchComposition CreateLaboratory(
+        Guid honeyBatchId,
+        DateTimeOffset determinedAt,
+        string evidenceReference) {
+        return new HoneyBatchComposition(
+            Guid.NewGuid(),
+            honeyBatchId,
+            null,
+            determinedAt,
+            HoneyCompositionDeterminationMethod.Laboratory,
+            evidenceReference);
     }
 }
