@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.Finalize;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetAll;
 using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetById;
 
@@ -20,6 +21,7 @@ public static class HoneyBatchesEndpoints {
 
         group.MapGetHoneyBatchesEndpoint();
         group.MapGetHoneyBatchByIdEndpoint();
+        group.MapFinalizeHoneyBatchEndpoint();
 
         return endpoints;
     }

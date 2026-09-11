@@ -197,3 +197,13 @@ export type HoneyBatchDetails = {
   } | null;
   sourceIssues: HarvestSourceIssue[];
 };
+
+export type FinalizeHoneyBatchResponse = {
+  id: string;
+  status: string;
+  batchCode: string;
+  totalAmount: number;
+  unit: string;
+  periodStartedOn: string;
+  periodEndedOn: string;
+};

@@ -1,7 +1,11 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import type { ContextualAction } from '@/shared/components/contextual-action-bar/types';
 import { AppHeader } from '@/shared/components/navigation/app-header';
 import { Screen } from '@/shared/components/screen/screen';
 import { colors } from '@/shared/theme/colors';
@@ -12,6 +16,7 @@ import {
   HarvestLoadingState,
   SectionTitle,
 } from '../components/harvest-screen-states';
+import { useFinalizeHoneyBatch } from '../hooks/use-finalize-honey-batch';
 import { useHoneyBatch } from '../hooks/use-honey-batch';
 import {
   formatAmount,
@@ -24,7 +29,9 @@ import {
 
 export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
   const { openDrawer } = useAppDrawer();
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const query = useHoneyBatch(batchId);
+  const finalizeHoneyBatchMutation = useFinalizeHoneyBatch();
   const header = <AppHeader onMenuPress={openDrawer} />;
 
   if (query.isLoading) return <Screen header={header}><HarvestLoadingState label="Učitavanje serije meda..." /></Screen>;
@@ -34,9 +41,71 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
 
   const batch = query.data;
   const isOpen = batch.status.toLocaleLowerCase() === 'open';
+  const handleFinalizePress = () => {
+    Alert.alert(
+      'Završi seriju meda?',
+      `Nakon završavanja nova vrcanja se više neće automatski dodavati ovoj seriji.\n\n${batch.batchCode} · ${batch.name}\nUkupno: ${formatAmount(batch.totalAmount, batch.unit)}\nBroj vrcanja: ${batch.harvestCount}\nUkupno ramova: ${batch.totalHarvestedFrameCount}\nPeriod porekla meda: ${formatPeriod(batch.periodStartedOn, batch.periodEndedOn)}`,
+      [
+        { text: 'Otkaži', style: 'cancel' },
+        {
+          text: 'Završi seriju',
+          onPress: () => {
+            void finalizeHoneyBatchMutation
+              .mutateAsync(batch.id)
+              .then(() => {
+                Alert.alert('Serija završena', 'Serija meda je završena.');
+              })
+              .catch(() => {
+                Alert.alert(
+                  'Završavanje nije uspelo',
+                  'Seriju meda nije moguće završiti. Pokušajte ponovo.',
+                );
+              });
+          },
+        },
+      ],
+    );
+  };
+
+  const moreActions: ContextualAction[] = isOpen
+    ? [
+        {
+          key: 'finalize-batch',
+          label: 'Završi seriju',
+          icon: 'checkmark-circle-outline',
+          accessibilityLabel: 'Završi seriju meda',
+          onPress: handleFinalizePress,
+          loading: finalizeHoneyBatchMutation.isPending,
+        },
+      ]
+    : [];
 
   return (
-    <Screen header={header}>
+    <>
+      <Screen
+        header={header}
+        contextualActionBar={
+          <ContextualActionBar
+            primaryAction={{
+              key: 'create-harvest',
+              label: 'Vrcanje',
+              icon: 'water-outline',
+              accessibilityLabel: 'Evidentiraj novo vrcanje',
+              onPress: () => router.push('/harvests/create' as never),
+            }}
+            rightActions={[
+              {
+                key: 'more',
+                label: 'Više',
+                icon: 'ellipsis-horizontal-outline',
+                accessibilityLabel: 'Prikaži više opcija za seriju meda',
+                onPress: () => setIsMoreOpen(true),
+                hidden: !isOpen,
+              },
+            ]}
+          />
+        }
+      >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
         <Pressable accessibilityRole="button" accessibilityLabel="Vrati se na serije meda" onPress={() => router.back()} className="mb-3 mt-3 self-start py-2">
           <Text className="text-sm font-semibold text-primary">← Serije meda</Text>
@@ -126,6 +195,14 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
           </View>
         )}
       </ScrollView>
-    </Screen>
+      </Screen>
+
+      <ActionOverflowSheet
+        visible={isMoreOpen && isOpen}
+        title="Serija meda"
+        actions={moreActions}
+        onClose={() => setIsMoreOpen(false)}
+      />
+    </>
   );
 }

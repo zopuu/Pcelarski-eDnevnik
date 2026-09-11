@@ -19,7 +19,7 @@ export function getBatchStatusLabel(status: string) {
     case 'open':
       return 'Otvorena';
     case 'finalized':
-      return 'Zaključena';
+      return 'Završena';
     default:
       return status;
   }
