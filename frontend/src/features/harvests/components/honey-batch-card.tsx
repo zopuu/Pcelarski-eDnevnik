@@ -48,7 +48,7 @@ export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; 
         <Metric icon="albums-outline" value={`${batch.totalHarvestedFrameCount} ramova`} />
         <Metric
           icon={batch.hasComposition ? 'checkmark-circle-outline' : 'flask-outline'}
-          value={batch.hasComposition ? 'Sastav dostupan' : 'Sastav nije određen'}
+          value={batch.hasComposition ? 'Sastav određen' : 'Sastav nije određen'}
         />
       </View>
     </Pressable>

@@ -183,19 +183,55 @@ export type HoneyBatchDetails = {
     superCount: number;
   }>;
   sources: HarvestSource[];
-  currentComposition: {
-    id: string;
-    algorithmVersion: string;
-    determinedAt: string;
-    determinationMethod: string;
-    items: Array<{
-      id: string;
-      forageType: string;
-      percentage: number;
-      notes: string | null;
-    }>;
-  } | null;
+  currentComposition: HoneyBatchComposition | null;
+  canCalculateComposition: boolean;
+  canManuallyDetermineComposition: boolean;
+  canLaboratoryDetermineComposition: boolean;
   sourceIssues: HarvestSourceIssue[];
+};
+
+export type HoneyBatchCompositionMethod =
+  | 'Calculated'
+  | 'Manual'
+  | 'Laboratory';
+
+export type HoneyBatchCompositionItem = {
+  id: string;
+  forageType: string;
+  percentage: number;
+  notes: string | null;
+};
+
+export type HoneyBatchComposition = {
+  id: string;
+  algorithmVersion: string | null;
+  determinedAt: string;
+  determinationMethod: HoneyBatchCompositionMethod;
+  evidenceReference: string | null;
+  items: HoneyBatchCompositionItem[];
+};
+
+export type HoneyBatchCompositionItemRequest = {
+  forageType: string;
+  percentage: number;
+  notes: string | null;
+};
+
+export type SetManualHoneyBatchCompositionRequest = {
+  items: HoneyBatchCompositionItemRequest[];
+};
+
+export type SetLaboratoryHoneyBatchCompositionRequest = {
+  evidenceReference: string;
+  items: HoneyBatchCompositionItemRequest[];
+};
+
+export type CompositionCalculationIssue = {
+  code: string;
+  message?: string;
+  hiveSuperStayId?: string;
+  apiaryStayId?: string;
+  year?: number;
 };
 
 export type FinalizeHoneyBatchResponse = {

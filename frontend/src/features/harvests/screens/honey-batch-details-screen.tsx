@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ApiError } from '@/shared/api/api-error';
 import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
 import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
 import type { ContextualAction } from '@/shared/components/contextual-action-bar/types';
@@ -10,6 +11,8 @@ import { AppHeader } from '@/shared/components/navigation/app-header';
 import { Screen } from '@/shared/components/screen/screen';
 import { colors } from '@/shared/theme/colors';
 import { HarvestSourceList } from '../components/harvest-source-list';
+import { CompositionCalculationError } from '../components/composition-calculation-error';
+import { HoneyBatchCompositionCard } from '../components/honey-batch-composition-card';
 import {
   DetailMetric,
   HarvestErrorState,
@@ -17,6 +20,7 @@ import {
   SectionTitle,
 } from '../components/harvest-screen-states';
 import { useFinalizeHoneyBatch } from '../hooks/use-finalize-honey-batch';
+import { useCalculateHoneyBatchComposition } from '../hooks/use-calculate-honey-batch-composition';
 import { useHoneyBatch } from '../hooks/use-honey-batch';
 import {
   formatAmount,
@@ -24,16 +28,17 @@ import {
   formatHarvestDate,
   formatPeriod,
   getBatchStatusLabel,
-  getDeterminationMethodLabel,
-  getForageLabel,
   hasDistinctBatchName,
 } from '../utils/harvest-format';
+import type { CompositionCalculationIssue } from '../types/harvest';
 
 export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
   const { openDrawer } = useAppDrawer();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [calculationIssues, setCalculationIssues] = useState<CompositionCalculationIssue[] | null>(null);
   const query = useHoneyBatch(batchId);
   const finalizeHoneyBatchMutation = useFinalizeHoneyBatch();
+  const calculateCompositionMutation = useCalculateHoneyBatchComposition();
   const header = <AppHeader onMenuPress={openDrawer} />;
 
   if (query.isLoading) return <Screen header={header}><HarvestLoadingState label="Učitavanje serije meda..." /></Screen>;
@@ -43,6 +48,43 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
 
   const batch = query.data;
   const isOpen = batch.status.toLocaleLowerCase() === 'open';
+  const openManualComposition = () => router.push({ pathname: '/honey-batches/[batchId]/composition/manual', params: { batchId: batch.id } } as never);
+  const openLaboratoryComposition = () => router.push({ pathname: '/honey-batches/[batchId]/composition/laboratory', params: { batchId: batch.id } } as never);
+  const handleCalculateComposition = () => {
+    Alert.alert(
+      'Izračunaj sastav meda?',
+      'Sistem će proceniti sastav na osnovu porekla meda, perioda boravka nastavaka i evidentiranih profila paše.\n\nProračun predstavlja procenu, ne laboratorijsku analizu.',
+      [
+        { text: 'Otkaži', style: 'cancel' },
+        {
+          text: 'Izračunaj',
+          onPress: () => {
+            setCalculationIssues(null);
+            void calculateCompositionMutation.mutateAsync(batch.id)
+              .then(() => Alert.alert('Sastav meda je izračunat.'))
+              .catch(async (error) => {
+                if (error instanceof ApiError && error.status === 409) {
+                  await query.refetch();
+                  Alert.alert('Sastav je u međuvremenu već određen.');
+                  return;
+                }
+                if (error instanceof ApiError && error.status === 422 && error.problem?.code === 'honey_batch_composition.cannot_calculate') {
+                  const issues = getCalculationIssues(error.problem.issues);
+                  setCalculationIssues(issues);
+                  Alert.alert('Sastav nije moguće izračunati', 'Nema dovoljno pouzdanih podataka za automatski proračun sastava.');
+                  return;
+                }
+                if (error instanceof ApiError && error.status === 404) {
+                  Alert.alert('Serija meda nije pronađena', 'Serija meda nije pronađena ili joj više nemate pristup.');
+                  return;
+                }
+                Alert.alert('Proračun nije uspeo', 'Sastav meda nije moguće izračunati. Pokušajte ponovo.');
+              });
+          },
+        },
+      ],
+    );
+  };
   const handleFinalizePress = () => {
     Alert.alert(
       'Završi seriju meda?',
@@ -166,28 +208,30 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
         </View>
 
         <SectionTitle>Sastav meda</SectionTitle>
-        {batch.currentComposition ? (
-          <View className="rounded-3xl border border-border bg-surface px-4 py-4">
-            {batch.currentComposition.items.map((item, index) => (
-              <View key={item.id} className={index > 0 ? 'mt-4 border-t border-border pt-4' : ''}>
-                <View className="flex-row items-center justify-between gap-3">
-                  <Text className="flex-1 text-base font-semibold text-foreground">{getForageLabel(item.forageType)}</Text>
-                  <Text className="text-lg font-bold text-primary">{item.percentage}%</Text>
-                </View>
-                <View className="mt-2 h-2 overflow-hidden rounded-full bg-surface-warm">
-                  <View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, item.percentage))}%` }} />
-                </View>
-                {item.notes && <Text className="mt-2 text-sm text-muted">{item.notes}</Text>}
-              </View>
-            ))}
-            <Text className="mt-4 border-t border-border pt-4 text-xs text-muted">
-              Određeno {new Intl.DateTimeFormat('sr-Latn-RS', { dateStyle: 'medium' }).format(new Date(batch.currentComposition.determinedAt))} · {getDeterminationMethodLabel(batch.currentComposition.determinationMethod)}
-            </Text>
+        {isOpen ? (
+          <View className="rounded-3xl border border-border bg-surface px-5 py-5">
+            <Text className="text-base font-semibold text-foreground">Sastav se može odrediti nakon završavanja serije.</Text>
           </View>
+        ) : batch.currentComposition ? (
+          <>
+            <HoneyBatchCompositionCard composition={batch.currentComposition} />
+            <View className="mt-3 gap-3">
+              {batch.canManuallyDetermineComposition && <Pressable accessibilityRole="button" onPress={openManualComposition} className="min-h-12 items-center justify-center rounded-2xl border border-primary bg-surface px-4"><Text className="font-bold text-primary">Ručno izmeni sastav</Text></Pressable>}
+              {batch.canLaboratoryDetermineComposition && <Pressable accessibilityRole="button" onPress={openLaboratoryComposition} className="min-h-12 items-center justify-center rounded-2xl border border-border bg-surface px-4"><Text className="font-bold text-foreground">Unesi laboratorijski nalaz</Text></Pressable>}
+            </View>
+          </>
+        ) : calculationIssues ? (
+          <CompositionCalculationError issues={calculationIssues} onManual={openManualComposition} onLaboratory={openLaboratoryComposition} />
         ) : (
           <View className="items-center rounded-3xl border border-border bg-surface px-6 py-8">
             <Ionicons name="flask-outline" size={32} color={colors.muted} />
-            <Text className="mt-3 text-center text-base font-semibold text-foreground">Sastav meda još nije određen</Text>
+            <Text className="mt-3 text-center text-base font-semibold text-foreground">Sastav još nije određen.</Text>
+            <Text className="mt-2 text-center text-sm leading-5 text-muted">Možete pokušati automatski proračun na osnovu istorije paše i porekla meda, uneti sastav ručno ili evidentirati laboratorijski nalaz.</Text>
+            <View className="mt-5 w-full gap-3">
+              {batch.canCalculateComposition && <Pressable accessibilityRole="button" disabled={calculateCompositionMutation.isPending} onPress={handleCalculateComposition} className={`min-h-12 items-center justify-center rounded-2xl bg-primary px-4 ${calculateCompositionMutation.isPending ? 'opacity-60' : ''}`}><Text className="font-bold text-background">{calculateCompositionMutation.isPending ? 'Izračunavanje...' : 'Izračunaj sastav'}</Text></Pressable>}
+              {batch.canManuallyDetermineComposition && <Pressable accessibilityRole="button" onPress={openManualComposition} className="min-h-12 items-center justify-center rounded-2xl border border-primary bg-surface px-4"><Text className="font-bold text-primary">Unesi ručno</Text></Pressable>}
+              {batch.canLaboratoryDetermineComposition && <Pressable accessibilityRole="button" onPress={openLaboratoryComposition} className="min-h-12 items-center justify-center rounded-2xl border border-border bg-surface px-4"><Text className="font-bold text-foreground">Laboratorijski nalaz</Text></Pressable>}
+            </View>
           </View>
         )}
 
@@ -211,4 +255,19 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
       />
     </>
   );
+}
+
+function getCalculationIssues(value: unknown): CompositionCalculationIssue[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item !== 'object' || item === null || typeof (item as Record<string, unknown>).code !== 'string') return [];
+    const issue = item as Record<string, unknown>;
+    return [{
+      code: issue.code as string,
+      message: typeof issue.message === 'string' ? issue.message : undefined,
+      hiveSuperStayId: typeof issue.hiveSuperStayId === 'string' ? issue.hiveSuperStayId : undefined,
+      apiaryStayId: typeof issue.apiaryStayId === 'string' ? issue.apiaryStayId : undefined,
+      year: typeof issue.year === 'number' ? issue.year : undefined,
+    }];
+  });
 }

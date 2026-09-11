@@ -56,9 +56,9 @@ export function getDeterminationMethodLabel(value: string) {
     case 'calculated':
       return 'Izračunato';
     case 'manual':
-      return 'Ručno određeno';
+      return 'Ručno';
     case 'laboratory':
-      return 'Laboratorijska analiza';
+      return 'Laboratorijski';
     default:
       return value;
   }
