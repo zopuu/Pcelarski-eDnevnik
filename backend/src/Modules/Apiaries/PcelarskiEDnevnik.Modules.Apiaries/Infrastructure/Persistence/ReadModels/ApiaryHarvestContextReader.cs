@@ -48,23 +48,35 @@ internal sealed class ApiaryHarvestContextReader(
             AtStartOfDayUtc(
                 endedOn.AddDays(1));
 
+        var apiaryStayRows =
+    await dbContext.ApiaryStays
+        .AsNoTracking()
+        .Where(
+            x =>
+                ownedApiaryIds.Contains(x.ApiaryId)
+                &&
+                x.StartedAtUtc < rangeEndExclusive
+                &&
+                (
+                    x.EndedAtUtc == null
+                    ||
+                    x.EndedAtUtc > rangeStart
+                ))
+        .OrderBy(x => x.StartedAtUtc)
+        .ThenBy(x => x.Id)
+        .Select(
+            x => new {
+                x.Id,
+                x.ApiaryId,
+                x.LocationId,
+                x.StartedAtUtc,
+                x.EndedAtUtc
+            })
+        .ToListAsync(
+            cancellationToken);
+
         var apiaryStays =
-            await dbContext.ApiaryStays
-                .AsNoTracking()
-                .Where(
-                    x =>
-                        ownedApiaryIds.Contains(
-                            x.ApiaryId)
-                        &&
-                        x.StartedAtUtc <
-                        rangeEndExclusive
-                        &&
-                        (
-                            x.EndedAtUtc == null
-                            ||
-                            x.EndedAtUtc >
-                            rangeStart
-                        ))
+            apiaryStayRows
                 .Select(
                     x =>
                         new ApiaryStayHarvestSource(
@@ -73,10 +85,7 @@ internal sealed class ApiaryHarvestContextReader(
                             x.LocationId,
                             x.StartedAtUtc,
                             x.EndedAtUtc))
-                .OrderBy(x => x.StartedAtUtc)
-                .ThenBy(x => x.Id)
-                .ToListAsync(
-                    cancellationToken);
+                .ToList();
 
         if (apiaryStays.Count == 0) {
             return Empty();

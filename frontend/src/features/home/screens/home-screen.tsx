@@ -129,14 +129,14 @@ export function HomeScreen() {
         <ContextualActionBar
           leftActions={[
             {
-              key: 'sales',
-              label: 'Prodaja',
-              icon: 'cash-outline',
+              key: 'honey',
+              label: 'Med',
+              icon: 'water-outline',
               accessibilityLabel:
-                'Otvori prodaju',
+                'Otvori vrcanja i serije meda',
               onPress: () => {
-                showComingSoon(
-                  'Prodaja',
+                router.push(
+                  '/harvests' as never,
                 );
               },
             },

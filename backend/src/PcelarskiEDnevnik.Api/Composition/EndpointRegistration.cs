@@ -1,26 +1,27 @@
-﻿using PcelarskiEDnevnik.Api.Features.Registration;
+﻿using PcelarskiEDnevnik.Api.Features.Profile;
+using PcelarskiEDnevnik.Api.Features.Registration;
 using PcelarskiEDnevnik.Modules.Accounts;
-using PcelarskiEDnevnik.Api.Features.Profile;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.ForageObservations;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Locations;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles;
 using PcelarskiEDnevnik.Modules.BeekeeperProfiles.Features;
+using PcelarskiEDnevnik.Modules.Harvests.Features;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches;
 using PcelarskiEDnevnik.Modules.Hives.Features.Colonies;
-using PcelarskiEDnevnik.Modules.Hives.Features.Hives;
-using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation;
-using PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveActions;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInspections;
+using PcelarskiEDnevnik.Modules.Hives.Features.HiveInsulation;
 using PcelarskiEDnevnik.Modules.Hives.Features.HiveMaintenance;
+using PcelarskiEDnevnik.Modules.Hives.Features.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Features.HoneyFrameFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.PattyFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.Queens;
 using PcelarskiEDnevnik.Modules.Hives.Features.SyrupFeedings;
 using PcelarskiEDnevnik.Modules.Hives.Features.VarroaTreatments;
-using PcelarskiEDnevnik.Modules.Harvests.Features;
 using PcelarskiEDnevnik.Modules.Identity;
-using PcelarskiEDnevnik.Modules.Relocations;
 using PcelarskiEDnevnik.Modules.Identity.Web;
+using PcelarskiEDnevnik.Modules.Relocations;
 
 namespace PcelarskiEDnevnik.Api.Composition;
 
@@ -49,6 +50,7 @@ internal static class EndpointRegistration {
         app.MapForageObservationsEndpoints();
         app.MapRelocationsEndpoints();
         app.MapHarvestsEndpoints();
+        app.MapHoneyBatchesEndpoints();
 
         return app;
     }

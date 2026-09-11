@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
+using PcelarskiEDnevnik.Modules.Apiaries.Contracts.Harvesting;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Elevation;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
+using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.ReadModels;
 
 namespace PcelarskiEDnevnik.Modules.Apiaries;
 
@@ -38,6 +40,9 @@ public static class ApiariesModule {
         services.AddScoped<
             IApiaryAccessChecker,
             ApiaryAccessChecker>();
+        services.AddScoped<
+            IApiaryHarvestContextReader,
+            ApiaryHarvestContextReader>();
 
         return services;
     }

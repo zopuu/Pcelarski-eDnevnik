@@ -4,7 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestExecution;
 using PcelarskiEDnevnik.Modules.Harvests.Application.HarvestSources;
 using PcelarskiEDnevnik.Modules.Harvests.Features.Create;
+using PcelarskiEDnevnik.Modules.Harvests.Features.GetAll;
 using PcelarskiEDnevnik.Modules.Harvests.Features.GetAvailableGroups;
+using PcelarskiEDnevnik.Modules.Harvests.Features.GetById;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetAll;
+using PcelarskiEDnevnik.Modules.Harvests.Features.HoneyBatches.GetById;
 using PcelarskiEDnevnik.Modules.Harvests.Infrastructure.Persistence;
 
 namespace PcelarskiEDnevnik.Modules.Harvests;
@@ -84,6 +88,17 @@ public static class HarvestsModule {
 
         services.AddScoped<
             GetAvailableHarvestGroupsHandler>();
+        services.AddScoped<
+    GetHarvestsHandler>();
+
+        services.AddScoped<
+            GetHarvestByIdHandler>();
+
+        services.AddScoped<
+            GetHoneyBatchesHandler>();
+
+        services.AddScoped<
+            GetHoneyBatchByIdHandler>();
 
         return services;
     }
