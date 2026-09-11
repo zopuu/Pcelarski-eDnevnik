@@ -83,12 +83,19 @@ internal sealed class HarvestFrameInventory(
         command.CommandText =
             """
             SELECT
-                id,
-                remaining_harvestable_frame_count
-            FROM hives.hive_super_stays
-            WHERE id = ANY(@ids)
-            FOR UPDATE;
+                hss.id,
+                hss.remaining_harvestable_frame_count
+            FROM hives.hive_super_stays AS hss
+            JOIN hives.hive_supers AS hs
+                ON hs.id = hss.hive_super_id
+            WHERE hss.id = ANY(@ids)
+              AND hs.status = @ready_for_harvest_status
+            FOR UPDATE OF hss, hs;
             """;
+        AddParameter(
+            command,
+            "ready_for_harvest_status",
+            "ReadyForHarvest");
 
         var idsParameter =
             command.CreateParameter();
@@ -127,10 +134,10 @@ internal sealed class HarvestFrameInventory(
     }
 
     private static async Task ConsumeOneAsync(
-        DbConnection connection,
-        IDbContextTransaction transaction,
-        HarvestFrameAllocation allocation,
-        CancellationToken cancellationToken) {
+    DbConnection connection,
+    IDbContextTransaction transaction,
+    HarvestFrameAllocation allocation,
+    CancellationToken cancellationToken) {
         await using var command =
             connection.CreateCommand();
 
@@ -139,6 +146,7 @@ internal sealed class HarvestFrameInventory(
 
         command.CommandText =
             """
+        WITH updated_stay AS (
             UPDATE hives.hive_super_stays
             SET remaining_harvestable_frame_count =
                 remaining_harvestable_frame_count
@@ -147,8 +155,25 @@ internal sealed class HarvestFrameInventory(
               AND remaining_harvestable_frame_count =
                   @expected_remaining
               AND remaining_harvestable_frame_count >=
-                  @frames;
-            """;
+                  @frames
+            RETURNING
+                hive_super_id,
+                remaining_harvestable_frame_count
+        ),
+        archived_super AS (
+            UPDATE hives.hive_supers AS hs
+            SET status = @archived_status
+            FROM updated_stay AS us
+            WHERE hs.id = us.hive_super_id
+              AND us.remaining_harvestable_frame_count = 0
+              AND hs.status = @ready_for_harvest_status
+            RETURNING hs.id
+        )
+        SELECT
+            hive_super_id,
+            remaining_harvestable_frame_count
+        FROM updated_stay;
+        """;
 
         AddParameter(
             command,
@@ -166,11 +191,29 @@ internal sealed class HarvestFrameInventory(
             allocation
                 .ExpectedRemainingFrameCount);
 
-        var affected =
-            await command.ExecuteNonQueryAsync(
+        AddParameter(
+            command,
+            "archived_status",
+            "Archived");
+
+        AddParameter(
+            command,
+            "ready_for_harvest_status",
+            "ReadyForHarvest");
+
+        await using var reader =
+            await command.ExecuteReaderAsync(
                 cancellationToken);
 
-        if (affected != 1) {
+        if (!await reader.ReadAsync(
+                cancellationToken)) {
+            throw SourceChanged();
+        }
+
+        var remaining =
+            reader.GetInt32(1);
+
+        if (remaining < 0) {
             throw SourceChanged();
         }
     }

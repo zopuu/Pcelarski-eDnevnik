@@ -25,6 +25,14 @@ export function getBatchStatusLabel(status: string) {
   }
 }
 
+export function hasDistinctBatchName(name: string, batchCode: string) {
+  return name.trim().localeCompare(batchCode.trim(), 'sr-Latn-RS', { sensitivity: 'accent' }) !== 0;
+}
+
+export function formatBatchIdentity(name: string, batchCode: string) {
+  return hasDistinctBatchName(name, batchCode) ? `${batchCode} · ${name}` : batchCode;
+}
+
 const forageLabels: Record<string, string> = {
   meadow: 'Livada',
   forest: 'Šuma',

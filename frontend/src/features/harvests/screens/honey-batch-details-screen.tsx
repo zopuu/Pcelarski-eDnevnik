@@ -20,11 +20,13 @@ import { useFinalizeHoneyBatch } from '../hooks/use-finalize-honey-batch';
 import { useHoneyBatch } from '../hooks/use-honey-batch';
 import {
   formatAmount,
+  formatBatchIdentity,
   formatHarvestDate,
   formatPeriod,
   getBatchStatusLabel,
   getDeterminationMethodLabel,
   getForageLabel,
+  hasDistinctBatchName,
 } from '../utils/harvest-format';
 
 export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
@@ -44,7 +46,7 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
   const handleFinalizePress = () => {
     Alert.alert(
       'Završi seriju meda?',
-      `Nakon završavanja nova vrcanja se više neće automatski dodavati ovoj seriji.\n\n${batch.batchCode} · ${batch.name}\nUkupno: ${formatAmount(batch.totalAmount, batch.unit)}\nBroj vrcanja: ${batch.harvestCount}\nUkupno ramova: ${batch.totalHarvestedFrameCount}\nPeriod porekla meda: ${formatPeriod(batch.periodStartedOn, batch.periodEndedOn)}`,
+      `Nakon završavanja nova vrcanja se više neće automatski dodavati ovoj seriji.\n\n${formatBatchIdentity(batch.name, batch.batchCode)}\nUkupno: ${formatAmount(batch.totalAmount, batch.unit)}\nBroj vrcanja: ${batch.harvestCount}\nUkupno ramova: ${batch.totalHarvestedFrameCount}\nPeriod porekla meda: ${formatPeriod(batch.periodStartedOn, batch.periodEndedOn)}`,
       [
         { text: 'Otkaži', style: 'cancel' },
         {
@@ -113,8 +115,12 @@ export function HoneyBatchDetailsScreen({ batchId }: { batchId: string }) {
 
         <View className="flex-row items-start justify-between gap-3">
           <View className="flex-1">
-            <Text className="text-xs font-bold uppercase tracking-widest text-muted">{batch.batchCode}</Text>
-            <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">{batch.name}</Text>
+            {hasDistinctBatchName(batch.name, batch.batchCode) && (
+              <Text className="text-xs font-bold uppercase tracking-widest text-muted">{batch.batchCode}</Text>
+            )}
+            <Text className={`${hasDistinctBatchName(batch.name, batch.batchCode) ? 'mt-1 ' : ''}text-3xl font-bold tracking-tight text-foreground`}>
+              {hasDistinctBatchName(batch.name, batch.batchCode) ? batch.name : batch.batchCode}
+            </Text>
           </View>
           <View className={`rounded-full px-3 py-1.5 ${isOpen ? 'bg-success/10' : 'bg-surface-warm'}`}>
             <Text className={`text-xs font-bold ${isOpen ? 'text-success' : 'text-muted'}`}>{getBatchStatusLabel(batch.status)}</Text>

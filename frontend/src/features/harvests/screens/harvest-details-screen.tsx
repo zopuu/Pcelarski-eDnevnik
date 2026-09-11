@@ -18,6 +18,7 @@ import {
   formatHarvestDate,
   formatPeriod,
   getBatchStatusLabel,
+  hasDistinctBatchName,
 } from '../utils/harvest-format';
 
 export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
@@ -59,8 +60,12 @@ export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
             <Ionicons name="layers-outline" size={24} color={colors.primary} />
           </View>
           <View className="flex-1">
-            <Text className="text-base font-bold text-foreground">{harvest.batch.name}</Text>
-            <Text className="mt-1 text-sm text-muted">{harvest.batch.batchCode} · {getBatchStatusLabel(harvest.batch.status)}</Text>
+            <Text className="text-base font-bold text-foreground">
+              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode) ? harvest.batch.name : harvest.batch.batchCode}
+            </Text>
+            <Text className="mt-1 text-sm text-muted">
+              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode) ? `${harvest.batch.batchCode} · ` : ''}{getBatchStatusLabel(harvest.batch.status)}
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
         </Pressable>

@@ -78,6 +78,7 @@ pnpm-debug.log*
 .expo/
 .expo-shared/
 .expo-web-export/
+.expo-export-check/
 
 dist/
 build/

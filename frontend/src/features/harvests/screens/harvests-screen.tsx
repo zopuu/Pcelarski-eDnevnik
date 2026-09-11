@@ -82,7 +82,6 @@ function HarvestHistory() {
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32, flexGrow: items.length === 0 ? 1 : undefined }}
-      ItemSeparatorComponent={() => <View className="h-4" />}
       refreshing={query.isRefetching && !query.isFetchingNextPage}
       onRefresh={() => void query.refetch()}
       onEndReached={() => {
@@ -91,9 +90,11 @@ function HarvestHistory() {
       onEndReachedThreshold={0.35}
       ListEmptyComponent={<EmptyState icon="water-outline" title="Još nema vrcanja" message="Evidentirajte prvo vrcanje pomoću centralnog dugmeta." />}
       ListFooterComponent={query.isFetchingNextPage ? <ActivityIndicator className="my-5" color={colors.primary} /> : null}
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <HarvestCard
           harvest={item}
+          isFirst={index === 0}
+          isLast={index === items.length - 1}
           onPress={() => router.push({ pathname: '/harvests/[harvestId]', params: { harvestId: item.id } } as never)}
         />
       )}

@@ -6,6 +6,7 @@ import {
   formatAmount,
   formatPeriod,
   getBatchStatusLabel,
+  hasDistinctBatchName,
 } from '../utils/harvest-format';
 
 export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; onPress: () => void }) {
@@ -21,8 +22,12 @@ export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; 
     >
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1">
-          <Text className="text-lg font-bold text-foreground" numberOfLines={2}>{batch.name}</Text>
-          <Text className="mt-1 text-sm font-semibold text-primary">{batch.batchCode}</Text>
+          <Text className="text-lg font-bold text-foreground" numberOfLines={2}>
+            {hasDistinctBatchName(batch.name, batch.batchCode) ? batch.name : batch.batchCode}
+          </Text>
+          {hasDistinctBatchName(batch.name, batch.batchCode) && (
+            <Text className="mt-1 text-sm font-semibold text-primary">{batch.batchCode}</Text>
+          )}
         </View>
         <View className={`rounded-full px-3 py-1.5 ${isOpen ? 'bg-success/10' : 'bg-surface-warm'}`}>
           <Text className={`text-xs font-bold ${isOpen ? 'text-success' : 'text-muted'}`}>

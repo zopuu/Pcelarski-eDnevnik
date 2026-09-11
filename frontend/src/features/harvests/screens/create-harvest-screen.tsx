@@ -28,6 +28,8 @@ import { formatAmount, formatHarvestDate, formatPeriod } from '../utils/harvest-
 
 type CreateStep = 'group' | 'frames' | 'data' | 'confirm' | 'success';
 
+const createSteps = ['Izbor', 'Ramovi', 'Podaci', 'Pregled'] as const;
+
 export function CreateHarvestScreen() {
   const groupsQuery = useAvailableHarvestGroups();
   const createMutation = useCreateHarvest();
@@ -363,8 +365,39 @@ function HarvestSuccess({ response }: { response: CreateHarvestResponse }) {
 function StepIndicator({ step }: { step: CreateStep }) {
   const current = { group: 1, frames: 2, data: 3, confirm: 4, success: 4 }[step];
   return (
-    <View className="mb-1 mt-4 flex-row gap-2">
-      {[1, 2, 3, 4].map((item) => <View key={item} className={`h-1.5 flex-1 rounded-full ${item <= current ? 'bg-primary' : 'bg-border'}`} />)}
+    <View className="mb-8 mt-6 flex-row items-start">
+      {createSteps.map((label, index) => {
+        const stepNumber = index + 1;
+        const isCurrent = stepNumber === current;
+        const isComplete = stepNumber < current;
+        const previousConnectorIsComplete = current > stepNumber - 1;
+        const nextConnectorIsComplete = current > stepNumber;
+
+        return (
+          <View key={label} className="relative flex-1 items-center">
+            {index > 0 && (
+              <View
+                className={`absolute left-0 right-1/2 top-5 h-0.5 ${previousConnectorIsComplete ? 'bg-primary' : 'bg-border'}`}
+              />
+            )}
+            {index < createSteps.length - 1 && (
+              <View
+                className={`absolute left-1/2 right-0 top-5 h-0.5 ${nextConnectorIsComplete ? 'bg-primary' : 'bg-border'}`}
+              />
+            )}
+            <View className="relative z-10 h-10 w-10 items-center justify-center rounded-full bg-background">
+              <View className={`h-8 w-8 items-center justify-center rounded-full ${isCurrent || isComplete ? 'bg-primary' : 'bg-border'}`}>
+                <Text className={`text-xs font-bold ${isCurrent || isComplete ? 'text-background' : 'text-muted'}`}>
+                  {isComplete ? '✓' : stepNumber}
+                </Text>
+              </View>
+            </View>
+            <Text numberOfLines={1} className={`mt-2 text-center text-[11px] font-semibold ${isCurrent ? 'text-primary' : 'text-muted'}`}>
+              {label}
+            </Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
