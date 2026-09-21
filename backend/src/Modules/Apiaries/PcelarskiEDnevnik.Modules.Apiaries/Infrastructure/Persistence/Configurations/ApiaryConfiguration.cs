@@ -10,7 +10,12 @@ internal sealed class ApiaryConfiguration
         EntityTypeBuilder<Apiary> builder) {
         builder.ToTable(
             "apiaries",
-            "apiaries");
+            "apiaries",
+            tableBuilder => {
+                tableBuilder.HasCheckConstraint(
+                    "ck_apiaries_type",
+                    "\"type\" IN ('Stationary', 'Migratory')");
+            });
 
         builder.HasKey(x => x.Id)
             .HasName("pk_apiaries");
@@ -34,7 +39,8 @@ internal sealed class ApiaryConfiguration
         builder.Property(x => x.Type)
             .HasColumnName("type")
             .HasConversion<string>()
-            .HasMaxLength(30);
+            .HasMaxLength(30)
+            .IsRequired();
 
         builder.Property(x => x.Status)
             .HasColumnName("status")

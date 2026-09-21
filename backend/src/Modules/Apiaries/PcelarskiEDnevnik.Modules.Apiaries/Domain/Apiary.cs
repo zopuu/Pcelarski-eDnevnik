@@ -8,9 +8,9 @@ public sealed class Apiary {
 
     private Apiary(
     Guid ownerBeekeeperId,
+    ApiaryType type,
     string? identificationNumber,
     string? name,
-    ApiaryType? type,
     ApiaryStatus? status,
     string? imagePath = null) {
         if (ownerBeekeeperId == Guid.Empty) {
@@ -30,7 +30,7 @@ public sealed class Apiary {
         Name =
             NormalizeOptionalText(name);
 
-        Type = type;
+        Type = ValidateType(type);
         Status = status;
         ImagePath = NormalizeOptionalText(imagePath);
 
@@ -46,7 +46,7 @@ public sealed class Apiary {
 
     public string? Name { get; private set; }
 
-    public ApiaryType? Type { get; private set; }
+    public ApiaryType Type { get; private set; }
 
     public ApiaryStatus? Status { get; private set; }
 
@@ -58,26 +58,26 @@ public sealed class Apiary {
 
     public static Apiary Create(
     Guid ownerBeekeeperId,
+    ApiaryType type,
     string? identificationNumber = null,
     string? name = null,
-    ApiaryType? type = null,
     ApiaryStatus? status = null,
     string? imagePath = null) {
         return new Apiary(
             ownerBeekeeperId,
+            type,
             identificationNumber,
             name,
-            type,
             status,
             imagePath);
     }
     public void Update(
     string? identificationNumber,
     string? name,
-    ApiaryType? type) {
+    ApiaryType type) {
         IdentificationNumber = NormalizeOptionalText(identificationNumber);
         Name = NormalizeOptionalText(name);
-        Type = type;
+        Type = ValidateType(type);
         UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
 
@@ -104,5 +104,17 @@ public sealed class Apiary {
         }
 
         return value.Trim();
+    }
+
+    private static ApiaryType ValidateType(
+        ApiaryType type) {
+        if (!Enum.IsDefined(type)) {
+            throw new ArgumentOutOfRangeException(
+                nameof(type),
+                type,
+                "Apiary type must be Stationary or Migratory.");
+        }
+
+        return type;
     }
 }

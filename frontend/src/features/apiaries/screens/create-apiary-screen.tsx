@@ -172,7 +172,7 @@ export function CreateApiaryScreen() {
       defaultValues: {
         name: '',
         identificationNumber: '',
-        type: null,
+        type: undefined,
 
         locationName: '',
         latitude: '',
@@ -482,7 +482,7 @@ export function CreateApiaryScreen() {
                   text-foreground
                 "
               >
-                Tip pčelinjaka
+                Tip pčelinjaka *
               </Text>
 
               <View
@@ -517,6 +517,18 @@ export function CreateApiaryScreen() {
                   }}
                 />
               </View>
+
+              {errors.type?.message && (
+                <Text
+                  className="
+                    mt-2
+                    text-sm
+                    text-error
+                  "
+                >
+                  {errors.type.message}
+                </Text>
+              )}
             </View>
           )}
         />

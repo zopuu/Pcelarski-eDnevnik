@@ -59,8 +59,10 @@ export const createApiarySchema =
             .enum([
                 'stationary',
                 'migratory',
-            ])
-            .nullable(),
+            ], {
+                error:
+                    'Izaberite tip pčelinjaka.',
+            }),
 
         locationName: z
             .string()

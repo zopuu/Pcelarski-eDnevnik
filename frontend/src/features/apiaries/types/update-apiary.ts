@@ -22,8 +22,7 @@ export type UpdateApiaryRequest = {
     | null;
 
   type:
-    | ApiaryType
-    | null;
+    ApiaryType;
 };
 
 export type UpdateApiaryResponse = {
@@ -42,8 +41,7 @@ export type UpdateApiaryResponse = {
     | null;
 
   type:
-    | ApiaryType
-    | null;
+    ApiaryType;
 
   status:
     | ApiaryStatus

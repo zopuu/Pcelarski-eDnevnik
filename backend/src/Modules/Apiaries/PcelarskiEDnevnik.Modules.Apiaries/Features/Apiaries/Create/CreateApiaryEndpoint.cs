@@ -49,9 +49,9 @@ public static class CreateApiaryEndpoint {
 
                     var apiary = Apiary.Create(
                         beekeeperId,
+                        request.Type!.Value,
                         request.IdentificationNumber,
                         request.Name,
-                        request.Type,
                         ApiaryStatus.Active,
                         imagePath);
 

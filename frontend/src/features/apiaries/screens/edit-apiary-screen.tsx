@@ -228,7 +228,7 @@ export function EditApiaryScreen({
         identificationNumber:
           '',
 
-        type: null,
+        type: undefined,
 
         latitude: '',
         longitude: '',
@@ -643,7 +643,7 @@ export function EditApiaryScreen({
                   text-foreground
                 "
               >
-                Tip pčelinjaka
+                Tip pčelinjaka *
               </Text>
 
               <View
@@ -660,10 +660,7 @@ export function EditApiaryScreen({
                   }
                   onPress={() => {
                     field.onChange(
-                      field.value ===
-                        'stationary'
-                        ? null
-                        : 'stationary',
+                      'stationary',
                     );
                   }}
                 />
@@ -676,14 +673,23 @@ export function EditApiaryScreen({
                   }
                   onPress={() => {
                     field.onChange(
-                      field.value ===
-                        'migratory'
-                        ? null
-                        : 'migratory',
+                      'migratory',
                     );
                   }}
                 />
               </View>
+
+              {errors.type?.message && (
+                <Text
+                  className="
+                    mt-2
+                    text-sm
+                    text-error
+                  "
+                >
+                  {errors.type.message}
+                </Text>
+              )}
             </View>
           )}
         />

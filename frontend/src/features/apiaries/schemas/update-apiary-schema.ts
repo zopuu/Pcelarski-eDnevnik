@@ -65,8 +65,10 @@ export const updateApiarySchema =
         .enum([
           'stationary',
           'migratory',
-        ])
-        .nullable(),
+        ], {
+          error:
+            'Izaberite tip pčelinjaka.',
+        }),
 
     latitude: coordinateSchema(
       -90,

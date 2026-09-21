@@ -58,6 +58,7 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .HasColumnName("status");
 
                     b.Property<string>("Type")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("type");
@@ -76,7 +77,10 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                     b.HasIndex("OwnerBeekeeperId")
                         .HasDatabaseName("ix_apiaries_owner_beekeeper_id");
 
-                    b.ToTable("apiaries", "apiaries");
+                    b.ToTable("apiaries", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_apiaries_type", "\"type\" IN ('Stationary', 'Migratory')");
+                        });
                 });
 
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLocation", b =>
@@ -212,16 +216,16 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .HasColumnType("uuid")
                         .HasColumnName("forage_profile_id");
 
-                    b.Property<string>("ImagePath")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("image_path");
-
                     b.Property<string>("ForageType")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("forage_type");
+
+                    b.Property<string>("ImagePath")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_path");
 
                     b.Property<short>("Intensity")
                         .HasColumnType("smallint")

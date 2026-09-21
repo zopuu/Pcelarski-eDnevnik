@@ -7,7 +7,7 @@ public sealed record GetApiaryByIdResponse(
     string? IdentificationNumber,
     string? Name,
     string? ImageUrl,
-    ApiaryType? Type,
+    ApiaryType Type,
     ApiaryStatus? Status,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc);

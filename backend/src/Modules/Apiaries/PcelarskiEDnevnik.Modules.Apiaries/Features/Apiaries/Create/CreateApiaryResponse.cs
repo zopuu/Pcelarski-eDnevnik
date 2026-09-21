@@ -7,6 +7,6 @@ public sealed record CreateApiaryResponse(
     string? IdentificationNumber,
     string? Name,
     string? ImageUrl,
-    ApiaryType? Type,
+    ApiaryType Type,
     ApiaryStatus? Status,
     DateTimeOffset CreatedAtUtc);

@@ -18,7 +18,7 @@ export interface CreateApiaryRequest {
     string | null;
 
   type:
-    ApiaryType | null;
+    ApiaryType;
 
   initialStay: {
     orientation:
@@ -62,7 +62,7 @@ export interface CreateApiaryResponse {
     string | null;
 
   type:
-    ApiaryType | null;
+    ApiaryType;
 
   status:
     string | null;

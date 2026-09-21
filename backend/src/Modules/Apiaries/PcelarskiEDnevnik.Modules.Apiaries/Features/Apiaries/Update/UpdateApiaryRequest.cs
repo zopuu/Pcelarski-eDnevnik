@@ -16,9 +16,10 @@ public sealed record UpdateApiaryRequest {
             "Apiary name cannot exceed 30 characters.")]
     public string? Name { get; init; }
 
+    [Required(ErrorMessage = "Apiary type is required.")]
     [EnumDataType(
         typeof(ApiaryType),
-        ErrorMessage = "Invalid apiary type.")]
+        ErrorMessage = "Apiary type must be Stationary or Migratory.")]
     public ApiaryType? Type { get; init; }
 
     public Microsoft.AspNetCore.Http.IFormFile? Image { get; init; }

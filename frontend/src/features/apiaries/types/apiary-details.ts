@@ -13,7 +13,7 @@ export type ApiaryDetails = {
 
   imageUrl: string | null;
 
-  type: ApiaryType | null;
+  type: ApiaryType;
 
   status: ApiaryStatus;
 
