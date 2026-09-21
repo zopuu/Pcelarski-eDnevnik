@@ -1284,7 +1284,7 @@ type StepTwoProps = {
   }>;
   apiaries: Array<{
     id: string;
-    name: string | null;
+    name: string;
   }>;
   sourceLocationId?: string;
   isLocationsLoading: boolean;
@@ -1386,8 +1386,7 @@ function StepTwo({
                 key={apiary.id}
                 icon="business-outline"
                 title={
-                  apiary.name?.trim() ||
-                  'Pčelinjak bez naziva'
+                  apiary.name
                 }
                 description="Odredišni pčelinjak"
                 selected={

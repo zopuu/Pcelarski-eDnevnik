@@ -8,9 +8,9 @@ public sealed class Apiary {
 
     private Apiary(
     Guid ownerBeekeeperId,
+    string name,
     ApiaryType type,
     string? identificationNumber,
-    string? name,
     ApiaryStatus? status,
     string? imagePath = null) {
         if (ownerBeekeeperId == Guid.Empty) {
@@ -27,8 +27,7 @@ public sealed class Apiary {
             NormalizeOptionalText(
                 identificationNumber);
 
-        Name =
-            NormalizeOptionalText(name);
+        Name = NormalizeRequiredName(name);
 
         Type = ValidateType(type);
         Status = status;
@@ -44,7 +43,7 @@ public sealed class Apiary {
 
     public string? IdentificationNumber { get; private set; }
 
-    public string? Name { get; private set; }
+    public string Name { get; private set; } = null!;
 
     public ApiaryType Type { get; private set; }
 
@@ -58,25 +57,25 @@ public sealed class Apiary {
 
     public static Apiary Create(
     Guid ownerBeekeeperId,
+    string name,
     ApiaryType type,
     string? identificationNumber = null,
-    string? name = null,
     ApiaryStatus? status = null,
     string? imagePath = null) {
         return new Apiary(
             ownerBeekeeperId,
+            name,
             type,
             identificationNumber,
-            name,
             status,
             imagePath);
     }
     public void Update(
     string? identificationNumber,
-    string? name,
+    string name,
     ApiaryType type) {
         IdentificationNumber = NormalizeOptionalText(identificationNumber);
-        Name = NormalizeOptionalText(name);
+        Name = NormalizeRequiredName(name);
         Type = ValidateType(type);
         UpdatedAtUtc = DateTimeOffset.UtcNow;
     }
@@ -116,5 +115,16 @@ public sealed class Apiary {
         }
 
         return type;
+    }
+
+    private static string NormalizeRequiredName(
+        string name) {
+        if (string.IsNullOrWhiteSpace(name)) {
+            throw new ArgumentException(
+                "Apiary name is required.",
+                nameof(name));
+        }
+
+        return name.Trim();
     }
 }

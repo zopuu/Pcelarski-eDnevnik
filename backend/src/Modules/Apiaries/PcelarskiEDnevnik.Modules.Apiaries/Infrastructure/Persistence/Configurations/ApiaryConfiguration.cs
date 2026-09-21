@@ -15,6 +15,9 @@ internal sealed class ApiaryConfiguration
                 tableBuilder.HasCheckConstraint(
                     "ck_apiaries_type",
                     "\"type\" IN ('Stationary', 'Migratory')");
+                tableBuilder.HasCheckConstraint(
+                    "ck_apiaries_name_not_blank",
+                    "btrim(\"name\") <> ''");
             });
 
         builder.HasKey(x => x.Id)
@@ -34,7 +37,8 @@ internal sealed class ApiaryConfiguration
 
         builder.Property(x => x.Name)
             .HasColumnName("name")
-            .HasMaxLength(ApiaryRules.NameMaxLength);
+            .HasMaxLength(ApiaryRules.NameMaxLength)
+            .IsRequired();
 
         builder.Property(x => x.Type)
             .HasColumnName("type")

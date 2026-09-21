@@ -9,7 +9,7 @@ export type ApiaryDetails = {
   identificationNumber:
     string | null;
 
-  name: string | null;
+  name: string;
 
   imageUrl: string | null;
 

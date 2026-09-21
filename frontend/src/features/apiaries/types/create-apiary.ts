@@ -15,7 +15,7 @@ export interface CreateApiaryRequest {
     string | null;
 
   name:
-    string | null;
+    string;
 
   type:
     ApiaryType;
@@ -56,7 +56,7 @@ export interface CreateApiaryResponse {
     string | null;
 
   name:
-    string | null;
+    string;
 
   imageUrl:
     string | null;

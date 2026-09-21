@@ -10,6 +10,7 @@ public sealed record UpdateApiaryRequest {
             "Identification number must have format RS followed by 12 digits.")]
     public string? IdentificationNumber { get; init; }
 
+    [Required(ErrorMessage = "Apiary name is required.")]
     [StringLength(
         ApiaryRules.NameMaxLength,
         ErrorMessage =

@@ -18,7 +18,7 @@ import { colors } from '@/shared/theme/colors';
 import { environment } from '@/shared/config/environment';
 
 type ApiaryCardProps = {
-  name: string | null;
+  name: string;
   imageUrl: string | null;
   isInactive: boolean;
   onPress: () => void;
@@ -126,9 +126,7 @@ export function ApiaryCard({
   isInactive,
   onPress,
 }: ApiaryCardProps) {
-  const displayName =
-    name?.trim() ||
-    'Pčelinjak bez naziva';
+  const displayName = name;
   const [cardSize, setCardSize] = useState({
     width: 0,
     height: 0,

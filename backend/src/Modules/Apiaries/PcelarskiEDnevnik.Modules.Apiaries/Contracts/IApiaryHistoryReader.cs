@@ -10,5 +10,5 @@ public interface IApiaryHistoryReader {
 
 public sealed record ApiaryHistorySummary(
     Guid Id,
-    string? Name,
+    string Name,
     string? ImageUrl);

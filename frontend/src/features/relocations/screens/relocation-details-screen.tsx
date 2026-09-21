@@ -182,7 +182,7 @@ function PlaceDetails({
   endedAtUtc: string | null;
 }) {
   const locationName = place.location.name?.trim() || 'Lokacija bez naziva';
-  const apiaryName = place.apiary.name?.trim() || 'Pčelinjak bez naziva';
+  const apiaryName = place.apiary.name;
 
   return (
     <View className="overflow-hidden rounded-3xl border border-border bg-surface">

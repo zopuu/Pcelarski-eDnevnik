@@ -268,9 +268,7 @@ export function ApiaryHivesScreen({
     );
   }
 
-  const displayName =
-    apiary.name?.trim() ||
-    'Pčelinjak bez naziva';
+  const displayName = apiary.name;
 
   const typeLabel =
     getApiaryTypeLabel(

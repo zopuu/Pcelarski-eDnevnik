@@ -132,8 +132,7 @@ export function ApiaryStayHistoryScreen({
               Pčelinjak
             </Text>
             <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-              {apiaryQuery.data.name?.trim() ||
-                'Pčelinjak bez naziva'}
+              {apiaryQuery.data.name}
             </Text>
             <Text className="mt-8 text-xl font-bold text-foreground">
               Istorija boravaka

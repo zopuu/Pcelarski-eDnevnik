@@ -272,9 +272,7 @@ export function CreateApiaryScreen() {
         CreateApiaryRequest = {
         image,
         name:
-          optionalText(
-            values.name,
-          ),
+          values.name,
 
         identificationNumber:
           optionalText(
@@ -426,7 +424,7 @@ export function CreateApiaryScreen() {
             field,
           }) => (
             <FormTextInput
-              label="Naziv"
+              label="Naziv *"
               value={
                 field.value
               }

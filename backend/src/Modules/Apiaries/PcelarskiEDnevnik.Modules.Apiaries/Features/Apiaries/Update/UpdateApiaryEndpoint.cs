@@ -52,7 +52,7 @@ public static class UpdateApiaryEndpoint {
 
                     apiary.Update(
                         request.IdentificationNumber,
-                        request.Name,
+                        request.Name!,
                         request.Type!.Value);
 
                     var imagePath = await ImageUpload.SaveAsync(

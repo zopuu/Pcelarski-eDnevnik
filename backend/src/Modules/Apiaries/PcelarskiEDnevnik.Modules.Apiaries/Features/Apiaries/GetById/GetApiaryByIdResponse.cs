@@ -5,7 +5,7 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.GetById;
 public sealed record GetApiaryByIdResponse(
     Guid Id,
     string? IdentificationNumber,
-    string? Name,
+    string Name,
     string? ImageUrl,
     ApiaryType Type,
     ApiaryStatus? Status,

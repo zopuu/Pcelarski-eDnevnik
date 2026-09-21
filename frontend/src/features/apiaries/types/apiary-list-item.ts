@@ -5,7 +5,7 @@ import type {
 
 export type ApiaryListItem = {
   id: string;
-  name: string | null;
+  name: string;
   imageUrl: string | null;
   type: ApiaryType;
   status: ApiaryStatus | null;

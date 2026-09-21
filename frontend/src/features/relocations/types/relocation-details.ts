@@ -11,7 +11,7 @@ type RelocationPlace = {
   apiary: {
     id: string;
     identificationNumber: string;
-    name: string | null;
+    name: string;
   };
   stay: {
     id: string;

@@ -20,9 +20,7 @@ export async function updateApiary(
     formData.append('IdentificationNumber', request.identificationNumber);
   }
 
-  if (request.name) {
-    formData.append('Name', request.name);
-  }
+  formData.append('Name', request.name);
 
   if (request.type) {
     formData.append('Type', request.type);

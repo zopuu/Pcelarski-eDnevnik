@@ -18,8 +18,7 @@ export type UpdateApiaryRequest = {
     | null;
 
   name:
-    | string
-    | null;
+    string;
 
   type:
     ApiaryType;
@@ -33,8 +32,7 @@ export type UpdateApiaryResponse = {
     | null;
 
   name:
-    | string
-    | null;
+    string;
 
   imageUrl:
     | string

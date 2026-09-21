@@ -44,6 +44,7 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .HasColumnName("image_path");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("name");
@@ -79,6 +80,8 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
 
                     b.ToTable("apiaries", "apiaries", t =>
                         {
+                            t.HasCheckConstraint("ck_apiaries_name_not_blank", "btrim(\"name\") <> ''");
+
                             t.HasCheckConstraint("ck_apiaries_type", "\"type\" IN ('Stationary', 'Migratory')");
                         });
                 });

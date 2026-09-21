@@ -24,7 +24,7 @@ public sealed record RelocationPlaceResponse(
 public sealed record RelocationApiaryResponse(
     Guid Id,
     string IdentificationNumber,
-    string? Name);
+    string Name);
 
 public sealed record RelocationApiaryStayResponse(
     Guid Id,

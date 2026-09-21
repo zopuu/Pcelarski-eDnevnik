@@ -37,6 +37,10 @@ export const createApiarySchema =
         name: z
             .string()
             .trim()
+            .min(
+                1,
+                'Naziv pčelinjaka je obavezan.',
+            )
             .max(
                 30,
                 'Naziv može imati najviše 30 karaktera.',

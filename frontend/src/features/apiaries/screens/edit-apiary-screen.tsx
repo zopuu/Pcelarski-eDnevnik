@@ -285,7 +285,7 @@ export function EditApiaryScreen({
 
     reset({
       name:
-        apiary.name ?? '',
+        apiary.name,
 
       identificationNumber:
         apiary
@@ -385,9 +385,7 @@ export function EditApiaryScreen({
             apiary: {
               image,
               name:
-                optionalText(
-                  values.name,
-                ),
+                values.name,
 
               identificationNumber:
                 optionalText(
@@ -587,7 +585,7 @@ export function EditApiaryScreen({
             field,
           }) => (
             <FormTextInput
-              label="Naziv"
+              label="Naziv *"
               value={
                 field.value
               }
