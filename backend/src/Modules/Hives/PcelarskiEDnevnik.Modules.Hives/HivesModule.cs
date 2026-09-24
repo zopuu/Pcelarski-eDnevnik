@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.Hives.Contracts.Harvesting;
+using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
+using PcelarskiEDnevnik.Modules.Hives.Infrastructure;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence.ReadModels;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
 
@@ -24,6 +26,9 @@ public static class HivesModule {
         services.AddScoped<
             IHarvestableSuperSourceReader,
             HarvestableSuperSourceReader>();
+        services.AddScoped<
+            IApiaryHiveStayManager,
+            ApiaryHiveStayManager>();
 
         return services;
     }

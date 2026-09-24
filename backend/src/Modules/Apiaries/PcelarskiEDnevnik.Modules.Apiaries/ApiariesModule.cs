@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
 using PcelarskiEDnevnik.Modules.Apiaries.Contracts.Harvesting;
 using PcelarskiEDnevnik.Modules.Apiaries.Features.Elevation;
+using PcelarskiEDnevnik.Modules.Apiaries.Features.Apiaries.Deactivate;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.ReadModels;
@@ -26,6 +27,7 @@ public static class ApiariesModule {
         services.AddScoped<
             IApiaryHistoryReader,
             ApiaryHistoryReader>();
+        services.AddScoped<DeactivateApiaryHandler>();
 
         services.AddHttpClient(
             OpenTopoDataClient.HttpClientName,
