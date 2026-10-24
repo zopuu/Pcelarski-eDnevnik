@@ -1,5 +1,7 @@
 import Ionicons
   from '@react-native-vector-icons/ionicons';
+import { TimelineDate } from '@/shared/components/timeline/timeline-date';
+import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import {
   router,
 } from 'expo-router';
@@ -39,14 +41,6 @@ import {
 type HiveRelocationHistoryScreenProps = {
   hiveId: string;
 };
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('sr-RS', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
-}
 
 export function HiveRelocationHistoryScreen({
   hiveId,
@@ -155,13 +149,11 @@ function HiveRelocationTimelineItem({
     : `${relocation.hiveCount ?? 0} košnica`;
 
   return (
-    <View className="flex-row">
-      <View className="w-16 items-end justify-center pr-3"><Text className="text-right text-xs font-bold text-foreground">{formatDate(relocation.occurredAtUtc)}</Text></View>
-      <View className="relative w-7 items-center justify-center">
-        {!isFirst && <View className="absolute top-0 w-px bg-border" style={{ bottom: '50%' }} />}
-        {!isLast && <View className="absolute bottom-0 w-px bg-border" style={{ top: '50%' }} />}
-        <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
-      </View>
+    <TimelineItem
+      date={<TimelineDate variant="instant" value={relocation.occurredAtUtc} showTime={false} />}
+      isFirst={isFirst}
+      isLast={isLast}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Otvori selidbu: ${relocation.originLocationName} do ${relocation.destinationLocationName}`}
@@ -180,7 +172,7 @@ function HiveRelocationTimelineItem({
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
         </View>
       </Pressable>
-    </View>
+    </TimelineItem>
   );
 }
 

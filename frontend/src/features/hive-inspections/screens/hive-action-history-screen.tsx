@@ -1,4 +1,6 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
+import { TimelineDate } from '@/shared/components/timeline/timeline-date';
+import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import { router } from 'expo-router';
 import {
   ActivityIndicator,
@@ -24,21 +26,6 @@ import { getInspectionTypeLabel } from '../utils/inspection-labels';
 type HiveActionHistoryScreenProps = {
   hiveId: string;
 };
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('sr-Latn-RS', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
-}
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat('sr-Latn-RS', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
-}
 
 export function HiveActionHistoryScreen({
   hiveId,
@@ -154,32 +141,11 @@ function HiveActionTimelineItem({
   const title = getActionTitle(action);
 
   return (
-    <View className="flex-row">
-      <View className="w-20 items-end justify-center pr-3">
-        <Text className="text-right text-xs font-bold text-foreground">
-          {formatDate(action.performedAt)}
-        </Text>
-        <Text className="mt-1 text-right text-xs text-muted">
-          {formatTime(action.performedAt)}
-        </Text>
-      </View>
-
-      <View className="relative w-7 items-center justify-center">
-        {!isFirst && (
-          <View
-            className="absolute top-0 w-px bg-border"
-            style={{ bottom: '50%' }}
-          />
-        )}
-        {!isLast && (
-          <View
-            className="absolute bottom-0 w-px bg-border"
-            style={{ top: '50%' }}
-          />
-        )}
-        <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
-      </View>
-
+    <TimelineItem
+      date={<TimelineDate variant="instant" value={action.performedAt} showTime={true} />}
+      isFirst={isFirst}
+      isLast={isLast}
+    >
       <Pressable
         accessibilityRole={hasDetailScreen ? 'button' : undefined}
         accessibilityLabel={hasDetailScreen ? `Otvori: ${title}` : undefined}
@@ -209,7 +175,7 @@ function HiveActionTimelineItem({
 
         <ActionSummary action={action} />
       </Pressable>
-    </View>
+    </TimelineItem>
   );
 }
 

@@ -1,5 +1,7 @@
 import Ionicons
   from '@react-native-vector-icons/ionicons';
+import { TimelineDate } from '@/shared/components/timeline/timeline-date';
+import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import {
   router,
 } from 'expo-router';
@@ -228,35 +230,11 @@ function QueenStayTimelineItem({
   isLast: boolean;
 }) {
   return (
-    <View className="flex-row">
-      <View className="w-20 items-end justify-center pr-3">
-        <TimelineDate value={stay.startedOn} />
-        <View className="my-2 h-px w-4 bg-border" />
-        {stay.endedOn ? (
-          <TimelineDate value={stay.endedOn} muted />
-        ) : (
-          <Text className="text-right text-xs text-muted">
-            U toku
-          </Text>
-        )}
-      </View>
-
-      <View className="relative w-7 items-center justify-center">
-        {!isFirst && (
-          <View
-            className="absolute top-0 w-px bg-border"
-            style={{ bottom: '50%' }}
-          />
-        )}
-        {!isLast && (
-          <View
-            className="absolute bottom-0 w-px bg-border"
-            style={{ top: '50%' }}
-          />
-        )}
-        <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
-      </View>
-
+    <TimelineItem
+      date={<TimelineDate variant="range" start={stay.startedOn} end={stay.endedOn} showTime={false} />}
+      isFirst={isFirst}
+      isLast={isLast}
+    >
       <View className="mb-5 flex-1 rounded-3xl border border-border bg-surface px-4 py-4">
         <View className="flex-row items-center">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
@@ -329,38 +307,10 @@ function QueenStayTimelineItem({
           </View>
         ) : null}
       </View>
-    </View>
+    </TimelineItem>
   );
 }
 
-function TimelineDate({
-  value,
-  muted = false,
-}: {
-  value: string;
-  muted?: boolean;
-}) {
-  const [year, month, day] = value.split('-');
-
-  if (!year || !month || !day) {
-    return (
-      <Text className={muted ? 'text-xs text-muted' : 'text-xs font-bold text-foreground'}>
-        {value}
-      </Text>
-    );
-  }
-
-  return (
-    <View className="items-end">
-      <Text className={muted ? 'text-xs text-muted' : 'text-xs font-bold text-foreground'}>
-        {day}.{month}.
-      </Text>
-      <Text className={muted ? 'text-xs text-muted' : 'text-xs font-bold text-foreground'}>
-        {year}
-      </Text>
-    </View>
-  );
-}
 
 function Detail({
   label,

@@ -1,5 +1,7 @@
 import Ionicons
   from '@react-native-vector-icons/ionicons';
+import { TimelineDate } from '@/shared/components/timeline/timeline-date';
+import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import {
   Image,
 } from 'expo-image';
@@ -60,30 +62,6 @@ const forageTypeLabels: Record<ForageType, string> = {
   buckwheat: 'Heljda',
   other: 'Ostalo',
 };
-
-function formatObservationDate(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    'sr-Latn-RS',
-    {
-      day: '2-digit',
-      month: 'short',
-    },
-  ).format(new Date(value));
-}
-
-function formatObservationTime(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    'sr-Latn-RS',
-    {
-      hour: '2-digit',
-      minute: '2-digit',
-    },
-  ).format(new Date(value));
-}
 
 function intensityLabel(
   intensity: number,
@@ -226,36 +204,11 @@ function ObservationTimelineItem({
     : null;
 
   return (
-    <View className="flex-row">
-      <View className="w-16 items-end pr-3">
-        <Text className="text-right text-xs font-bold text-foreground">
-          {formatObservationDate(observation.observedAt)}
-        </Text>
-        <Text className="mt-1 text-right text-xs text-muted">
-          {formatObservationTime(observation.observedAt)}
-        </Text>
-      </View>
-
-      <View className="relative w-7 items-center justify-center">
-        {!isFirst && (
-          <View
-            className="absolute top-0 w-px bg-border"
-            style={{
-              bottom: '50%',
-            }}
-          />
-        )}
-        {!isLast && (
-          <View
-            className="absolute bottom-0 w-px bg-border"
-            style={{
-              top: '50%',
-            }}
-          />
-        )}
-        <View className="z-10 h-4 w-4 rounded-full border-4 border-background bg-primary" />
-      </View>
-
+    <TimelineItem
+      date={<TimelineDate variant="instant" value={observation.observedAt} showTime={true} />}
+      isFirst={isFirst}
+      isLast={isLast}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Otvori zapažanje: ${forageTypeLabels[observation.forageType]}`}
@@ -309,7 +262,7 @@ function ObservationTimelineItem({
           <ObservationPhoto photoUri={photoUri} />
         </View>
       </Pressable>
-    </View>
+    </TimelineItem>
   );
 }
 

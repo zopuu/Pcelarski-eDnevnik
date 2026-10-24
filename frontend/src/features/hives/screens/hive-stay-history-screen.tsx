@@ -1,5 +1,7 @@
 import Ionicons
   from '@react-native-vector-icons/ionicons';
+import { TimelineDate } from '@/shared/components/timeline/timeline-date';
+import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import {
   Image,
 } from 'expo-image';
@@ -173,37 +175,12 @@ function HiveStayTimelineItem({
   isLast: boolean;
 }) {
   return (
-    <View className="flex-row">
-      <View className="w-20 items-end justify-center pr-3">
-        <TimelineDate value={stay.startedAtUtc} />
-        <View className="my-2 h-px w-4 bg-border" />
-        {stay.endedAtUtc ? (
-          <TimelineDate value={stay.endedAtUtc} muted />
-        ) : (
-          <Text className="text-right text-xs font-semibold text-primary">
-            U toku
-          </Text>
-        )}
-      </View>
-
-      <View className="relative w-7 items-center justify-center">
-        {!isFirst && (
-          <View
-            className="absolute top-0 w-px bg-border"
-            style={{ bottom: '50%' }}
-          />
-        )}
-        {!isLast && (
-          <View
-            className="absolute bottom-0 w-px bg-border"
-            style={{ top: '50%' }}
-          />
-        )}
-        <View className={`z-10 h-4 w-4 rounded-full border-4 border-background ${
-          stay.isActive ? 'bg-primary' : 'bg-muted'
-        }`} />
-      </View>
-
+    <TimelineItem
+      date={<TimelineDate variant="range" start={stay.startedAtUtc} end={stay.endedAtUtc} showTime={false} />}
+      isFirst={isFirst}
+      isLast={isLast}
+      muted={!stay.isActive}
+    >
       <View className="mb-5 flex-1 rounded-3xl border border-border bg-surface px-4 py-4">
         <View className="flex-row items-start">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
@@ -261,33 +238,10 @@ function HiveStayTimelineItem({
           </Text>
         </View>
       </View>
-    </View>
+    </TimelineItem>
   );
 }
 
-function TimelineDate({
-  value,
-  muted = false,
-}: {
-  value: string;
-  muted?: boolean;
-}) {
-  const formatted = formatDate(value).split(' ');
-  const dateClassName = muted
-    ? 'text-right text-xs text-muted'
-    : 'text-right text-xs font-bold text-foreground';
-
-  return (
-    <View className="items-end">
-      <Text className={dateClassName}>
-        {formatted.slice(0, 2).join(' ')}
-      </Text>
-      <Text className={dateClassName}>
-        {formatted[2] ?? ''}
-      </Text>
-    </View>
-  );
-}
 
 function Detail({
   label,
