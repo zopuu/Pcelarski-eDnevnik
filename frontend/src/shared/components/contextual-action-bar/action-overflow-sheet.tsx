@@ -1,9 +1,21 @@
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import {
   ActivityIndicator,
+  Animated,
   Modal,
+  PanResponder,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -32,20 +44,160 @@ type ActionOverflowSheetProps = {
   onClose: () => void;
 };
 
-export function ActionOverflowSheet({
-  visible,
+const ACTION_HEIGHT = 56;
+const OPEN_ANIMATION_DURATION = 220;
+const CLOSE_DRAG_DISTANCE = 100;
+
+function OpenActionOverflowSheet({
   title = 'Više opcija',
   actions,
   onClose,
-}: ActionOverflowSheetProps) {
+}: Omit<ActionOverflowSheetProps, 'visible'>) {
   const insets =
     useSafeAreaInsets();
+  const { height: windowHeight } =
+    useWindowDimensions();
 
   const visibleActions =
     actions.filter(
       (action) =>
         !action.hidden,
     );
+
+  const bottomPadding =
+    Math.max(insets.bottom, 16);
+  const contentHeight =
+    50 +
+    visibleActions.length * ACTION_HEIGHT +
+    bottomPadding;
+  const maxHeight =
+    Math.min(
+      windowHeight * 0.85,
+      contentHeight,
+    );
+  const hasOverflow = contentHeight > maxHeight;
+  const collapsedHeight =
+    Math.min(
+      maxHeight,
+      Math.max(
+        200,
+        Math.min(260, windowHeight * 0.38),
+      ),
+    );
+  const sheetHeight =
+    useRef(
+      new Animated.Value(maxHeight),
+    ).current;
+  const entryOffset =
+    useRef(
+      new Animated.Value(windowHeight),
+    ).current;
+  const dragStartHeight =
+    useRef(maxHeight);
+  const [isExpanded, setIsExpanded] =
+    useState(true);
+
+  useEffect(() => {
+    Animated.timing(entryOffset, {
+      toValue: 0,
+      duration: OPEN_ANIMATION_DURATION,
+      useNativeDriver: false,
+    }).start();
+  }, [entryOffset]);
+
+  const snapTo = useCallback((height: number) => {
+    if (height < maxHeight) {
+      setIsExpanded(false);
+    }
+    Animated.spring(sheetHeight, {
+      toValue: height,
+      useNativeDriver: false,
+      bounciness: 0,
+    }).start(({ finished }) => {
+      if (finished && height === maxHeight) {
+        setIsExpanded(true);
+      }
+    });
+  }, [maxHeight, sheetHeight]);
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          Math.abs(gesture.dy) > 6 &&
+          Math.abs(gesture.dy) > Math.abs(gesture.dx),
+        onPanResponderGrant: () => {
+          setIsExpanded(false);
+          entryOffset.stopAnimation();
+          sheetHeight.stopAnimation((height) => {
+            dragStartHeight.current = height;
+          });
+        },
+        onPanResponderMove: (_, gesture) => {
+          const remainingCollapse =
+            dragStartHeight.current - collapsedHeight;
+          sheetHeight.setValue(
+            Math.max(
+              collapsedHeight,
+              Math.min(
+                maxHeight,
+                dragStartHeight.current - gesture.dy,
+              ),
+            ),
+          );
+          entryOffset.setValue(
+            Math.max(0, gesture.dy - remainingCollapse),
+          );
+        },
+        onPanResponderRelease: (_, gesture) => {
+          if (
+            gesture.dy >
+              dragStartHeight.current - collapsedHeight +
+                CLOSE_DRAG_DISTANCE ||
+            (gesture.dy > 35 && gesture.vy > 1.4)
+          ) {
+            Animated.timing(entryOffset, {
+              toValue: windowHeight,
+              duration: OPEN_ANIMATION_DURATION,
+              useNativeDriver: false,
+            }).start(({ finished }) => {
+              if (finished) {
+                onClose();
+              }
+            });
+            return;
+          }
+
+          Animated.spring(entryOffset, {
+            toValue: 0,
+            useNativeDriver: false,
+            bounciness: 0,
+          }).start();
+
+          if (gesture.dy < -35 || gesture.vy < -0.6) {
+            snapTo(maxHeight);
+          } else if (gesture.dy > 35 || gesture.vy > 0.6) {
+            snapTo(maxHeight);                                //collapsedHeight if using collapsed option
+          } else {
+            snapTo(
+              dragStartHeight.current - gesture.dy >
+                (collapsedHeight + maxHeight) / 2
+                ? maxHeight
+                : collapsedHeight,
+            );
+          }
+        },
+        onPanResponderTerminate: () => {
+          snapTo(dragStartHeight.current);
+          Animated.spring(entryOffset, {
+            toValue: 0,
+            useNativeDriver: false,
+            bounciness: 0,
+          }).start();
+        },
+      }),
+    [collapsedHeight, entryOffset, maxHeight, onClose, sheetHeight, snapTo, windowHeight],
+  );
 
   const handleActionPress = (
     action: ContextualAction,
@@ -59,9 +211,9 @@ export function ActionOverflowSheet({
 
   return (
     <Modal
-      visible={visible}
+      visible
       transparent
-      animationType="slide"
+      animationType="none"
       statusBarTranslucent
       onRequestClose={onClose}
     >
@@ -74,7 +226,7 @@ export function ActionOverflowSheet({
           className="bg-black/40"
         />
 
-        <View
+        <Animated.View
           className="
             rounded-t-3xl
             border-t
@@ -84,11 +236,9 @@ export function ActionOverflowSheet({
             pt-4
           "
           style={{
-            paddingBottom:
-              Math.max(
-                insets.bottom,
-                16,
-              ),
+            height: sheetHeight,
+            paddingBottom: bottomPadding,
+            transform: [{ translateY: entryOffset }],
           }}
         >
           <View
@@ -96,29 +246,46 @@ export function ActionOverflowSheet({
               mb-3
               items-center
             "
+            {...panResponder.panHandlers}
           >
-            <View
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Promeni veličinu menija"
+              onPress={() => {
+                sheetHeight.stopAnimation((height) => {
+                  snapTo(
+                    height > (collapsedHeight + maxHeight) / 2
+                      ? collapsedHeight
+                      : maxHeight,
+                  );
+                });
+              }}
+              className="min-h-8 w-full items-center justify-center"
+            >
+              <View
+                className="h-1 w-10 rounded-full bg-border"
+              />
+            </Pressable>
+            <Text
               className="
-                h-1
-                w-10
-                rounded-full
-                bg-border
+                mt-1
+                w-full
+                text-lg
+                font-bold
+                text-foreground
               "
-            />
+            >
+              {title}
+            </Text>
           </View>
 
-          <Text
-            className="
-              mb-2
-              text-lg
-              font-bold
-              text-foreground
-            "
+          <ScrollView
+            bounces={false}
+            scrollEnabled={hasOverflow && isExpanded}
+            showsVerticalScrollIndicator={hasOverflow && isExpanded}
+            style={{ flex: 1 }}
           >
-            {title}
-          </Text>
-
-          {visibleActions.map(
+            {visibleActions.map(
             (action) => {
               const isDisabled =
                 action.disabled ||
@@ -210,9 +377,19 @@ export function ActionOverflowSheet({
                 </Pressable>
               );
             },
-          )}
-        </View>
+            )}
+          </ScrollView>
+        </Animated.View>
       </View>
     </Modal>
   );
+}
+
+export function ActionOverflowSheet({
+  visible,
+  ...props
+}: ActionOverflowSheetProps) {
+  return visible ? (
+    <OpenActionOverflowSheet {...props} />
+  ) : null;
 }
