@@ -44,7 +44,8 @@ type ActionOverflowSheetProps = {
   onClose: () => void;
 };
 
-const ACTION_HEIGHT = 56;
+const ACTION_HEIGHT = 50;
+const HEADER_HEIGHT = 92;
 const OPEN_ANIMATION_DURATION = 220;
 const CLOSE_DRAG_DISTANCE = 100;
 
@@ -67,7 +68,7 @@ function OpenActionOverflowSheet({
   const bottomPadding =
     Math.max(insets.bottom, 16);
   const contentHeight =
-    50 +
+    HEADER_HEIGHT +
     visibleActions.length * ACTION_HEIGHT +
     bottomPadding;
   const maxHeight =
@@ -224,6 +225,7 @@ function OpenActionOverflowSheet({
           onPress={onClose}
           style={StyleSheet.absoluteFill}
           className="bg-black/40"
+          
         />
 
         <Animated.View
@@ -267,6 +269,7 @@ function OpenActionOverflowSheet({
               />
             </Pressable>
             <Text
+              numberOfLines={1}
               className="
                 mt-1
                 w-full
