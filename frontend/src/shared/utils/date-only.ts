@@ -15,11 +15,7 @@ export function isDateOnly(value: string) {
 
   date.setFullYear(year, month - 1, day);
 
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  );
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
 
 export function parseDateOnly(value: string) {

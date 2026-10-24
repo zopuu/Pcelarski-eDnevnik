@@ -10,8 +10,6 @@ export function useHarvests() {
     queryFn: ({ pageParam }) => getHarvests(pageParam, pageSize),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
-      lastPage.page.page < lastPage.page.totalPages
-        ? lastPage.page.page + 1
-        : undefined,
+      lastPage.page.page < lastPage.page.totalPages ? lastPage.page.page + 1 : undefined,
   });
 }

@@ -1,9 +1,5 @@
-import {
-  Platform,
-} from 'react-native';
-import {
-  File,
-} from 'expo-file-system';
+import { Platform } from 'react-native';
+import { File } from 'expo-file-system';
 
 export type ImageUpload = {
   uri: string;

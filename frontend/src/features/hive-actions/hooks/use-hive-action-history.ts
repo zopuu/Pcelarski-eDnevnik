@@ -8,8 +8,7 @@ export function useHiveActionHistory(hiveId: string) {
     queryKey: hiveActionQueryKeys.history(hiveId),
     queryFn: ({ pageParam }) => getHiveActionHistory(hiveId, pageParam),
     initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: Boolean(hiveId),
   });
 }

@@ -10,15 +10,7 @@ import {
   type Control,
   type UseFormSetError,
 } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import {
@@ -40,10 +32,7 @@ import {
   recordPattyFeedingSchema,
   type RecordPattyFeedingFormValues,
 } from '../schemas/record-patty-feeding-schema';
-import type {
-  PattyType,
-  RecordPattyFeedingRequest,
-} from '../types/patty-feeding';
+import type { PattyType, RecordPattyFeedingRequest } from '../types/patty-feeding';
 
 type RecordPattyFeedingScreenProps =
   | {
@@ -144,9 +133,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
     ]);
   }, [hiveId, hiveQuery.data, isSingleHive, replace, selectedHives]);
 
-  const isLoadingHives = isSingleHive
-    ? hiveQuery.isLoading
-    : apiaryHivesQuery.isLoading;
+  const isLoadingHives = isSingleHive ? hiveQuery.isLoading : apiaryHivesQuery.isLoading;
   const hasHiveError = isSingleHive
     ? hiveQuery.isError || !hiveQuery.data
     : apiaryHivesQuery.isError || !apiaryHivesQuery.data;
@@ -182,9 +169,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
           {
             text: 'U redu',
             onPress: () => {
-              router.replace(
-                isSingleHive ? `/hives/${hiveId}` : `/apiaries/${apiaryId}`,
-              );
+              router.replace(isSingleHive ? `/hives/${hiveId}` : `/apiaries/${apiaryId}`);
             },
           },
         ],
@@ -219,10 +204,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
     );
   }
 
-  const hivesError =
-    typeof errors.hives?.message === 'string'
-      ? errors.hives.message
-      : undefined;
+  const hivesError = typeof errors.hives?.message === 'string' ? errors.hives.message : undefined;
 
   return (
     <Screen header={<AppHeader onMenuPress={openDrawer} />}>
@@ -244,17 +226,12 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
           <Text className="text-sm font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Prihrana pogačom
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Prihrana pogačom</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
-          Unesite podatke o jednoj pogači, a zatim procenat koji dajete svakoj
-          košnici.
+          Unesite podatke o jednoj pogači, a zatim procenat koji dajete svakoj košnici.
         </Text>
 
-        <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-          Opšti podaci
-        </Text>
+        <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Opšti podaci</Text>
         <View className="rounded-3xl border border-border bg-surface px-5 pb-1 pt-5">
           <Controller
             control={control}
@@ -270,10 +247,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
               />
             )}
           />
-          <PattyMassField
-            control={control}
-            error={errors.pattyMassG?.message}
-          />
+          <PattyMassField control={control} error={errors.pattyMassG?.message} />
           <Controller
             control={control}
             name="pattyType"
@@ -346,9 +320,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
         ) : (
           <View className="gap-3">
             {selectableHives.map((hive) => {
-              const selectedIndex = fields.findIndex(
-                (field) => field.hiveId === hive.id,
-              );
+              const selectedIndex = fields.findIndex((field) => field.hiveId === hive.id);
               const selected = selectedIndex >= 0;
 
               return (
@@ -359,11 +331,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
                   selectionDisabled={false}
                   percentage={selectedHives?.[selectedIndex]?.percentage ?? ''}
                   pattyMassG={pattyMassG}
-                  error={
-                    selected
-                      ? errors.hives?.[selectedIndex]?.percentage?.message
-                      : undefined
-                  }
+                  error={selected ? errors.hives?.[selectedIndex]?.percentage?.message : undefined}
                   onToggle={() => toggleHive(hive.id)}
                   onPercentageChange={(value) => {
                     if (selectedIndex < 0) {
@@ -380,9 +348,7 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
           </View>
         )}
 
-        {hivesError && (
-          <Text className="mt-2 text-sm text-error">{hivesError}</Text>
-        )}
+        {hivesError && <Text className="mt-2 text-sm text-error">{hivesError}</Text>}
 
         <View className="mt-7 gap-3">
           <Pressable
@@ -404,22 +370,16 @@ export function RecordPattyFeedingScreen(props: RecordPattyFeedingScreenProps) {
               void handleSubmit(onSubmit)();
             }}
             className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${
-              mutation.isPending || selectableHives.length === 0
-                ? 'opacity-60'
-                : ''
+              mutation.isPending || selectableHives.length === 0 ? 'opacity-60' : ''
             }`}
           >
             {mutation.isPending ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color={colors.onPrimary} />
-                <Text className="text-base font-bold text-white">
-                  Čuvanje...
-                </Text>
+                <Text className="text-base font-bold text-white">Čuvanje...</Text>
               </View>
             ) : (
-              <Text className="text-base font-bold text-white">
-                Završi prihranu
-              </Text>
+              <Text className="text-base font-bold text-white">Završi prihranu</Text>
             )}
           </Pressable>
         </View>
@@ -502,27 +462,19 @@ function HivePercentageCard({
             selected ? 'border-primary bg-primary' : 'border-border bg-surface'
           }`}
         >
-          {selected && (
-            <Ionicons name="checkmark" size={18} color={colors.onPrimary} />
-          )}
+          {selected && <Ionicons name="checkmark" size={18} color={colors.onPrimary} />}
         </View>
         <View className="ml-3 flex-1">
-          <Text className="text-base font-bold text-foreground">
-            {hive.label}
-          </Text>
+          <Text className="text-base font-bold text-foreground">{hive.label}</Text>
           {hive.identificationNumber && (
-            <Text className="mt-1 text-sm text-muted">
-              Oznaka: {hive.identificationNumber}
-            </Text>
+            <Text className="mt-1 text-sm text-muted">Oznaka: {hive.identificationNumber}</Text>
           )}
         </View>
       </Pressable>
 
       {selected && (
         <View className="border-t border-border bg-surface-warm px-4 pb-4 pt-3">
-          <Text className="mb-2 text-sm font-semibold text-foreground">
-            Procenat pogače (%) *
-          </Text>
+          <Text className="mb-2 text-sm font-semibold text-foreground">Procenat pogače (%) *</Text>
           <TextInput
             accessibilityLabel={`Procenat pogače za košnicu ${hive.label}`}
             value={percentage}
@@ -549,9 +501,7 @@ function HivePercentageCard({
   );
 }
 
-function toRequest(
-  values: RecordPattyFeedingFormValues,
-): RecordPattyFeedingRequest {
+function toRequest(values: RecordPattyFeedingFormValues): RecordPattyFeedingRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     pattyMassG: Number(values.pattyMassG),

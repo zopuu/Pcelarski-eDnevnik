@@ -1,27 +1,12 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  Image,
-} from 'expo-image';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import {
-  useState,
-} from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-import type {
-  ApiaryImageUpload,
-} from '@/features/apiaries/types/apiary-image';
-import {
-  environment,
-} from '@/shared/config/environment';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import type { ApiaryImageUpload } from '@/features/apiaries/types/apiary-image';
+import { environment } from '@/shared/config/environment';
+import { colors } from '@/shared/theme/colors';
 
 type ApiaryImagePickerProps = {
   value: ApiaryImageUpload | null;
@@ -30,29 +15,19 @@ type ApiaryImagePickerProps = {
 };
 
 const maximumImageSizeBytes = 5 * 1024 * 1024;
-const allowedMimeTypes = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-export function ApiaryImagePicker({
-  value,
-  imageUrl,
-  onChange,
-}: ApiaryImagePickerProps) {
+export function ApiaryImagePicker({ value, imageUrl, onChange }: ApiaryImagePickerProps) {
   const [isPicking, setIsPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const previewUri = value?.uri ??
-    (imageUrl ? `${environment.apiUrl}${imageUrl}` : null);
+  const previewUri = value?.uri ?? (imageUrl ? `${environment.apiUrl}${imageUrl}` : null);
 
   const chooseImage = async () => {
     setError(null);
     setIsPicking(true);
 
     try {
-      const permission =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
         setError('Dozvolite pristup galeriji da biste izabrali fotografiju.');
@@ -76,19 +51,14 @@ export function ApiaryImagePicker({
         return;
       }
 
-      if (!allowedMimeTypes.includes(
-        asset.mimeType as typeof allowedMimeTypes[number],
-      )) {
+      if (!allowedMimeTypes.includes(asset.mimeType as (typeof allowedMimeTypes)[number])) {
         setError('Izaberite JPEG, PNG ili WebP fotografiju.');
         return;
       }
 
       const mimeType = asset.mimeType as ApiaryImageUpload['mimeType'];
-      const extension = mimeType === 'image/png'
-        ? 'png'
-        : mimeType === 'image/webp'
-          ? 'webp'
-          : 'jpg';
+      const extension =
+        mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
 
       onChange({
         uri: asset.uri,
@@ -104,9 +74,7 @@ export function ApiaryImagePicker({
 
   return (
     <View className="mb-6">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Fotografija pčelinjaka
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Fotografija pčelinjaka</Text>
 
       {previewUri && (
         <Image
@@ -132,26 +100,16 @@ export function ApiaryImagePicker({
         {isPicking ? (
           <ActivityIndicator color={colors.primary} />
         ) : (
-          <Ionicons
-            name="images-outline"
-            size={21}
-            color={colors.primary}
-          />
+          <Ionicons name="images-outline" size={21} color={colors.primary} />
         )}
         <Text className="font-semibold text-foreground">
           {previewUri ? 'Zameni fotografiju' : 'Dodaj fotografiju'}
         </Text>
       </Pressable>
 
-      <Text className="mt-2 text-sm text-muted">
-        JPEG, PNG ili WebP, najviše 5 MB.
-      </Text>
+      <Text className="mt-2 text-sm text-muted">JPEG, PNG ili WebP, najviše 5 MB.</Text>
 
-      {error && (
-        <Text className="mt-2 text-sm text-error">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="mt-2 text-sm text-error">{error}</Text>}
     </View>
   );
 }

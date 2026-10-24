@@ -23,21 +23,9 @@ export const colors = {
 } as const;
 
 export const gradients = {
-  header: [
-    '#FFD66B',
-    '#F7AA18',
-    '#E88908',
-  ] as const,
+  header: ['#FFD66B', '#F7AA18', '#E88908'] as const,
 
-  apiary: [
-    '#FFF4D1',
-    '#FFD878',
-    '#F4AC2A',
-  ] as const,
+  apiary: ['#FFF4D1', '#FFD878', '#F4AC2A'] as const,
 
-  addApiary: [
-    '#FFFFFF',
-    '#FFF7E2',
-    '#FFE7AA',
-  ] as const,
+  addApiary: ['#FFFFFF', '#FFF7E2', '#FFE7AA'] as const,
 } as const;

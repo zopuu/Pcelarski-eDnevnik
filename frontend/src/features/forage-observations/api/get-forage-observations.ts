@@ -1,10 +1,6 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  ForageObservationsPage,
-} from '../types/forage-observation';
+import type { ForageObservationsPage } from '../types/forage-observation';
 
 export function getForageObservations(
   page: number,

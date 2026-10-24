@@ -1,57 +1,20 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  router,
-} from 'expo-router';
-import {
-  useState,
-} from 'react';
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useApiaries,
-} from '@/features/apiaries/hooks/use-apiaries';
-import {
-  useCreateLocation,
-} from '@/features/apiaries/hooks/use-create-location';
-import {
-  useCurrentApiaryStay,
-} from '@/features/apiaries/hooks/use-current-apiary-stay';
-import {
-  useLocations,
-} from '@/features/apiaries/hooks/use-locations';
-import type {
-  HiveEntranceOrientation,
-} from '@/features/apiaries/types/apiary-stay';
-import {
-  HiveCard,
-} from '@/features/hives/components/hive-card';
-import {
-  useHives,
-} from '@/features/hives/hooks/use-hives';
-import {
-  useCreateRelocation,
-} from '@/features/relocations/hooks/use-create-relocation';
-import type {
-  CreateRelocationFormValues,
-} from '@/features/relocations/schemas/create-relocation-schema';
+import { useApiaries } from '@/features/apiaries/hooks/use-apiaries';
+import { useCreateLocation } from '@/features/apiaries/hooks/use-create-location';
+import { useCurrentApiaryStay } from '@/features/apiaries/hooks/use-current-apiary-stay';
+import { useLocations } from '@/features/apiaries/hooks/use-locations';
+import type { HiveEntranceOrientation } from '@/features/apiaries/types/apiary-stay';
+import { HiveCard } from '@/features/hives/components/hive-card';
+import { useHives } from '@/features/hives/hooks/use-hives';
+import { useCreateRelocation } from '@/features/relocations/hooks/use-create-relocation';
+import type { CreateRelocationFormValues } from '@/features/relocations/schemas/create-relocation-schema';
 import {
   createRelocationSchema,
   orientationValues,
@@ -62,37 +25,16 @@ import type {
   RelocationKind,
   RelocationTransportMethod,
 } from '@/features/relocations/types/create-relocation';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import type {
-  GeographicCoordinates,
-} from '@/shared/api/open-topo-data';
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import {
-  DatePickerField,
-} from '@/shared/components/date-picker-field';
-import {
-  MapLocationPicker,
-} from '@/shared/components/map-location-picker/map-location-picker';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  formatDateOnly,
-  getCurrentUtcDateOnly,
-} from '@/shared/utils/date-only';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ApiError } from '@/shared/api/api-error';
+import type { GeographicCoordinates } from '@/shared/api/open-topo-data';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { MapLocationPicker } from '@/shared/components/map-location-picker/map-location-picker';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
+import { formatDateOnly, getCurrentUtcDateOnly } from '@/shared/utils/date-only';
 
 type CreateRelocationScreenProps = {
   apiaryId: string;
@@ -100,38 +42,25 @@ type CreateRelocationScreenProps = {
 
 type Step = 1 | 2 | 3 | 4;
 
-const steps = [
-  'Vrsta',
-  'Odredište',
-  'Detalji',
-  'Pregled',
-] as const;
+const steps = ['Vrsta', 'Odredište', 'Detalji', 'Pregled'] as const;
 
-const orientationLabels:
-  Record<
-    HiveEntranceOrientation,
-    string
-  > = {
-    north: 'Sever',
-    northEast: 'Severoistok',
-    east: 'Istok',
-    southEast: 'Jugoistok',
-    south: 'Jug',
-    southWest: 'Jugozapad',
-    west: 'Zapad',
-    northWest: 'Severozapad',
-  };
+const orientationLabels: Record<HiveEntranceOrientation, string> = {
+  north: 'Sever',
+  northEast: 'Severoistok',
+  east: 'Istok',
+  southEast: 'Jugoistok',
+  south: 'Jug',
+  southWest: 'Jugozapad',
+  west: 'Zapad',
+  northWest: 'Severozapad',
+};
 
-const transportMethodLabels:
-  Record<
-    RelocationTransportMethod,
-    string
-  > = {
-    trailer: 'Prikolica',
-    truck: 'Kamion',
-    van: 'Kombi',
-    other: 'Drugo',
-  };
+const transportMethodLabels: Record<RelocationTransportMethod, string> = {
+  trailer: 'Prikolica',
+  truck: 'Kamion',
+  van: 'Kombi',
+  other: 'Drugo',
+};
 
 function getLocalDateOnly() {
   return formatDateOnly(new Date());
@@ -139,93 +68,50 @@ function getLocalDateOnly() {
 
 function getLocalTime() {
   const now = new Date();
-  const hours = String(
-    now.getHours(),
-  ).padStart(2, '0');
-  const minutes = String(
-    now.getMinutes(),
-  ).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
 
   return `${hours}:${minutes}`;
 }
 
-function optionalText(
-  value: string,
-) {
+function optionalText(value: string) {
   const trimmed = value.trim();
 
   return trimmed || undefined;
 }
 
-function parseDecimal(
-  value: string,
-) {
-  return Number(
-    value.trim().replace(',', '.'),
-  );
+function parseDecimal(value: string) {
+  return Number(value.trim().replace(',', '.'));
 }
 
-function parseOptionalInteger(
-  value: string,
-) {
+function parseOptionalInteger(value: string) {
   const trimmed = value.trim();
 
-  return trimmed
-    ? Number(trimmed)
-    : null;
+  return trimmed ? Number(trimmed) : null;
 }
 
-function toOccurredAtUtc(
-  date: string,
-  time: string,
-) {
-  const [year, month, day] =
-    date.split('-').map(Number);
-  const [hours, minutes] =
-    time.split(':').map(Number);
+function toOccurredAtUtc(date: string, time: string) {
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
 
-  return new Date(
-    year,
-    month - 1,
-    day,
-    hours,
-    minutes,
-  ).toISOString();
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
 
-function formatCoordinates(
-  latitude: number,
-  longitude: number,
-) {
+function formatCoordinates(latitude: number, longitude: number) {
   return `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 }
 
-export function CreateRelocationScreen({
-  apiaryId,
-}: CreateRelocationScreenProps) {
-  const {
-    openDrawer,
-  } = useAppDrawer();
+export function CreateRelocationScreen({ apiaryId }: CreateRelocationScreenProps) {
+  const { openDrawer } = useAppDrawer();
 
-  const [
-    step,
-    setStep,
-  ] = useStateStep();
+  const [step, setStep] = useStateStep();
 
-  const [
-    createdLocationId,
-    setCreatedLocationId,
-  ] = useState<string | null>(null);
+  const [createdLocationId, setCreatedLocationId] = useState<string | null>(null);
 
-  const [
-    submissionError,
-    setSubmissionError,
-  ] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  const createLocationMutation =
-    useCreateLocation();
-  const createRelocationMutation =
-    useCreateRelocation();
+  const createLocationMutation = useCreateLocation();
+  const createRelocationMutation = useCreateRelocation();
 
   const {
     control,
@@ -234,13 +120,9 @@ export function CreateRelocationScreen({
     setValue,
     clearErrors,
     trigger,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<CreateRelocationFormValues>({
-    resolver: zodResolver(
-      createRelocationSchema,
-    ),
+    resolver: zodResolver(createRelocationSchema),
     defaultValues: {
       kind: null,
       selectedHiveIds: [],
@@ -319,41 +201,28 @@ export function CreateRelocationScreen({
     refetch: refetchLocations,
   } = useLocations();
 
-  const {
-    data: sourceStay,
-  } = useCurrentApiaryStay(apiaryId);
+  const { data: sourceStay } = useCurrentApiaryStay(apiaryId);
 
-  const {
-    data: destinationApiaryStay,
-  } = useCurrentApiaryStay(
-    destinationApiaryId ?? '',
-  );
+  const { data: destinationApiaryStay } = useCurrentApiaryStay(destinationApiaryId ?? '');
 
-  const isSubmitting =
-    createLocationMutation.isPending ||
-    createRelocationMutation.isPending;
+  const isSubmitting = createLocationMutation.isPending || createRelocationMutation.isPending;
 
   const selectedCoordinates =
     latitude.trim() && longitude.trim()
       ? (() => {
-        const selectedLatitude =
-          parseDecimal(latitude);
-        const selectedLongitude =
-          parseDecimal(longitude);
+          const selectedLatitude = parseDecimal(latitude);
+          const selectedLongitude = parseDecimal(longitude);
 
-        return Number.isFinite(selectedLatitude) &&
-          Number.isFinite(selectedLongitude)
-          ? {
-            latitude: selectedLatitude,
-            longitude: selectedLongitude,
-          }
-          : null;
-      })()
+          return Number.isFinite(selectedLatitude) && Number.isFinite(selectedLongitude)
+            ? {
+                latitude: selectedLatitude,
+                longitude: selectedLongitude,
+              }
+            : null;
+        })()
       : null;
 
-  const chooseKind = (
-    nextKind: RelocationKind,
-  ) => {
+  const chooseKind = (nextKind: RelocationKind) => {
     setSubmissionError(null);
     setValue('kind', nextKind, {
       shouldValidate: true,
@@ -370,51 +239,32 @@ export function CreateRelocationScreen({
     }
   };
 
-  const toggleHive = (
-    hiveId: string,
-  ) => {
+  const toggleHive = (hiveId: string) => {
     setSubmissionError(null);
 
     const nextIds = selectedHiveIds.includes(hiveId)
-      ? selectedHiveIds.filter(
-        (id) => id !== hiveId,
-      )
-      : [
-        ...selectedHiveIds,
-        hiveId,
-      ];
+      ? selectedHiveIds.filter((id) => id !== hiveId)
+      : [...selectedHiveIds, hiveId];
 
-    setValue(
-      'selectedHiveIds',
-      nextIds,
-      {
-        shouldValidate: true,
-      },
-    );
+    setValue('selectedHiveIds', nextIds, {
+      shouldValidate: true,
+    });
   };
 
   const validateStepOne = async () => {
-    clearErrors([
-      'kind',
-      'selectedHiveIds',
-    ]);
+    clearErrors(['kind', 'selectedHiveIds']);
 
     if (!kind) {
       setError('kind', {
-        message:
-          'Izaberite vrstu selidbe.',
+        message: 'Izaberite vrstu selidbe.',
       });
 
       return false;
     }
 
-    if (
-      kind === 'selectedHives' &&
-      selectedHiveIds.length === 0
-    ) {
+    if (kind === 'selectedHives' && selectedHiveIds.length === 0) {
       setError('selectedHiveIds', {
-        message:
-          'Izaberite najmanje jednu košnicu.',
+        message: 'Izaberite najmanje jednu košnicu.',
       });
 
       return false;
@@ -427,27 +277,22 @@ export function CreateRelocationScreen({
     clearErrors([
       'destinationLocationId',
       'destinationApiaryId',
-          'destinationOrientation',
-          'destinationStayNote',
+      'destinationOrientation',
+      'destinationStayNote',
     ]);
 
     if (kind === 'wholeApiary') {
       if (!destinationOrientation) {
         setError('destinationOrientation', {
-          message:
-            'Izaberite novu orijentaciju pčelinjaka.',
+          message: 'Izaberite novu orijentaciju pčelinjaka.',
         });
 
         return false;
       }
 
-      if (
-        destinationMode === 'existing' &&
-        !destinationLocationId
-      ) {
+      if (destinationMode === 'existing' && !destinationLocationId) {
         setError('destinationLocationId', {
-          message:
-            'Izaberite odredišnu lokaciju.',
+          message: 'Izaberite odredišnu lokaciju.',
         });
 
         return false;
@@ -470,8 +315,7 @@ export function CreateRelocationScreen({
 
     if (!destinationApiaryId) {
       setError('destinationApiaryId', {
-        message:
-          'Izaberite odredišni pčelinjak.',
+        message: 'Izaberite odredišni pčelinjak.',
       });
 
       return false;
@@ -495,8 +339,7 @@ export function CreateRelocationScreen({
 
     if (!values.transportMethod) {
       setError('transportMethod', {
-        message:
-          'Izaberite način prevoza.',
+        message: 'Izaberite način prevoza.',
       });
 
       return false;
@@ -506,19 +349,11 @@ export function CreateRelocationScreen({
       return false;
     }
 
-    const occurredAtUtc = toOccurredAtUtc(
-      values.occurredAtDate,
-      values.occurredAtTime,
-    );
+    const occurredAtUtc = toOccurredAtUtc(values.occurredAtDate, values.occurredAtTime);
 
-    if (
-      sourceStay &&
-      new Date(occurredAtUtc) <=
-        new Date(sourceStay.startedAtUtc)
-    ) {
+    if (sourceStay && new Date(occurredAtUtc) <= new Date(sourceStay.startedAtUtc)) {
       setError('occurredAtDate', {
-        message:
-          'Datum i vreme moraju biti posle početka trenutnog boravka pčelinjaka.',
+        message: 'Datum i vreme moraju biti posle početka trenutnog boravka pčelinjaka.',
       });
 
       return false;
@@ -527,14 +362,10 @@ export function CreateRelocationScreen({
     if (
       kind === 'selectedHives' &&
       destinationApiaryStay &&
-      new Date(occurredAtUtc) <
-        new Date(
-          destinationApiaryStay.startedAtUtc,
-        )
+      new Date(occurredAtUtc) < new Date(destinationApiaryStay.startedAtUtc)
     ) {
       setError('occurredAtDate', {
-        message:
-          'Selidba ne može biti pre početka trenutnog boravka odredišnog pčelinjaka.',
+        message: 'Selidba ne može biti pre početka trenutnog boravka odredišnog pčelinjaka.',
       });
 
       return false;
@@ -554,9 +385,7 @@ export function CreateRelocationScreen({
           : await validateStepThree();
 
     if (canContinue && step < 4) {
-      setStep(
-        (step + 1) as Step,
-      );
+      setStep((step + 1) as Step);
     }
   };
 
@@ -564,34 +393,21 @@ export function CreateRelocationScreen({
     setSubmissionError(null);
 
     if (step > 1) {
-      setStep(
-        (step - 1) as Step,
-      );
+      setStep((step - 1) as Step);
     }
   };
 
-  const mapApiErrors = (
-    error: unknown,
-  ) => {
+  const mapApiErrors = (error: unknown) => {
     if (!(error instanceof ApiError)) {
       return false;
     }
 
-    const fieldMap: Partial<
-      Record<
-        string,
-        keyof CreateRelocationFormValues
-      >
-    > = {
+    const fieldMap: Partial<Record<string, keyof CreateRelocationFormValues>> = {
       kind: 'kind',
-      destinationLocationId:
-        'destinationLocationId',
-      destinationApiaryId:
-        'destinationApiaryId',
-      destinationOrientation:
-        'destinationOrientation',
-      destinationStayNote:
-        'destinationStayNote',
+      destinationLocationId: 'destinationLocationId',
+      destinationApiaryId: 'destinationApiaryId',
+      destinationOrientation: 'destinationOrientation',
+      destinationStayNote: 'destinationStayNote',
       hiveIds: 'selectedHiveIds',
       occurredAtUtc: 'occurredAtDate',
       transportMethod: 'transportMethod',
@@ -602,24 +418,15 @@ export function CreateRelocationScreen({
       latitude: 'latitude',
       longitude: 'longitude',
       altitudeMeters: 'altitudeMeters',
-      cadastralParcelNumber:
-        'cadastralParcelNumber',
+      cadastralParcelNumber: 'cadastralParcelNumber',
       description: 'locationDescription',
     };
 
     let hasFieldError = false;
 
-    Object.entries(
-      error.problem?.errors ?? {},
-    ).forEach(([
-      key,
-      messages,
-    ]) => {
-      const normalizedKey =
-        key.charAt(0).toLowerCase() +
-        key.slice(1);
-      const field =
-        fieldMap[normalizedKey];
+    Object.entries(error.problem?.errors ?? {}).forEach(([key, messages]) => {
+      const normalizedKey = key.charAt(0).toLowerCase() + key.slice(1);
+      const field = fieldMap[normalizedKey];
 
       if (field && messages[0]) {
         setError(field, {
@@ -633,11 +440,7 @@ export function CreateRelocationScreen({
   };
 
   const confirmRelocation = async () => {
-    for (const currentStep of [
-      1,
-      2,
-      3,
-    ] as const) {
+    for (const currentStep of [1, 2, 3] as const) {
       const isValid =
         currentStep === 1
           ? await validateStepOne()
@@ -655,40 +458,18 @@ export function CreateRelocationScreen({
     setSubmissionError(null);
 
     try {
-      let locationId =
-        values.destinationLocationId ??
-        undefined;
+      let locationId = values.destinationLocationId ?? undefined;
 
-      if (
-        values.kind === 'wholeApiary' &&
-        values.destinationMode === 'new'
-      ) {
+      if (values.kind === 'wholeApiary' && values.destinationMode === 'new') {
         if (!createdLocationId) {
-          const createdLocation =
-            await createLocationMutation.mutateAsync({
-              name:
-                optionalText(
-                  values.locationName,
-                ) ?? null,
-              latitude: parseDecimal(
-                values.latitude,
-              ),
-              longitude: parseDecimal(
-                values.longitude,
-              ),
-              altitudeMeters:
-                parseOptionalInteger(
-                  values.altitudeMeters,
-                ),
-              cadastralParcelNumber:
-                optionalText(
-                  values.cadastralParcelNumber,
-                ) ?? null,
-              description:
-                optionalText(
-                  values.locationDescription,
-                ) ?? null,
-            });
+          const createdLocation = await createLocationMutation.mutateAsync({
+            name: optionalText(values.locationName) ?? null,
+            latitude: parseDecimal(values.latitude),
+            longitude: parseDecimal(values.longitude),
+            altitudeMeters: parseOptionalInteger(values.altitudeMeters),
+            cadastralParcelNumber: optionalText(values.cadastralParcelNumber) ?? null,
+            description: optionalText(values.locationDescription) ?? null,
+          });
 
           locationId = createdLocation.id;
           setCreatedLocationId(locationId);
@@ -700,49 +481,29 @@ export function CreateRelocationScreen({
       const request: CreateRelocationRequest = {
         kind: values.kind!,
         sourceApiaryId: apiaryId,
-        occurredAtUtc: toOccurredAtUtc(
-          values.occurredAtDate,
-          values.occurredAtTime,
-        ),
-        transportMethod:
-          values.transportMethod!,
-        distanceKm: values.distanceKm
-          ? parseDecimal(values.distanceKm)
-          : undefined,
-        costAmount: values.costAmount
-          ? parseDecimal(values.costAmount)
-          : undefined,
-        currencyCode:
-          optionalText(
-            values.currencyCode,
-          ),
+        occurredAtUtc: toOccurredAtUtc(values.occurredAtDate, values.occurredAtTime),
+        transportMethod: values.transportMethod!,
+        distanceKm: values.distanceKm ? parseDecimal(values.distanceKm) : undefined,
+        costAmount: values.costAmount ? parseDecimal(values.costAmount) : undefined,
+        currencyCode: optionalText(values.currencyCode),
         notes: optionalText(values.notes),
         ...(values.kind === 'wholeApiary'
           ? {
-            destinationLocationId: locationId,
-            destinationOrientation:
-              values.destinationOrientation!,
-            destinationStayNote:
-              optionalText(
-                values.destinationStayNote,
-              ),
-          }
+              destinationLocationId: locationId,
+              destinationOrientation: values.destinationOrientation!,
+              destinationStayNote: optionalText(values.destinationStayNote),
+            }
           : {
-            destinationApiaryId:
-              values.destinationApiaryId!,
-            hiveIds:
-              values.selectedHiveIds,
-          }),
+              destinationApiaryId: values.destinationApiaryId!,
+              hiveIds: values.selectedHiveIds,
+            }),
       };
 
-      await createRelocationMutation.mutateAsync(
-        request,
-      );
+      await createRelocationMutation.mutateAsync(request);
 
       router.replace('/');
     } catch (error) {
-      const hasFieldError =
-        mapApiErrors(error);
+      const hasFieldError = mapApiErrors(error);
 
       setSubmissionError(
         error instanceof Error
@@ -755,37 +516,26 @@ export function CreateRelocationScreen({
   };
 
   const confirmCancellation = () => {
-    Alert.alert(
-      'Otkaži selidbu?',
-      'Uneti podaci neće biti sačuvani.',
-      [
-        {
-          text: 'Nastavi unos',
-          style: 'cancel',
+    Alert.alert('Otkaži selidbu?', 'Uneti podaci neće biti sačuvani.', [
+      {
+        text: 'Nastavi unos',
+        style: 'cancel',
+      },
+      {
+        text: 'Otkaži selidbu',
+        style: 'destructive',
+        onPress: () => {
+          router.back();
         },
-        {
-          text: 'Otkaži selidbu',
-          style: 'destructive',
-          onPress: () => {
-            router.back();
-          },
-        },
-      ],
-    );
+      },
+    ]);
   };
 
-  const currentTitle =
-    kind === 'selectedHives'
-      ? 'Selidba košnica'
-      : 'Nova selidba';
+  const currentTitle = kind === 'selectedHives' ? 'Selidba košnica' : 'Nova selidba';
 
   return (
     <Screen
-      header={
-        <AppHeader
-          onMenuPress={openDrawer}
-        />
-      }
+      header={<AppHeader onMenuPress={openDrawer} />}
       contextualActionBar={
         <ContextualActionBar
           leftActions={[
@@ -794,8 +544,7 @@ export function CreateRelocationScreen({
               label: 'Otkaži',
               icon: 'close-outline',
               variant: 'danger',
-              accessibilityLabel:
-                'Otkaži unos selidbe',
+              accessibilityLabel: 'Otkaži unos selidbe',
               onPress: confirmCancellation,
               disabled: isSubmitting,
             },
@@ -804,8 +553,7 @@ export function CreateRelocationScreen({
             key: 'confirm',
             label: 'Potvrdi',
             icon: 'checkmark',
-            accessibilityLabel:
-              'Potvrdi selidbu',
+            accessibilityLabel: 'Potvrdi selidbu',
             onPress: () => {
               void confirmRelocation();
             },
@@ -818,19 +566,15 @@ export function CreateRelocationScreen({
               key: 'previous',
               label: 'Nazad',
               icon: 'arrow-back-outline',
-              accessibilityLabel:
-                'Prethodni korak',
+              accessibilityLabel: 'Prethodni korak',
               onPress: movePrevious,
-              disabled:
-                step === 1 ||
-                isSubmitting,
+              disabled: step === 1 || isSubmitting,
             },
             {
               key: 'next',
               label: 'Dalje',
               icon: 'arrow-forward-outline',
-              accessibilityLabel:
-                'Sledeći korak',
+              accessibilityLabel: 'Sledeći korak',
               onPress: () => {
                 void moveNext();
               },
@@ -850,15 +594,9 @@ export function CreateRelocationScreen({
           paddingBottom: 36,
         }}
       >
-        <Text
-          className="text-2xl font-bold text-foreground"
-        >
-          {currentTitle}
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">{currentTitle}</Text>
 
-        <Text
-          className="mt-1 text-sm text-muted"
-        >
+        <Text className="mt-1 text-sm text-muted">
           Korak {step} od {steps.length}
         </Text>
 
@@ -872,9 +610,7 @@ export function CreateRelocationScreen({
             isHivesError={areHivesError}
             selectedHiveIds={selectedHiveIds}
             kindError={errors.kind?.message}
-            hiveError={
-              errors.selectedHiveIds?.message
-            }
+            hiveError={errors.selectedHiveIds?.message}
             onRetryHives={() => {
               void refetchHives();
             }}
@@ -888,15 +624,9 @@ export function CreateRelocationScreen({
             apiaryId={apiaryId}
             kind={kind}
             destinationMode={destinationMode}
-            destinationLocationId={
-              destinationLocationId
-            }
-            destinationApiaryId={
-              destinationApiaryId
-            }
-      destinationOrientation={
-              destinationOrientation
-            }
+            destinationLocationId={destinationLocationId}
+            destinationApiaryId={destinationApiaryId}
+            destinationOrientation={destinationOrientation}
             locations={locations}
             apiaries={apiaries}
             sourceLocationId={sourceStay?.locationId}
@@ -919,80 +649,43 @@ export function CreateRelocationScreen({
               setValue('destinationMode', mode);
 
               if (mode === 'new') {
-                setValue(
-                  'destinationLocationId',
-                  null,
-                );
+                setValue('destinationLocationId', null);
               }
             }}
-            onDestinationLocationChange={(
-              locationId,
-            ) => {
+            onDestinationLocationChange={(locationId) => {
               setSubmissionError(null);
               setCreatedLocationId(null);
-              setValue(
-                'destinationLocationId',
-                locationId,
-                {
-                  shouldValidate: true,
-                },
-              );
+              setValue('destinationLocationId', locationId, {
+                shouldValidate: true,
+              });
             }}
-            onDestinationApiaryChange={(
-              selectedApiaryId,
-            ) => {
+            onDestinationApiaryChange={(selectedApiaryId) => {
               setSubmissionError(null);
-              setValue(
-                'destinationApiaryId',
-                selectedApiaryId,
-                {
-                  shouldValidate: true,
-                },
-              );
+              setValue('destinationApiaryId', selectedApiaryId, {
+                shouldValidate: true,
+              });
             }}
-            onOrientationChange={(
-              orientation,
-            ) => {
+            onOrientationChange={(orientation) => {
               setSubmissionError(null);
-              setValue(
-                'destinationOrientation',
-                orientation,
-                {
-                  shouldValidate: true,
-                },
-              );
+              setValue('destinationOrientation', orientation, {
+                shouldValidate: true,
+              });
             }}
-            onMapLocationChange={(
-              coordinates,
-            ) => {
+            onMapLocationChange={(coordinates) => {
               setSubmissionError(null);
               setCreatedLocationId(null);
-              setValue(
-                'latitude',
-                coordinates.latitude.toFixed(6),
-                {
-                  shouldValidate: true,
-                },
-              );
-              setValue(
-                'longitude',
-                coordinates.longitude.toFixed(6),
-                {
-                  shouldValidate: true,
-                },
-              );
+              setValue('latitude', coordinates.latitude.toFixed(6), {
+                shouldValidate: true,
+              });
+              setValue('longitude', coordinates.longitude.toFixed(6), {
+                shouldValidate: true,
+              });
             }}
-            onAltitudeChange={(
-              altitudeMeters,
-            ) => {
+            onAltitudeChange={(altitudeMeters) => {
               setCreatedLocationId(null);
-              setValue(
-                'altitudeMeters',
-                altitudeMeters?.toString() ?? '',
-                {
-                  shouldValidate: true,
-                },
-              );
+              setValue('altitudeMeters', altitudeMeters?.toString() ?? '', {
+                shouldValidate: true,
+              });
             }}
             onNewLocationChange={() => {
               setCreatedLocationId(null);
@@ -1000,12 +693,7 @@ export function CreateRelocationScreen({
           />
         )}
 
-        {step === 3 && (
-          <StepThree
-            control={control}
-            errors={errors}
-          />
-        )}
+        {step === 3 && <StepThree control={control} errors={errors} />}
 
         {step === 4 && kind && (
           <StepFour
@@ -1024,45 +712,27 @@ export function CreateRelocationScreen({
 }
 
 function useStateStep() {
-  const [
-    step,
-    setStep,
-  ] = useState<Step>(1);
+  const [step, setStep] = useState<Step>(1);
 
-  return [
-    step,
-    setStep,
-  ] as const;
+  return [step, setStep] as const;
 }
 
 type StepLegendProps = {
   step: Step;
 };
 
-function StepLegend({
-  step,
-}: StepLegendProps) {
+function StepLegend({ step }: StepLegendProps) {
   return (
-    <View
-      className="mb-8 mt-6 flex-row items-start"
-    >
+    <View className="mb-8 mt-6 flex-row items-start">
       {steps.map((label, index) => {
-        const stepNumber =
-          (index + 1) as Step;
-        const isCurrent =
-          stepNumber === step;
-        const isComplete =
-          stepNumber < step;
-        const previousConnectorIsComplete =
-          step > stepNumber - 1;
-        const nextConnectorIsComplete =
-          step > stepNumber;
+        const stepNumber = (index + 1) as Step;
+        const isCurrent = stepNumber === step;
+        const isComplete = stepNumber < step;
+        const previousConnectorIsComplete = step > stepNumber - 1;
+        const nextConnectorIsComplete = step > stepNumber;
 
         return (
-          <View
-            key={label}
-            className="relative flex-1 items-center"
-          >
+          <View key={label} className="relative flex-1 items-center">
             {index > 0 && (
               <View
                 className={`
@@ -1071,10 +741,7 @@ function StepLegend({
                   right-1/2
                   top-5
                   h-0.5
-                  ${previousConnectorIsComplete
-                    ? 'bg-primary'
-                    : 'bg-border'
-                  }
+                  ${previousConnectorIsComplete ? 'bg-primary' : 'bg-border'}
                 `}
               />
             )}
@@ -1087,17 +754,12 @@ function StepLegend({
                   right-0
                   top-5
                   h-0.5
-                  ${nextConnectorIsComplete
-                    ? 'bg-primary'
-                    : 'bg-border'
-                  }
+                  ${nextConnectorIsComplete ? 'bg-primary' : 'bg-border'}
                 `}
               />
             )}
 
-            <View
-              className="relative z-10 h-10 w-10 items-center justify-center rounded-full bg-background"
-            >
+            <View className="relative z-10 h-10 w-10 items-center justify-center rounded-full bg-background">
               <View
                 className={`
                 h-8
@@ -1105,25 +767,17 @@ function StepLegend({
                 items-center
                 justify-center
                 rounded-full
-                ${isCurrent || isComplete
-                  ? 'bg-primary'
-                  : 'bg-border'
-                }
+                ${isCurrent || isComplete ? 'bg-primary' : 'bg-border'}
               `}
               >
                 <Text
                   className={`
                     text-xs
                     font-bold
-                    ${isCurrent || isComplete
-                      ? 'text-background'
-                      : 'text-muted'
-                    }
+                    ${isCurrent || isComplete ? 'text-background' : 'text-muted'}
                   `}
                 >
-                  {isComplete
-                    ? '✓'
-                    : stepNumber}
+                  {isComplete ? '✓' : stepNumber}
                 </Text>
               </View>
             </View>
@@ -1135,10 +789,7 @@ function StepLegend({
                 text-center
                 text-[11px]
                 font-semibold
-                ${isCurrent
-                  ? 'text-primary'
-                  : 'text-muted'
-                }
+                ${isCurrent ? 'text-primary' : 'text-muted'}
               `}
             >
               {label}
@@ -1152,9 +803,7 @@ function StepLegend({
 
 type StepOneProps = {
   kind: RelocationKind | null;
-  hives: ReturnType<typeof useHives>['data'] extends infer T
-    ? NonNullable<T>
-    : never;
+  hives: ReturnType<typeof useHives>['data'] extends infer T ? NonNullable<T> : never;
   isHivesLoading: boolean;
   isHivesError: boolean;
   selectedHiveIds: string[];
@@ -1206,32 +855,20 @@ function StepOne({
         />
       </View>
 
-      {kindError && (
-        <ErrorText message={kindError} />
-      )}
+      {kindError && <ErrorText message={kindError} />}
 
       {kind === 'selectedHives' && (
         <View className="mt-8">
-          <Text className="text-lg font-bold text-foreground">
-            Aktivne košnice
-          </Text>
+          <Text className="text-lg font-bold text-foreground">Aktivne košnice</Text>
 
-          <Text className="mt-1 text-sm text-muted">
-            Označite košnice koje selite.
-          </Text>
+          <Text className="mt-1 text-sm text-muted">Označite košnice koje selite.</Text>
 
           {isHivesLoading ? (
             <View className="items-center py-10">
-              <ActivityIndicator
-                size="large"
-                color={colors.primary}
-              />
+              <ActivityIndicator size="large" color={colors.primary} />
             </View>
           ) : isHivesError ? (
-            <RetryCard
-              message="Nije moguće učitati aktivne košnice."
-              onRetry={onRetryHives}
-            />
+            <RetryCard message="Nije moguće učitati aktivne košnice." onRetry={onRetryHives} />
           ) : hives.length === 0 ? (
             <EmptyCard message="Pčelinjak trenutno nema aktivne košnice za selidbu." />
           ) : (
@@ -1240,9 +877,7 @@ function StepOne({
                 <HiveCard
                   key={hive.id}
                   label={hive.label}
-                  identificationNumber={
-                    hive.identificationNumber
-                  }
+                  identificationNumber={hive.identificationNumber}
                   type={hive.type}
                   colorHex={hive.colorHex}
                   status={hive.status}
@@ -1256,9 +891,7 @@ function StepOne({
             </View>
           )}
 
-          {hiveError && (
-            <ErrorText message={hiveError} />
-          )}
+          {hiveError && <ErrorText message={hiveError} />}
         </View>
       )}
     </View>
@@ -1271,9 +904,8 @@ type StepTwoProps = {
   destinationMode: 'existing' | 'new';
   destinationLocationId: string | null;
   destinationApiaryId: string | null;
-  destinationOrientation:
-    HiveEntranceOrientation | null;
-  locations: Array<{
+  destinationOrientation: HiveEntranceOrientation | null;
+  locations: {
     id: string;
     name: string | null;
     latitude: number;
@@ -1281,11 +913,11 @@ type StepTwoProps = {
     altitudeMeters: number | null;
     cadastralParcelNumber: string | null;
     description: string | null;
-  }>;
-  apiaries: Array<{
+  }[];
+  apiaries: {
     id: string;
     name: string;
-  }>;
+  }[];
   sourceLocationId?: string;
   isLocationsLoading: boolean;
   isLocationsError: boolean;
@@ -1296,33 +928,19 @@ type StepTwoProps = {
       message?: string;
     };
   };
-  control: ReturnType<
-    typeof useForm<CreateRelocationFormValues>
-  >['control'];
+  control: ReturnType<typeof useForm<CreateRelocationFormValues>>['control'];
   selectedCoordinates: {
     latitude: number;
     longitude: number;
   } | null;
   onRetryLocations: () => void;
   onRetryApiaries: () => void;
-  onDestinationModeChange: (
-    mode: 'existing' | 'new',
-  ) => void;
-  onDestinationLocationChange: (
-    locationId: string,
-  ) => void;
-  onDestinationApiaryChange: (
-    apiaryId: string,
-  ) => void;
-  onOrientationChange: (
-    orientation: HiveEntranceOrientation,
-  ) => void;
-  onMapLocationChange: (
-    coordinates: GeographicCoordinates,
-  ) => void;
-  onAltitudeChange: (
-    altitudeMeters: number | null,
-  ) => void;
+  onDestinationModeChange: (mode: 'existing' | 'new') => void;
+  onDestinationLocationChange: (locationId: string) => void;
+  onDestinationApiaryChange: (apiaryId: string) => void;
+  onOrientationChange: (orientation: HiveEntranceOrientation) => void;
+  onMapLocationChange: (coordinates: GeographicCoordinates) => void;
+  onAltitudeChange: (altitudeMeters: number | null) => void;
   onNewLocationChange: () => void;
 };
 
@@ -1354,9 +972,7 @@ function StepTwo({
   onNewLocationChange,
 }: StepTwoProps) {
   if (kind === 'selectedHives') {
-    const destinationApiaries = apiaries.filter(
-      (apiary) => apiary.id !== apiaryId,
-    );
+    const destinationApiaries = apiaries.filter((apiary) => apiary.id !== apiaryId);
 
     return (
       <View>
@@ -1367,16 +983,10 @@ function StepTwo({
 
         {isApiariesLoading ? (
           <View className="items-center py-10">
-            <ActivityIndicator
-              size="large"
-              color={colors.primary}
-            />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : isApiariesError ? (
-          <RetryCard
-            message="Nije moguće učitati pčelinjake."
-            onRetry={onRetryApiaries}
-          />
+          <RetryCard message="Nije moguće učitati pčelinjake." onRetry={onRetryApiaries} />
         ) : destinationApiaries.length === 0 ? (
           <EmptyCard message="Potrebno je da imate još jedan aktivan pčelinjak kao odredište." />
         ) : (
@@ -1385,13 +995,9 @@ function StepTwo({
               <SelectionCard
                 key={apiary.id}
                 icon="business-outline"
-                title={
-                  apiary.name
-                }
+                title={apiary.name}
                 description="Odredišni pčelinjak"
-                selected={
-                  destinationApiaryId === apiary.id
-                }
+                selected={destinationApiaryId === apiary.id}
                 onPress={() => {
                   onDestinationApiaryChange(apiary.id);
                 }}
@@ -1401,19 +1007,13 @@ function StepTwo({
         )}
 
         {errors.destinationApiaryId?.message && (
-          <ErrorText
-            message={
-              errors.destinationApiaryId.message
-            }
-          />
+          <ErrorText message={errors.destinationApiaryId.message} />
         )}
       </View>
     );
   }
 
-  const availableLocations = locations.filter(
-    (location) => location.id !== sourceLocationId,
-  );
+  const availableLocations = locations.filter((location) => location.id !== sourceLocationId);
 
   return (
     <View>
@@ -1444,10 +1044,7 @@ function StepTwo({
         <View className="mt-5">
           {isLocationsLoading ? (
             <View className="items-center py-10">
-              <ActivityIndicator
-                size="large"
-                color={colors.primary}
-              />
+              <ActivityIndicator size="large" color={colors.primary} />
             </View>
           ) : isLocationsError ? (
             <RetryCard
@@ -1462,19 +1059,12 @@ function StepTwo({
                 <SelectionCard
                   key={location.id}
                   icon="location-outline"
-                  title={
-                    location.name?.trim() ||
-                    'Lokacija bez naziva'
-                  }
+                  title={location.name?.trim() || 'Lokacija bez naziva'}
                   metadata={
-                    location.altitudeMeters === null
-                      ? null
-                      : `${location.altitudeMeters} m n/v`
+                    location.altitudeMeters === null ? null : `${location.altitudeMeters} m n/v`
                   }
                   description={location.description}
-                  selected={
-                    destinationLocationId === location.id
-                  }
+                  selected={destinationLocationId === location.id}
                   onPress={() => {
                     onDestinationLocationChange(location.id);
                   }}
@@ -1484,11 +1074,7 @@ function StepTwo({
           )}
 
           {errors.destinationLocationId?.message && (
-            <ErrorText
-              message={
-                errors.destinationLocationId.message
-              }
-            />
+            <ErrorText message={errors.destinationLocationId.message} />
           )}
         </View>
       ) : (
@@ -1502,19 +1088,14 @@ function StepTwo({
         />
       )}
 
-      <Text className="mb-2 mt-8 text-lg font-bold text-foreground">
-        Nova orijentacija leta
-      </Text>
-
+      <Text className="mb-2 mt-8 text-lg font-bold text-foreground">Nova orijentacija leta</Text>
 
       <View className="flex-row flex-wrap gap-2">
         {orientationValues.map((orientation) => (
           <OrientationChoice
             key={orientation}
             label={orientationLabels[orientation]}
-            selected={
-              destinationOrientation === orientation
-            }
+            selected={destinationOrientation === orientation}
             onPress={() => {
               onOrientationChange(orientation);
             }}
@@ -1523,31 +1104,21 @@ function StepTwo({
       </View>
 
       {errors.destinationOrientation?.message && (
-        <ErrorText
-          message={
-            errors.destinationOrientation.message
-          }
-        />
+        <ErrorText message={errors.destinationOrientation.message} />
       )}
     </View>
   );
 }
 
 type NewLocationFieldsProps = {
-  control: ReturnType<
-    typeof useForm<CreateRelocationFormValues>
-  >['control'];
+  control: ReturnType<typeof useForm<CreateRelocationFormValues>>['control'];
   errors: StepTwoProps['errors'];
   selectedCoordinates: {
     latitude: number;
     longitude: number;
   } | null;
-  onMapLocationChange: (
-    coordinates: GeographicCoordinates,
-  ) => void;
-  onAltitudeChange: (
-    altitudeMeters: number | null,
-  ) => void;
+  onMapLocationChange: (coordinates: GeographicCoordinates) => void;
+  onAltitudeChange: (altitudeMeters: number | null) => void;
   onChange: () => void;
 };
 
@@ -1561,9 +1132,7 @@ function NewLocationFields({
 }: NewLocationFieldsProps) {
   return (
     <View className="mt-6">
-      <Text className="mb-1 text-lg font-bold text-foreground">
-        Nova lokacija
-      </Text>
+      <Text className="mb-1 text-lg font-bold text-foreground">Nova lokacija</Text>
 
       <Text className="mb-4 text-sm text-muted">
         Izaberite mesto na mapi ili unesite koordinate ručno.
@@ -1590,10 +1159,7 @@ function NewLocationFields({
         value={selectedCoordinates}
         onLocationChange={onMapLocationChange}
         onAltitudeChange={onAltitudeChange}
-        error={
-          errors.latitude?.message ??
-          errors.longitude?.message
-        }
+        error={errors.latitude?.message ?? errors.longitude?.message}
       />
 
       <Controller
@@ -1662,9 +1228,7 @@ function NewLocationFields({
               field.onChange(value);
             }}
             placeholder="npr. 1234/2"
-            error={
-              errors.cadastralParcelNumber?.message
-            }
+            error={errors.cadastralParcelNumber?.message}
           />
         )}
       />
@@ -1682,9 +1246,7 @@ function NewLocationFields({
             }}
             placeholder="Dodatne informacije o lokaciji..."
             multiline
-            error={
-              errors.locationDescription?.message
-            }
+            error={errors.locationDescription?.message}
           />
         )}
       />
@@ -1708,16 +1270,11 @@ function NewLocationFields({
 }
 
 type StepThreeProps = {
-  control: ReturnType<
-    typeof useForm<CreateRelocationFormValues>
-  >['control'];
+  control: ReturnType<typeof useForm<CreateRelocationFormValues>>['control'];
   errors: StepTwoProps['errors'];
 };
 
-function StepThree({
-  control,
-  errors,
-}: StepThreeProps) {
+function StepThree({ control, errors }: StepThreeProps) {
   return (
     <View>
       <SectionHeading
@@ -1755,9 +1312,7 @@ function StepThree({
         )}
       />
 
-      <Text className="mb-2 mt-2 text-sm font-semibold text-foreground">
-        Način prevoza
-      </Text>
+      <Text className="mb-2 mt-2 text-sm font-semibold text-foreground">Način prevoza</Text>
 
       <Controller
         control={control}
@@ -1778,11 +1333,7 @@ function StepThree({
         )}
       />
 
-      {errors.transportMethod?.message && (
-        <ErrorText
-          message={errors.transportMethod.message}
-        />
-      )}
+      {errors.transportMethod?.message && <ErrorText message={errors.transportMethod.message} />}
 
       <Controller
         control={control}
@@ -1799,9 +1350,7 @@ function StepThree({
         )}
       />
 
-      <Text className="mb-3 mt-4 text-lg font-bold text-foreground">
-        Trošak
-      </Text>
+      <Text className="mb-3 mt-4 text-lg font-bold text-foreground">Trošak</Text>
 
       <Controller
         control={control}
@@ -1872,37 +1421,24 @@ function StepFour({
   createdLocationId,
   submissionError,
 }: StepFourProps) {
-  const selectedHives = hives.filter((hive) =>
-    values.selectedHiveIds.includes(hive.id),
-  );
+  const selectedHives = hives.filter((hive) => values.selectedHiveIds.includes(hive.id));
 
   const selectedLocation = locations.find(
-    (location) =>
-      location.id === values.destinationLocationId,
+    (location) => location.id === values.destinationLocationId,
   );
 
-  const destinationApiary = apiaries.find(
-    (apiary) =>
-      apiary.id === values.destinationApiaryId,
-  );
+  const destinationApiary = apiaries.find((apiary) => apiary.id === values.destinationApiaryId);
 
   const destinationLabel =
     kind === 'wholeApiary'
       ? values.destinationMode === 'new'
         ? values.locationName.trim() ||
-          formatCoordinates(
-            parseDecimal(values.latitude),
-            parseDecimal(values.longitude),
-          )
+          formatCoordinates(parseDecimal(values.latitude), parseDecimal(values.longitude))
         : selectedLocation?.name?.trim() ||
           (selectedLocation
-            ? formatCoordinates(
-              selectedLocation.latitude,
-              selectedLocation.longitude,
-            )
+            ? formatCoordinates(selectedLocation.latitude, selectedLocation.longitude)
             : 'Izabrana lokacija')
-      : destinationApiary?.name?.trim() ||
-        'Izabrani pčelinjak';
+      : destinationApiary?.name?.trim() || 'Izabrani pčelinjak';
 
   return (
     <View>
@@ -1914,11 +1450,7 @@ function StepFour({
       <View className="rounded-3xl border border-border bg-surface px-5 py-2">
         <SummaryRow
           label="Tip"
-          value={
-            kind === 'wholeApiary'
-              ? 'Ceo pčelinjak'
-              : 'Odabrane košnice'
-          }
+          value={kind === 'wholeApiary' ? 'Ceo pčelinjak' : 'Odabrane košnice'}
         />
 
         {kind === 'selectedHives' && (
@@ -1927,19 +1459,13 @@ function StepFour({
             value={
               selectedHives.length === 0
                 ? 'Nema izabranih'
-                : selectedHives
-                  .map((hive) => hive.label)
-                  .join(', ')
+                : selectedHives.map((hive) => hive.label).join(', ')
             }
           />
         )}
 
         <SummaryRow
-          label={
-            kind === 'wholeApiary'
-              ? 'Odredišna lokacija'
-              : 'Odredišni pčelinjak'
-          }
+          label={kind === 'wholeApiary' ? 'Odredišna lokacija' : 'Odredišni pčelinjak'}
           value={destinationLabel}
         />
 
@@ -1948,21 +1474,15 @@ function StepFour({
             label="Nova orijentacija"
             value={
               values.destinationOrientation
-                ? orientationLabels[
-                  values.destinationOrientation
-                ]
+                ? orientationLabels[values.destinationOrientation]
                 : 'Nije izabrana'
             }
           />
         )}
 
-        {kind === 'wholeApiary' &&
-          values.destinationStayNote && (
-            <SummaryRow
-              label="Napomena o boravku"
-              value={values.destinationStayNote}
-            />
-          )}
+        {kind === 'wholeApiary' && values.destinationStayNote && (
+          <SummaryRow label="Napomena o boravku" value={values.destinationStayNote} />
+        )}
 
         <SummaryRow
           label="Datum i vreme"
@@ -1972,34 +1492,17 @@ function StepFour({
         <SummaryRow
           label="Prevoz"
           value={
-            values.transportMethod
-              ? transportMethodLabels[
-                values.transportMethod
-              ]
-              : 'Nije izabran'
+            values.transportMethod ? transportMethodLabels[values.transportMethod] : 'Nije izabran'
           }
         />
 
-        {values.distanceKm && (
-          <SummaryRow
-            label="Udaljenost"
-            value={`${values.distanceKm} km`}
-          />
-        )}
+        {values.distanceKm && <SummaryRow label="Udaljenost" value={`${values.distanceKm} km`} />}
 
         {values.costAmount && (
-          <SummaryRow
-            label="Trošak"
-            value={`${values.costAmount} ${values.currencyCode}`}
-          />
+          <SummaryRow label="Trošak" value={`${values.costAmount} ${values.currencyCode}`} />
         )}
 
-        {values.notes && (
-          <SummaryRow
-            label="Napomena"
-            value={values.notes}
-          />
-        )}
+        {values.notes && <SummaryRow label="Napomena" value={values.notes} />}
       </View>
 
       {createdLocationId && (
@@ -2010,9 +1513,7 @@ function StepFour({
 
       {submissionError && (
         <View className="mt-5 rounded-2xl border border-error/30 bg-error/10 px-4 py-3">
-          <Text className="text-sm text-error">
-            {submissionError}
-          </Text>
+          <Text className="text-sm text-error">{submissionError}</Text>
         </View>
       )}
 
@@ -2030,19 +1531,12 @@ type SectionHeadingProps = {
   description: string;
 };
 
-function SectionHeading({
-  title,
-  description,
-}: SectionHeadingProps) {
+function SectionHeading({ title, description }: SectionHeadingProps) {
   return (
     <View className="mb-5">
-      <Text className="text-xl font-bold text-foreground">
-        {title}
-      </Text>
+      <Text className="text-xl font-bold text-foreground">{title}</Text>
 
-      <Text className="mt-1 text-sm text-muted">
-        {description}
-      </Text>
+      <Text className="mt-1 text-sm text-muted">{description}</Text>
     </View>
   );
 }
@@ -2079,10 +1573,7 @@ function SelectionCard({
         border
         px-4
         py-4
-        ${selected
-          ? 'border-primary bg-primary/10'
-          : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary/10' : 'border-border bg-surface'}
       `}
     >
       <View
@@ -2092,39 +1583,18 @@ function SelectionCard({
           items-center
           justify-center
           rounded-2xl
-          ${selected
-            ? 'bg-primary'
-            : 'bg-primary/10'
-          }
+          ${selected ? 'bg-primary' : 'bg-primary/10'}
         `}
       >
-        <Ionicons
-          name={icon}
-          size={24}
-          color={
-            selected
-              ? colors.onPrimary
-              : colors.primary
-          }
-        />
+        <Ionicons name={icon} size={24} color={selected ? colors.onPrimary : colors.primary} />
       </View>
 
       <View className="ml-4 flex-1">
-        <Text className="text-base font-bold text-foreground">
-          {title}
-        </Text>
+        <Text className="text-base font-bold text-foreground">{title}</Text>
 
-        {metadata && (
-          <Text className="mt-1 text-sm font-semibold text-muted">
-            {metadata}
-          </Text>
-        )}
+        {metadata && <Text className="mt-1 text-sm font-semibold text-muted">{metadata}</Text>}
 
-        {description && (
-          <Text className="mt-1 text-sm text-muted">
-            {description}
-          </Text>
-        )}
+        {description && <Text className="mt-1 text-sm text-muted">{description}</Text>}
       </View>
 
       <View
@@ -2136,19 +1606,10 @@ function SelectionCard({
           justify-center
           rounded-full
           border
-          ${selected
-            ? 'border-primary bg-primary'
-            : 'border-border bg-surface'
-          }
+          ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
         `}
       >
-        {selected && (
-          <Ionicons
-            name="checkmark"
-            size={18}
-            color={colors.onPrimary}
-          />
-        )}
+        {selected && <Ionicons name="checkmark" size={18} color={colors.onPrimary} />}
       </View>
     </Pressable>
   );
@@ -2160,11 +1621,7 @@ type ChoiceProps = {
   onPress: () => void;
 };
 
-function Choice({
-  label,
-  selected,
-  onPress,
-}: ChoiceProps) {
+function Choice({ label, selected, onPress }: ChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -2177,10 +1634,7 @@ function Choice({
         border
         px-3
         py-3
-        ${selected
-          ? 'border-primary bg-primary'
-          : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
@@ -2188,10 +1642,7 @@ function Choice({
           text-center
           text-sm
           font-semibold
-          ${selected
-            ? 'text-background'
-            : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}
@@ -2202,11 +1653,7 @@ function Choice({
 
 type OrientationChoiceProps = ChoiceProps;
 
-function OrientationChoice({
-  label,
-  selected,
-  onPress,
-}: OrientationChoiceProps) {
+function OrientationChoice({ label, selected, onPress }: OrientationChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -2218,20 +1665,14 @@ function OrientationChoice({
         border
         px-3
         py-3
-        ${selected
-          ? 'border-primary bg-primary'
-          : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
         className={`
           text-sm
           font-semibold
-          ${selected
-            ? 'text-background'
-            : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}
@@ -2247,15 +1688,8 @@ type FormTextInputProps = {
   placeholder?: string;
   error?: string;
   multiline?: boolean;
-  keyboardType?:
-    | 'default'
-    | 'decimal-pad'
-    | 'numbers-and-punctuation';
-  autoCapitalize?:
-    | 'none'
-    | 'sentences'
-    | 'words'
-    | 'characters';
+  keyboardType?: 'default' | 'decimal-pad' | 'numbers-and-punctuation';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 };
 
 function FormTextInput({
@@ -2270,9 +1704,7 @@ function FormTextInput({
 }: FormTextInputProps) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       <TextInput
         value={value}
@@ -2282,11 +1714,7 @@ function FormTextInput({
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         multiline={multiline}
-        textAlignVertical={
-          multiline
-            ? 'top'
-            : 'center'
-        }
+        textAlignVertical={multiline ? 'top' : 'center'}
         className={`
           rounded-2xl
           border
@@ -2294,20 +1722,12 @@ function FormTextInput({
           px-4
           text-base
           text-foreground
-          ${multiline
-            ? 'min-h-28 py-3'
-            : 'h-14'
-          }
-          ${error
-            ? 'border-error'
-            : 'border-border'
-          }
+          ${multiline ? 'min-h-28 py-3' : 'h-14'}
+          ${error ? 'border-error' : 'border-border'}
         `}
       />
 
-      {error && (
-        <ErrorText message={error} />
-      )}
+      {error && <ErrorText message={error} />}
     </View>
   );
 }
@@ -2316,28 +1736,18 @@ type ErrorTextProps = {
   message: string;
 };
 
-function ErrorText({
-  message,
-}: ErrorTextProps) {
-  return (
-    <Text className="mt-2 text-sm text-error">
-      {message}
-    </Text>
-  );
+function ErrorText({ message }: ErrorTextProps) {
+  return <Text className="mt-2 text-sm text-error">{message}</Text>;
 }
 
 type EmptyCardProps = {
   message: string;
 };
 
-function EmptyCard({
-  message,
-}: EmptyCardProps) {
+function EmptyCard({ message }: EmptyCardProps) {
   return (
     <View className="mt-4 rounded-3xl border border-border bg-surface px-5 py-7">
-      <Text className="text-center text-sm text-muted">
-        {message}
-      </Text>
+      <Text className="text-center text-sm text-muted">{message}</Text>
     </View>
   );
 }
@@ -2347,23 +1757,13 @@ type RetryCardProps = {
   onRetry: () => void;
 };
 
-function RetryCard({
-  message,
-  onRetry,
-}: RetryCardProps) {
+function RetryCard({ message, onRetry }: RetryCardProps) {
   return (
     <View className="mt-4 items-center rounded-3xl border border-error/30 bg-surface px-5 py-7">
-      <Text className="text-center text-sm text-error">
-        {message}
-      </Text>
+      <Text className="text-center text-sm text-error">{message}</Text>
 
-      <Pressable
-        onPress={onRetry}
-        className="mt-4 rounded-2xl bg-primary px-5 py-3"
-      >
-        <Text className="font-bold text-background">
-          Pokušaj ponovo
-        </Text>
+      <Pressable onPress={onRetry} className="mt-4 rounded-2xl bg-primary px-5 py-3">
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
       </Pressable>
     </View>
   );
@@ -2374,19 +1774,12 @@ type SummaryRowProps = {
   value: string;
 };
 
-function SummaryRow({
-  label,
-  value,
-}: SummaryRowProps) {
+function SummaryRow({ label, value }: SummaryRowProps) {
   return (
     <View className="border-b border-border py-4 last:border-b-0">
-      <Text className="text-xs font-bold uppercase tracking-wide text-muted">
-        {label}
-      </Text>
+      <Text className="text-xs font-bold uppercase tracking-wide text-muted">{label}</Text>
 
-      <Text className="mt-1 text-base font-semibold text-foreground">
-        {value}
-      </Text>
+      <Text className="mt-1 text-base font-semibold text-foreground">{value}</Text>
     </View>
   );
 }

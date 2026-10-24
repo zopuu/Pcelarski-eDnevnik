@@ -1,9 +1,5 @@
-import type {
-  ForageType,
-} from '@/features/apiaries/types/forage-profile';
-import type {
-  ImageUpload,
-} from '@/shared/api/image-upload';
+import type { ForageType } from '@/features/apiaries/types/forage-profile';
+import type { ImageUpload } from '@/shared/api/image-upload';
 
 export type ForageObservation = {
   id: string;

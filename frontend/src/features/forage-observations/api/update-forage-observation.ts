@@ -1,14 +1,10 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
 import type {
   CreateForageObservationRequest,
   UpdateForageObservationResponse,
 } from '../types/forage-observation';
-import {
-  appendImageToFormData,
-} from '@/shared/api/image-upload';
+import { appendImageToFormData } from '@/shared/api/image-upload';
 
 export async function updateForageObservation(
   observationId: string,
@@ -26,16 +22,9 @@ export async function updateForageObservation(
     formData.append('Notes', request.notes);
   }
 
-  await appendImageToFormData(
-    formData,
-    'Image',
-    request.image,
-  );
+  await appendImageToFormData(formData, 'Image', request.image);
 
-  return apiClient.put<
-    UpdateForageObservationResponse,
-    FormData
-  >(
+  return apiClient.put<UpdateForageObservationResponse, FormData>(
     `/api/forage-observations/${observationId}`,
     formData,
     {

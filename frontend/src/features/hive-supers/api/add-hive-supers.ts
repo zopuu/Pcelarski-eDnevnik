@@ -1,9 +1,6 @@
 import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  AddHiveSupersRequest,
-  AddHiveSupersResponse,
-} from '../types/hive-super';
+import type { AddHiveSupersRequest, AddHiveSupersResponse } from '../types/hive-super';
 
 export function addHiveSupers(
   hiveId: string,

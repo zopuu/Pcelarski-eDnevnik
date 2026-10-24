@@ -1,43 +1,27 @@
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import {
-  apiaryQueryKeys,
-} from '@/features/apiaries/apiary-query-keys';
-import {
-  hiveQueryKeys,
-} from '@/features/hives/hive-query-keys';
+import { apiaryQueryKeys } from '@/features/apiaries/apiary-query-keys';
+import { hiveQueryKeys } from '@/features/hives/hive-query-keys';
 
-import {
-  createRelocation,
-} from '../api/create-relocation';
-import {
-  relocationQueryKeys,
-} from '../relocation-query-keys';
+import { createRelocation } from '../api/create-relocation';
+import { relocationQueryKeys } from '../relocation-query-keys';
 
 export function useCreateRelocation() {
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn:
-      createRelocation,
+    mutationFn: createRelocation,
 
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey:
-            apiaryQueryKeys.all,
+          queryKey: apiaryQueryKeys.all,
         }),
         queryClient.invalidateQueries({
-          queryKey:
-            hiveQueryKeys.all,
+          queryKey: hiveQueryKeys.all,
         }),
         queryClient.invalidateQueries({
-          queryKey:
-            relocationQueryKeys.all,
+          queryKey: relocationQueryKeys.all,
         }),
       ]);
     },

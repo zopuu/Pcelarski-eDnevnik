@@ -9,8 +9,7 @@ export function useRecordHoneyFrameFeeding() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: RecordHoneyFrameFeedingRequest) =>
-      recordHoneyFrameFeeding(request),
+    mutationFn: (request: RecordHoneyFrameFeedingRequest) => recordHoneyFrameFeeding(request),
     onSuccess: async (_response, request) => {
       await Promise.all(
         request.hives.map((hive) =>

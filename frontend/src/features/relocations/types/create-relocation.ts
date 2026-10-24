@@ -1,16 +1,8 @@
-import type {
-  HiveEntranceOrientation,
-} from '@/features/apiaries/types/apiary-stay';
+import type { HiveEntranceOrientation } from '@/features/apiaries/types/apiary-stay';
 
-export type RelocationKind =
-  | 'wholeApiary'
-  | 'selectedHives';
+export type RelocationKind = 'wholeApiary' | 'selectedHives';
 
-export type RelocationTransportMethod =
-  | 'trailer'
-  | 'truck'
-  | 'van'
-  | 'other';
+export type RelocationTransportMethod = 'trailer' | 'truck' | 'van' | 'other';
 
 export type CreateRelocationRequest = {
   kind: RelocationKind;

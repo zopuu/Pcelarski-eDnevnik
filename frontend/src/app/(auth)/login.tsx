@@ -1,58 +1,37 @@
-import {
-  router,
-  useLocalSearchParams,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/features/auth/hooks/use-auth';
 
 export default function LoginScreen() {
-  const {
-    signIn,
-    isSigningIn,
-    error,
-  } = useAuth();
+  const { signIn, isSigningIn, error } = useAuth();
 
-  const { registered } =
-    useLocalSearchParams<{
-      registered?: string;
-    }>();
+  const { registered } = useLocalSearchParams<{
+    registered?: string;
+  }>();
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.brand}>
-          <Text style={styles.logo}>
-            Pčelarski eDnevnik
-          </Text>
+          <Text style={styles.logo}>Pčelarski eDnevnik</Text>
 
           <Text style={styles.description}>
-            Digitalna evidencija vaših
-            pčelinjaka, košnica i pčelinjih
-            društava.
+            Digitalna evidencija vaših pčelinjaka, košnica i pčelinjih društava.
           </Text>
         </View>
 
         {registered === '1' && (
           <View style={styles.successBox}>
             <Text style={styles.successText}>
-              Nalog je uspešno kreiran.
-              Možete da se prijavite.
+              Nalog je uspešno kreiran. Možete da se prijavite.
             </Text>
           </View>
         )}
 
         {error && (
           <View style={styles.errorBox}>
-            <Text style={styles.errorText}>
-              {error}
-            </Text>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
@@ -63,44 +42,31 @@ export default function LoginScreen() {
           }}
           style={({ pressed }) => [
             styles.primaryButton,
-            pressed &&
-              styles.primaryButtonPressed,
-            isSigningIn &&
-              styles.buttonDisabled,
+            pressed && styles.primaryButtonPressed,
+            isSigningIn && styles.buttonDisabled,
           ]}
         >
           {isSigningIn ? (
-            <ActivityIndicator
-              color="#ffffff"
-            />
+            <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text
-              style={styles.primaryButtonText}
-            >
-              Prijavi se
-            </Text>
+            <Text style={styles.primaryButtonText}>Prijavi se</Text>
           )}
         </Pressable>
 
         <View style={styles.registration}>
-          <Text style={styles.registrationText}>
-            Nemate nalog?
-          </Text>
+          <Text style={styles.registrationText}>Nemate nalog?</Text>
 
           <Pressable
             onPress={() => {
               router.push('/register');
             }}
           >
-            <Text style={styles.registrationLink}>
-              Registrujte se
-            </Text>
+            <Text style={styles.registrationLink}>Registrujte se</Text>
           </Pressable>
         </View>
 
         <Text style={styles.securityText}>
-          Prijavljivanje se obavlja preko
-          bezbednog OpenID Connect sistema.
+          Prijavljivanje se obavlja preko bezbednog OpenID Connect sistema.
         </Text>
       </View>
     </View>

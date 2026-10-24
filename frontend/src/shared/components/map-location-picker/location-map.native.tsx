@@ -1,18 +1,9 @@
-import {
-  StyleSheet,
-} from 'react-native';
-import MapView, {
-  Marker,
-  PROVIDER_GOOGLE,
-} from 'react-native-maps';
+import { StyleSheet } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-import type {
-  Region,
-} from 'react-native-maps';
+import type { Region } from 'react-native-maps';
 
-import type {
-  LocationMapProps,
-} from './location-map.types';
+import type { LocationMapProps } from './location-map.types';
 
 const serbiaRegion: Region = {
   latitude: 44.0165,
@@ -21,9 +12,7 @@ const serbiaRegion: Region = {
   longitudeDelta: 4.4,
 };
 
-function getInitialRegion(
-  value: LocationMapProps['value'],
-): Region {
+function getInitialRegion(value: LocationMapProps['value']): Region {
   if (!value) {
     return serbiaRegion;
   }
@@ -36,18 +25,11 @@ function getInitialRegion(
   };
 }
 
-export function LocationMap({
-  value,
-  onLocationPress,
-}: LocationMapProps) {
+export function LocationMap({ value, onLocationPress }: LocationMapProps) {
   return (
     <MapView
-      provider={
-        PROVIDER_GOOGLE
-      }
-      initialRegion={
-        getInitialRegion(value)
-      }
+      provider={PROVIDER_GOOGLE}
+      initialRegion={getInitialRegion(value)}
       mapType="hybrid"
       showsBuildings={false}
       showsCompass={false}
@@ -55,29 +37,19 @@ export function LocationMap({
       showsTraffic={false}
       toolbarEnabled={false}
       style={styles.map}
-      onPress={(
-        event,
-      ) => {
-        onLocationPress(
-          event.nativeEvent
-            .coordinate,
-        );
+      onPress={(event) => {
+        onLocationPress(event.nativeEvent.coordinate);
       }}
     >
-      {value && (
-        <Marker
-          coordinate={value}
-        />
-      )}
+      {value && <Marker coordinate={value} />}
     </MapView>
   );
 }
 
-const styles =
-  StyleSheet.create({
-    map: {
-      height: 288,
-      borderRadius: 16,
-      overflow: 'hidden',
-    },
-  });
+const styles = StyleSheet.create({
+  map: {
+    height: 288,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+});

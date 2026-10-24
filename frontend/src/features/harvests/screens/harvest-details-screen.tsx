@@ -26,15 +26,30 @@ export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
   const query = useHarvest(harvestId);
   const header = <AppHeader onMenuPress={openDrawer} />;
 
-  if (query.isLoading) return <Screen header={header}><HarvestLoadingState label="Učitavanje vrcanja..." /></Screen>;
+  if (query.isLoading)
+    return (
+      <Screen header={header}>
+        <HarvestLoadingState label="Učitavanje vrcanja..." />
+      </Screen>
+    );
   if (query.isError || !query.data) {
-    return <Screen header={header}><HarvestErrorState message="Vrcanje nije moguće učitati." onRetry={() => void query.refetch()} /></Screen>;
+    return (
+      <Screen header={header}>
+        <HarvestErrorState
+          message="Vrcanje nije moguće učitati."
+          onRetry={() => void query.refetch()}
+        />
+      </Screen>
+    );
   }
 
   const harvest = query.data;
   return (
     <Screen header={header}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+      >
         <BackButton />
         <Text className="text-xs font-bold uppercase tracking-widest text-muted">Vrcanje</Text>
         <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
@@ -45,14 +60,22 @@ export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
         <View className="mt-6 flex-row flex-wrap gap-3 rounded-3xl border border-border bg-surface p-4">
           <DetailMetric label="Izvrcano ramova" value={String(harvest.harvestedFrameCount)} />
           <DetailMetric label="Broj nastavaka" value={String(harvest.superCount)} />
-          <DetailMetric label="Period izvora" value={formatPeriod(harvest.sourcePeriodStartedOn, harvest.sourcePeriodEndedOn)} />
+          <DetailMetric
+            label="Period izvora"
+            value={formatPeriod(harvest.sourcePeriodStartedOn, harvest.sourcePeriodEndedOn)}
+          />
         </View>
 
         <SectionTitle>Serija meda</SectionTitle>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Otvori seriju ${harvest.batch.batchCode}`}
-          onPress={() => router.push({ pathname: '/honey-batches/[batchId]', params: { batchId: harvest.batch.id } } as never)}
+          onPress={() =>
+            router.push({
+              pathname: '/honey-batches/[batchId]',
+              params: { batchId: harvest.batch.id },
+            } as never)
+          }
           className="flex-row items-center gap-3 rounded-3xl border border-border bg-surface px-4 py-4"
           style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
         >
@@ -61,10 +84,15 @@ export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
           </View>
           <View className="flex-1">
             <Text className="text-base font-bold text-foreground">
-              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode) ? harvest.batch.name : harvest.batch.batchCode}
+              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode)
+                ? harvest.batch.name
+                : harvest.batch.batchCode}
             </Text>
             <Text className="mt-1 text-sm text-muted">
-              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode) ? `${harvest.batch.batchCode} · ` : ''}{getBatchStatusLabel(harvest.batch.status)}
+              {hasDistinctBatchName(harvest.batch.name, harvest.batch.batchCode)
+                ? `${harvest.batch.batchCode} · `
+                : ''}
+              {getBatchStatusLabel(harvest.batch.status)}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
@@ -97,7 +125,12 @@ export function HarvestDetailsScreen({ harvestId }: { harvestId: string }) {
 
 function BackButton() {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel="Vrati se na vrcanja" onPress={() => router.back()} className="mb-3 mt-3 self-start py-2">
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Vrati se na vrcanja"
+      onPress={() => router.back()}
+      className="mb-3 mt-3 self-start py-2"
+    >
       <Text className="text-sm font-semibold text-primary">← Vrcanja</Text>
     </Pressable>
   );

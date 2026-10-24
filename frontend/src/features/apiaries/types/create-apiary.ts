@@ -1,50 +1,32 @@
-import type {
-  ApiaryType,
-  ApiaryStatus
-} from './apiary';
-import type {
-  HiveEntranceOrientation
-} from './apiary-stay';
-import type {
-  ApiaryImageUpload,
-} from './apiary-image';
+import type { ApiaryType } from './apiary';
+import type { HiveEntranceOrientation } from './apiary-stay';
+import type { ApiaryImageUpload } from './apiary-image';
 
 export interface CreateApiaryRequest {
   image?: ApiaryImageUpload | null;
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
-  name:
-    string;
+  name: string;
 
-  type:
-    ApiaryType;
+  type: ApiaryType;
 
   initialStay: {
-    orientation:
-      HiveEntranceOrientation | null;
+    orientation: HiveEntranceOrientation | null;
 
-    note:
-      string | null;
+    note: string | null;
 
     location: {
-      name:
-        string | null;
+      name: string | null;
 
-      latitude:
-        number;
+      latitude: number;
 
-      longitude:
-        number;
+      longitude: number;
 
-      altitudeMeters:
-        number | null;
+      altitudeMeters: number | null;
 
-      cadastralParcelNumber:
-        string | null;
+      cadastralParcelNumber: string | null;
 
-      description:
-        string | null;
+      description: string | null;
     };
   };
 }
@@ -52,21 +34,15 @@ export interface CreateApiaryRequest {
 export interface CreateApiaryResponse {
   id: string;
 
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
-  name:
-    string;
+  name: string;
 
-  imageUrl:
-    string | null;
+  imageUrl: string | null;
 
-  type:
-    ApiaryType;
+  type: ApiaryType;
 
-  status:
-    string | null;
+  status: string | null;
 
-  createdAtUtc:
-    string;
+  createdAtUtc: string;
 }

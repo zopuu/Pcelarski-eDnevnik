@@ -1,15 +1,15 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { router } from "expo-router";
+import { router } from 'expo-router';
 
-import { Controller, useForm, useWatch } from "react-hook-form";
-import type { Control, FieldErrors, FieldPath } from "react-hook-form";
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import type { Control, FieldErrors, FieldPath } from 'react-hook-form';
 
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { HiveInspectionHeader } from "../components/hive-inspection-header";
+import { HiveInspectionHeader } from '../components/hive-inspection-header';
 import {
   BooleanField,
   CountField,
@@ -17,60 +17,60 @@ import {
   FormTextInput,
   InspectionSection,
   RatingField,
-} from "../components/inspection-form-controls";
-import { useRecordHiveInspection } from "../hooks/use-record-hive-inspection";
-import { recordHiveInspectionSchema } from "../schemas/record-hive-inspection-schema";
-import type { RecordHiveInspectionFormValues } from "../schemas/record-hive-inspection-schema";
-import type { RecordHiveInspectionRequest } from "../types/hive-inspection";
+} from '../components/inspection-form-controls';
+import { useRecordHiveInspection } from '../hooks/use-record-hive-inspection';
+import { recordHiveInspectionSchema } from '../schemas/record-hive-inspection-schema';
+import type { RecordHiveInspectionFormValues } from '../schemas/record-hive-inspection-schema';
+import type { RecordHiveInspectionRequest } from '../types/hive-inspection';
 
-import { useCurrentColony } from "@/features/colonies/hooks/use-current-colony";
-import { useHive } from "@/features/hives/hooks/use-hive";
-import { useCurrentQueen } from "@/features/queens/hooks/use-current-queen";
-import { ApiError } from "@/shared/api/api-error";
-import { DatePickerField } from "@/shared/components/date-picker-field";
-import { colors } from "@/shared/theme/colors";
-import { formatDateOnly } from "@/shared/utils/date-only";
+import { useCurrentColony } from '@/features/colonies/hooks/use-current-colony';
+import { useHive } from '@/features/hives/hooks/use-hive';
+import { useCurrentQueen } from '@/features/queens/hooks/use-current-queen';
+import { ApiError } from '@/shared/api/api-error';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { colors } from '@/shared/theme/colors';
+import { formatDateOnly } from '@/shared/utils/date-only';
 
 type RecordHiveInspectionScreenProps = {
   hiveId: string;
 };
 
 type RatingFieldName =
-  | "overallConditionRating"
-  | "populationRating"
-  | "temperamentRating"
-  | "colonyStrength"
-  | "honeyStoresRating"
-  | "pollenStoresRating"
-  | "droneBroodExtent"
-  | "larvaePresence"
-  | "droneWorkerBalance"
-  | "broodQuality"
-  | "queenCellStage"
-  | "swarmingTendency"
-  | "foodStoreAssessment"
-  | "pollenStoreAssessment"
-  | "starvationRisk"
-  | "varroaLevel"
-  | "deadBeeLevel"
-  | "odor";
+  | 'overallConditionRating'
+  | 'populationRating'
+  | 'temperamentRating'
+  | 'colonyStrength'
+  | 'honeyStoresRating'
+  | 'pollenStoresRating'
+  | 'droneBroodExtent'
+  | 'larvaePresence'
+  | 'droneWorkerBalance'
+  | 'broodQuality'
+  | 'queenCellStage'
+  | 'swarmingTendency'
+  | 'foodStoreAssessment'
+  | 'pollenStoreAssessment'
+  | 'starvationRisk'
+  | 'varroaLevel'
+  | 'deadBeeLevel'
+  | 'odor';
 
 type CountFieldName =
-  | "beeCoveredFrameCount"
-  | "broodFrameCount"
-  | "honeyFrameCount"
-  | "pollenFrameCount"
-  | "openBroodFrameCount"
-  | "cappedBroodFrameCount"
-  | "queenCellCount";
+  | 'beeCoveredFrameCount'
+  | 'broodFrameCount'
+  | 'honeyFrameCount'
+  | 'pollenFrameCount'
+  | 'openBroodFrameCount'
+  | 'cappedBroodFrameCount'
+  | 'queenCellCount';
 
 type BooleanFieldName =
-  | "hasSwarmed"
-  | "queenSeen"
-  | "queenMarked"
-  | "droneBroodPresent"
-  | "moldPresent"
-  | "excessMoisturePresent";
+  | 'hasSwarmed'
+  | 'queenSeen'
+  | 'queenMarked'
+  | 'droneBroodPresent'
+  | 'moldPresent'
+  | 'excessMoisturePresent';
 
 type FieldDefinition<TName extends string> = {
   name: TName;
@@ -111,122 +111,120 @@ const defaultValues: RecordHiveInspectionFormValues = {
   starvationRisk: null,
   varroaLevel: null,
   disease: null,
-  diseaseOther: "",
+  diseaseOther: '',
   pest: null,
-  pestOther: "",
+  pestOther: '',
   predator: null,
-  predatorOther: "",
+  predatorOther: '',
   moldPresent: null,
   excessMoisturePresent: null,
   deadBeeLevel: null,
   odor: null,
-  notes: "",
+  notes: '',
 };
 
 const generalRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "overallConditionRating", label: "Opšte stanje" },
-  { name: "populationRating", label: "Brojnost pčela" },
-  { name: "temperamentRating", label: "Mirnoća društva" },
-  { name: "colonyStrength", label: "Snaga društva" },
+  { name: 'overallConditionRating', label: 'Opšte stanje' },
+  { name: 'populationRating', label: 'Brojnost pčela' },
+  { name: 'temperamentRating', label: 'Mirnoća društva' },
+  { name: 'colonyStrength', label: 'Snaga društva' },
 ];
 
 const frameCountFields: readonly FieldDefinition<CountFieldName>[] = [
-  { name: "beeCoveredFrameCount", label: "Ramovi prekriveni pčelama" },
-  { name: "broodFrameCount", label: "Ramovi sa leglom" },
-  { name: "honeyFrameCount", label: "Ramovi sa medom" },
-  { name: "pollenFrameCount", label: "Ramovi sa polenom" },
-  { name: "openBroodFrameCount", label: "Ramovi sa otvorenim leglom" },
-  { name: "cappedBroodFrameCount", label: "Ramovi sa zatvorenim leglom" },
+  { name: 'beeCoveredFrameCount', label: 'Ramovi prekriveni pčelama' },
+  { name: 'broodFrameCount', label: 'Ramovi sa leglom' },
+  { name: 'honeyFrameCount', label: 'Ramovi sa medom' },
+  { name: 'pollenFrameCount', label: 'Ramovi sa polenom' },
+  { name: 'openBroodFrameCount', label: 'Ramovi sa otvorenim leglom' },
+  { name: 'cappedBroodFrameCount', label: 'Ramovi sa zatvorenim leglom' },
 ];
 
 const foodRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "honeyStoresRating", label: "Zalihe meda" },
-  { name: "pollenStoresRating", label: "Zalihe polena" },
-  { name: "foodStoreAssessment", label: "Ukupna procena hrane" },
-  { name: "pollenStoreAssessment", label: "Procena dostupnog polena" },
-  { name: "starvationRisk", label: "Rizik od gladovanja" },
+  { name: 'honeyStoresRating', label: 'Zalihe meda' },
+  { name: 'pollenStoresRating', label: 'Zalihe polena' },
+  { name: 'foodStoreAssessment', label: 'Ukupna procena hrane' },
+  { name: 'pollenStoreAssessment', label: 'Procena dostupnog polena' },
+  { name: 'starvationRisk', label: 'Rizik od gladovanja' },
 ];
 
 const broodRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "larvaePresence", label: "Prisustvo larvi" },
-  { name: "broodQuality", label: "Kvalitet legla" },
+  { name: 'larvaePresence', label: 'Prisustvo larvi' },
+  { name: 'broodQuality', label: 'Kvalitet legla' },
 ];
 
 const droneRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "droneBroodExtent", label: "Obim trutovskog legla" },
-  { name: "droneWorkerBalance", label: "Odnos trutova i radilica" },
+  { name: 'droneBroodExtent', label: 'Obim trutovskog legla' },
+  { name: 'droneWorkerBalance', label: 'Odnos trutova i radilica' },
 ];
 
 const queenRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "queenCellStage", label: "Razvijenost matičnjaka" },
-  { name: "swarmingTendency", label: "Nagon za rojenjem" },
+  { name: 'queenCellStage', label: 'Razvijenost matičnjaka' },
+  { name: 'swarmingTendency', label: 'Nagon za rojenjem' },
 ];
 
 const healthRatingFields: readonly FieldDefinition<RatingFieldName>[] = [
-  { name: "varroaLevel", label: "Nivo varoe" },
-  { name: "deadBeeLevel", label: "Količina uginulih pčela" },
-  { name: "odor", label: "Neuobičajen miris" },
+  { name: 'varroaLevel', label: 'Nivo varoe' },
+  { name: 'deadBeeLevel', label: 'Količina uginulih pčela' },
+  { name: 'odor', label: 'Neuobičajen miris' },
 ];
 
 const inspectionTypeOptions = [
-  { value: "FIRST_SPRING", label: "Prvi prolećni" },
-  { value: "SPRING_ROUTINE", label: "Redovni prolećni" },
-  { value: "SWARM_CONTROL", label: "Kontrola rojenja" },
-  { value: "FIRST_SUMMER", label: "Prvi letnji" },
-  { value: "SUMMER_ROUTINE", label: "Redovni letnji" },
-  { value: "POST_HARVEST", label: "Posle vrcanja" },
-  { value: "AUTUMN_ROUTINE", label: "Jesenji" },
-  { value: "PRE_WINTER", label: "Pred zimovanje" },
-  { value: "QUEEN_CHECK", label: "Kontrola matice" },
-  { value: "HEALTH_CHECK", label: "Zdravstveni" },
-  { value: "EMERGENCY", label: "Vanredni" },
-  { value: "OTHER", label: "Drugo" },
+  { value: 'FIRST_SPRING', label: 'Prvi prolećni' },
+  { value: 'SPRING_ROUTINE', label: 'Redovni prolećni' },
+  { value: 'SWARM_CONTROL', label: 'Kontrola rojenja' },
+  { value: 'FIRST_SUMMER', label: 'Prvi letnji' },
+  { value: 'SUMMER_ROUTINE', label: 'Redovni letnji' },
+  { value: 'POST_HARVEST', label: 'Posle vrcanja' },
+  { value: 'AUTUMN_ROUTINE', label: 'Jesenji' },
+  { value: 'PRE_WINTER', label: 'Pred zimovanje' },
+  { value: 'QUEEN_CHECK', label: 'Kontrola matice' },
+  { value: 'HEALTH_CHECK', label: 'Zdravstveni' },
+  { value: 'EMERGENCY', label: 'Vanredni' },
+  { value: 'OTHER', label: 'Drugo' },
 ] as const;
 
 const broodPatternOptions = [
-  { value: "COMPACT", label: "Kompaktno" },
-  { value: "SPOTTY", label: "Proređeno" },
-  { value: "MOTTLED", label: "Šareno" },
-  { value: "OTHER", label: "Drugo" },
+  { value: 'COMPACT', label: 'Kompaktno' },
+  { value: 'SPOTTY', label: 'Proređeno' },
+  { value: 'MOTTLED', label: 'Šareno' },
+  { value: 'OTHER', label: 'Drugo' },
 ] as const;
 
 const broodStageOptions = [
-  { value: "EGGS", label: "Jaja" },
-  { value: "LARVAE", label: "Larve" },
-  { value: "CAPPED", label: "Zatvoreno leglo" },
-  { value: "MIXED", label: "Mešovito" },
+  { value: 'EGGS', label: 'Jaja' },
+  { value: 'LARVAE', label: 'Larve' },
+  { value: 'CAPPED', label: 'Zatvoreno leglo' },
+  { value: 'MIXED', label: 'Mešovito' },
 ] as const;
 
 const diseaseOptions = [
-  { value: "AMERICAN_FOULBROOD", label: "Američka kuga legla" },
-  { value: "EUROPEAN_FOULBROOD", label: "Evropska kuga legla" },
-  { value: "NOSEMA", label: "Nozemoza" },
-  { value: "CHALKBROOD", label: "Krečno leglo" },
-  { value: "SACBROOD", label: "Mešinasto leglo" },
-  { value: "DEFORMED_WING_VIRUS", label: "Virus deformisanih krila" },
-  { value: "OTHER", label: "Drugo" },
+  { value: 'AMERICAN_FOULBROOD', label: 'Američka kuga legla' },
+  { value: 'EUROPEAN_FOULBROOD', label: 'Evropska kuga legla' },
+  { value: 'NOSEMA', label: 'Nozemoza' },
+  { value: 'CHALKBROOD', label: 'Krečno leglo' },
+  { value: 'SACBROOD', label: 'Mešinasto leglo' },
+  { value: 'DEFORMED_WING_VIRUS', label: 'Virus deformisanih krila' },
+  { value: 'OTHER', label: 'Drugo' },
 ] as const;
 
 const pestOptions = [
-  { value: "VARROA_MITE", label: "Varoa" },
-  { value: "WAX_MOTH", label: "Voštani moljac" },
-  { value: "SMALL_HIVE_BEETLE", label: "Mala košničina buba" },
-  { value: "BEE_LOUSE", label: "Pčelinja vaš" },
-  { value: "ANTS", label: "Mravi" },
-  { value: "OTHER", label: "Drugo" },
+  { value: 'VARROA_MITE', label: 'Varoa' },
+  { value: 'WAX_MOTH', label: 'Voštani moljac' },
+  { value: 'SMALL_HIVE_BEETLE', label: 'Mala košničina buba' },
+  { value: 'BEE_LOUSE', label: 'Pčelinja vaš' },
+  { value: 'ANTS', label: 'Mravi' },
+  { value: 'OTHER', label: 'Drugo' },
 ] as const;
 
 const predatorOptions = [
-  { value: "WASP", label: "Osa" },
-  { value: "HORNET", label: "Stršljen" },
-  { value: "MOUSE", label: "Miš" },
-  { value: "BIRD", label: "Ptica" },
-  { value: "OTHER", label: "Drugo" },
+  { value: 'WASP', label: 'Osa' },
+  { value: 'HORNET', label: 'Stršljen' },
+  { value: 'MOUSE', label: 'Miš' },
+  { value: 'BIRD', label: 'Ptica' },
+  { value: 'OTHER', label: 'Drugo' },
 ] as const;
 
-export function RecordHiveInspectionScreen({
-  hiveId,
-}: RecordHiveInspectionScreenProps) {
+export function RecordHiveInspectionScreen({ hiveId }: RecordHiveInspectionScreenProps) {
   const hiveQuery = useHive(hiveId);
   const colonyQuery = useCurrentColony(hiveId);
   const queenQuery = useCurrentQueen(colonyQuery.data?.id ?? null);
@@ -244,9 +242,9 @@ export function RecordHiveInspectionScreen({
     defaultValues,
   });
 
-  const disease = useWatch({ control, name: "disease" });
-  const pest = useWatch({ control, name: "pest" });
-  const predator = useWatch({ control, name: "predator" });
+  const disease = useWatch({ control, name: 'disease' });
+  const pest = useWatch({ control, name: 'pest' });
+  const predator = useWatch({ control, name: 'predator' });
 
   const onSubmit = async (values: RecordHiveInspectionFormValues) => {
     clearErrors();
@@ -254,21 +252,17 @@ export function RecordHiveInspectionScreen({
     try {
       await mutation.mutateAsync(toRequest(values));
 
-      Alert.alert(
-        "Pregled uspešno obavljen",
-        "Podaci o pregledu košnice su sačuvani.",
-        [
-          {
-            text: "U redu",
-            onPress: () => {
-              router.replace({
-                pathname: "/hives/[hiveId]",
-                params: { hiveId },
-              } as never);
-            },
+      Alert.alert('Pregled uspešno obavljen', 'Podaci o pregledu košnice su sačuvani.', [
+        {
+          text: 'U redu',
+          onPress: () => {
+            router.replace({
+              pathname: '/hives/[hiveId]',
+              params: { hiveId },
+            } as never);
           },
-        ],
-      );
+        },
+      ]);
     } catch (error) {
       applyServerValidationErrors(error, setError);
     }
@@ -300,8 +294,7 @@ export function RecordHiveInspectionScreen({
   }
 
   const hive = hiveQuery.data;
-  const isQueenLoading =
-    colonyQuery.isLoading || Boolean(colonyQuery.data && queenQuery.isLoading);
+  const isQueenLoading = colonyQuery.isLoading || Boolean(colonyQuery.data && queenQuery.isLoading);
 
   return (
     <View className="flex-1 bg-background">
@@ -324,9 +317,7 @@ export function RecordHiveInspectionScreen({
           <Text className="text-base font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Pregled košnice
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Pregled košnice</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
           Unesite samo podatke koje ste proverili tokom pregleda.
         </Text>
@@ -384,16 +375,8 @@ export function RecordHiveInspectionScreen({
 
         <SectionTitle>Brza zapažanja</SectionTitle>
         <View className="mb-4 rounded-3xl border border-border bg-surface px-5 pb-1 pt-5">
-          <BooleanController
-            control={control}
-            name="hasSwarmed"
-            label="Da li se društvo rojilo?"
-          />
-          <BooleanController
-            control={control}
-            name="queenSeen"
-            label="Da li je matica viđena?"
-          />
+          <BooleanController control={control} name="hasSwarmed" label="Da li se društvo rojilo?" />
+          <BooleanController control={control} name="queenSeen" label="Da li je matica viđena?" />
           <BooleanController
             control={control}
             name="queenMarked"
@@ -406,22 +389,14 @@ export function RecordHiveInspectionScreen({
           description="Stanje, brojnost, temperament i snaga društva"
           defaultOpen
         >
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={generalRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={generalRatingFields} />
         </InspectionSection>
 
         <InspectionSection
           title="Ramovi i pokrivenost leglom"
           description="Broj ramova i procenat površine pod leglom"
         >
-          <CountControllers
-            control={control}
-            errors={errors}
-            fields={frameCountFields}
-          />
+          <CountControllers control={control} errors={errors} fields={frameCountFields} />
           <Controller
             control={control}
             name="broodCoveragePercentage"
@@ -442,17 +417,10 @@ export function RecordHiveInspectionScreen({
           title="Hrana i rizik"
           description="Zalihe hrane, polen i rizik od gladovanja"
         >
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={foodRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={foodRatingFields} />
         </InspectionSection>
 
-        <InspectionSection
-          title="Leglo"
-          description="Obrazac, razvojni stadijum i kvalitet legla"
-        >
+        <InspectionSection title="Leglo" description="Obrazac, razvojni stadijum i kvalitet legla">
           <Controller
             control={control}
             name="broodPattern"
@@ -479,27 +447,16 @@ export function RecordHiveInspectionScreen({
               />
             )}
           />
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={broodRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={broodRatingFields} />
         </InspectionSection>
 
-        <InspectionSection
-          title="Trutovi"
-          description="Trutovsko leglo i odnos trutova i radilica"
-        >
+        <InspectionSection title="Trutovi" description="Trutovsko leglo i odnos trutova i radilica">
           <BooleanController
             control={control}
             name="droneBroodPresent"
             label="Da li je prisutno trutovsko leglo?"
           />
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={droneRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={droneRatingFields} />
         </InspectionSection>
 
         <InspectionSection
@@ -509,24 +466,16 @@ export function RecordHiveInspectionScreen({
           <CountControllers
             control={control}
             errors={errors}
-            fields={[{ name: "queenCellCount", label: "Broj matičnjaka" }]}
+            fields={[{ name: 'queenCellCount', label: 'Broj matičnjaka' }]}
           />
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={queenRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={queenRatingFields} />
         </InspectionSection>
 
         <InspectionSection
           title="Zdravlje i štetočine"
           description="Varoa, bolesti, štetočine, predatori i uslovi u košnici"
         >
-          <RatingControllers
-            control={control}
-            errors={errors}
-            fields={healthRatingFields}
-          />
+          <RatingControllers control={control} errors={errors} fields={healthRatingFields} />
           <Controller
             control={control}
             name="disease"
@@ -537,8 +486,8 @@ export function RecordHiveInspectionScreen({
                 onChange={(value) => {
                   field.onChange(value);
 
-                  if (value !== "OTHER") {
-                    setValue("diseaseOther", "");
+                  if (value !== 'OTHER') {
+                    setValue('diseaseOther', '');
                   }
                 }}
                 options={diseaseOptions}
@@ -546,7 +495,7 @@ export function RecordHiveInspectionScreen({
               />
             )}
           />
-          {disease === "OTHER" && (
+          {disease === 'OTHER' && (
             <Controller
               control={control}
               name="diseaseOther"
@@ -571,8 +520,8 @@ export function RecordHiveInspectionScreen({
                 onChange={(value) => {
                   field.onChange(value);
 
-                  if (value !== "OTHER") {
-                    setValue("pestOther", "");
+                  if (value !== 'OTHER') {
+                    setValue('pestOther', '');
                   }
                 }}
                 options={pestOptions}
@@ -580,7 +529,7 @@ export function RecordHiveInspectionScreen({
               />
             )}
           />
-          {pest === "OTHER" && (
+          {pest === 'OTHER' && (
             <Controller
               control={control}
               name="pestOther"
@@ -605,8 +554,8 @@ export function RecordHiveInspectionScreen({
                 onChange={(value) => {
                   field.onChange(value);
 
-                  if (value !== "OTHER") {
-                    setValue("predatorOther", "");
+                  if (value !== 'OTHER') {
+                    setValue('predatorOther', '');
                   }
                 }}
                 options={predatorOptions}
@@ -614,7 +563,7 @@ export function RecordHiveInspectionScreen({
               />
             )}
           />
-          {predator === "OTHER" && (
+          {predator === 'OTHER' && (
             <Controller
               control={control}
               name="predatorOther"
@@ -629,11 +578,7 @@ export function RecordHiveInspectionScreen({
               )}
             />
           )}
-          <BooleanController
-            control={control}
-            name="moldPresent"
-            label="Da li je prisutna buđ?"
-          />
+          <BooleanController control={control} name="moldPresent" label="Da li je prisutna buđ?" />
           <BooleanController
             control={control}
             name="excessMoisturePresent"
@@ -654,20 +599,16 @@ export function RecordHiveInspectionScreen({
           disabled={mutation.isPending}
           onPress={handleSubmit(onSubmit)}
           className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${
-            mutation.isPending ? "opacity-60" : ""
+            mutation.isPending ? 'opacity-60' : ''
           }`}
         >
           {mutation.isPending ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" color={colors.onPrimary} />
-              <Text className="text-base font-bold text-background">
-                Čuvanje...
-              </Text>
+              <Text className="text-base font-bold text-background">Čuvanje...</Text>
             </View>
           ) : (
-            <Text className="text-base font-bold text-background">
-              Završi pregled
-            </Text>
+            <Text className="text-base font-bold text-background">Završi pregled</Text>
           )}
         </Pressable>
       </KeyboardAwareScrollView>
@@ -676,11 +617,7 @@ export function RecordHiveInspectionScreen({
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-7 text-lg font-bold text-foreground">{children}</Text>;
 }
 
 function RatingControllers({
@@ -749,11 +686,7 @@ function BooleanController({
       control={control}
       name={name}
       render={({ field }) => (
-        <BooleanField
-          label={label}
-          value={field.value}
-          onChange={field.onChange}
-        />
+        <BooleanField label={label} value={field.value} onChange={field.onChange} />
       )}
     />
   );
@@ -765,7 +698,7 @@ function getFieldError(
 ) {
   const message = errors[name]?.message;
 
-  return typeof message === "string" ? message : undefined;
+  return typeof message === 'string' ? message : undefined;
 }
 
 function optionalText(value: string) {
@@ -781,14 +714,12 @@ function toPerformedAt(performedOn: string) {
     return new Date().toISOString();
   }
 
-  const [year, month, day] = performedOn.split("-").map(Number);
+  const [year, month, day] = performedOn.split('-').map(Number);
 
   return new Date(year, month - 1, day, 12, 0, 0).toISOString();
 }
 
-function toRequest(
-  values: RecordHiveInspectionFormValues,
-): RecordHiveInspectionRequest {
+function toRequest(values: RecordHiveInspectionFormValues): RecordHiveInspectionRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     inspectionType: values.inspectionType,
@@ -850,8 +781,8 @@ function applyServerValidationErrors(
 
   for (const [serverName, messages] of Object.entries(error.problem.errors)) {
     const candidate =
-      serverName.toLowerCase() === "performedat"
-        ? "performedOn"
+      serverName.toLowerCase() === 'performedat'
+        ? 'performedOn'
         : `${serverName.charAt(0).toLowerCase()}${serverName.slice(1)}`;
 
     if (!(candidate in defaultValues) || !messages[0]) {
@@ -859,7 +790,7 @@ function applyServerValidationErrors(
     }
 
     setError(candidate as FieldPath<RecordHiveInspectionFormValues>, {
-      type: "server",
+      type: 'server',
       message: messages[0],
     });
   }
@@ -867,14 +798,12 @@ function applyServerValidationErrors(
 
 function getMutationErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 404) {
-    return "Košnica nije pronađena ili joj više nemate pristup.";
+    return 'Košnica nije pronađena ili joj više nemate pristup.';
   }
 
   if (error instanceof ApiError && error.status === 400) {
-    return "Proverite označena polja i pokušajte ponovo.";
+    return 'Proverite označena polja i pokušajte ponovo.';
   }
 
-  return error instanceof Error
-    ? error.message
-    : "Pregled nije moguće sačuvati. Pokušajte ponovo.";
+  return error instanceof Error ? error.message : 'Pregled nije moguće sačuvati. Pokušajte ponovo.';
 }

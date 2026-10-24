@@ -1,28 +1,16 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 
-import {
-  LinearGradient,
-} from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  colors,
-  gradients,
-} from '@/shared/theme/colors';
+import { colors, gradients } from '@/shared/theme/colors';
 
 type AddApiaryCardProps = {
   onPress: () => void;
 };
 
-export function AddApiaryCard({
-  onPress,
-}: AddApiaryCardProps) {
+export function AddApiaryCard({ onPress }: AddApiaryCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -37,9 +25,7 @@ export function AddApiaryCard({
       "
     >
       <LinearGradient
-        colors={
-          gradients.addApiary
-        }
+        colors={gradients.addApiary}
         start={{
           x: 0,
           y: 0,
@@ -48,9 +34,7 @@ export function AddApiaryCard({
           x: 1,
           y: 1,
         }}
-        style={
-          StyleSheet.absoluteFill
-        }
+        style={StyleSheet.absoluteFill}
       />
 
       <View
@@ -84,13 +68,7 @@ export function AddApiaryCard({
             bg-primary
           "
         >
-          <Ionicons
-            name="add"
-            size={31}
-            color={
-              colors.white
-            }
-          />
+          <Ionicons name="add" size={31} color={colors.white} />
         </View>
 
         <Text

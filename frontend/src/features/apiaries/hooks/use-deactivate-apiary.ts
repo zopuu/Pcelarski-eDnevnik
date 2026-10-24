@@ -1,14 +1,7 @@
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import {
-  deactivateApiary,
-} from '../api/deactivate-apiary';
-import {
-  apiaryQueryKeys,
-} from '../apiary-query-keys';
+import { deactivateApiary } from '../api/deactivate-apiary';
+import { apiaryQueryKeys } from '../apiary-query-keys';
 
 export function useDeactivateApiary() {
   const queryClient = useQueryClient();

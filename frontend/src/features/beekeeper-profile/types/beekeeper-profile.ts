@@ -16,7 +16,6 @@ export type UpdateMyProfileRequest = {
   agriculturalHoldingNumber: number | null;
 };
 
-export type UpdateMyProfileResponse =
-  BeekeeperProfile & {
-    email: string;
-  };
+export type UpdateMyProfileResponse = BeekeeperProfile & {
+  email: string;
+};

@@ -1,18 +1,9 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  CreateApiaryRequest,
-  CreateApiaryResponse,
-} from '../types/create-apiary';
-import {
-  appendApiaryImage,
-} from './apiary-image-form-data';
+import type { CreateApiaryRequest, CreateApiaryResponse } from '../types/create-apiary';
+import { appendApiaryImage } from './apiary-image-form-data';
 
-export async function createApiary(
-  request: CreateApiaryRequest,
-): Promise<CreateApiaryResponse> {
+export async function createApiary(request: CreateApiaryRequest): Promise<CreateApiaryResponse> {
   const formData = new FormData();
   const location = request.initialStay.location;
 
@@ -42,17 +33,11 @@ export async function createApiary(
   formData.append('InitialStay.Location.Longitude', location.longitude.toString());
 
   if (location.altitudeMeters !== null) {
-    formData.append(
-      'InitialStay.Location.AltitudeMeters',
-      location.altitudeMeters.toString(),
-    );
+    formData.append('InitialStay.Location.AltitudeMeters', location.altitudeMeters.toString());
   }
 
   if (location.cadastralParcelNumber) {
-    formData.append(
-      'InitialStay.Location.CadastralParcelNumber',
-      location.cadastralParcelNumber,
-    );
+    formData.append('InitialStay.Location.CadastralParcelNumber', location.cadastralParcelNumber);
   }
 
   if (location.description) {
@@ -61,11 +46,7 @@ export async function createApiary(
 
   await appendApiaryImage(formData, request.image);
 
-  return apiClient.post<CreateApiaryResponse, FormData>(
-    '/api/apiaries',
-    formData,
-    {
-      authenticated: true,
-    },
-  );
+  return apiClient.post<CreateApiaryResponse, FormData>('/api/apiaries', formData, {
+    authenticated: true,
+  });
 }

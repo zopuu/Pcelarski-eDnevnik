@@ -1,9 +1,6 @@
-import { apiClient } from "@/shared/api/api-client";
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  ForageProfile,
-  UpdateForageProfileRequest,
-} from "../types/forage-profile";
+import type { ForageProfile, UpdateForageProfileRequest } from '../types/forage-profile';
 
 export function updateForageProfile(
   apiaryId: string,

@@ -1,19 +1,11 @@
-import {
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 
-import {
-  Image,
-} from 'expo-image';
+import { Image } from 'expo-image';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type HiveHeaderIllustrationProps = {
-  colorHex:
-    | string
-    | null;
+  colorHex: string | null;
 
   size?: number;
 
@@ -28,8 +20,7 @@ export function HiveHeaderIllustration({
   size = ILLUSTRATION_SIZE,
   accessible = true,
 }: HiveHeaderIllustrationProps) {
-  const scale =
-    size / ILLUSTRATION_SIZE;
+  const scale = size / ILLUSTRATION_SIZE;
 
   return (
     <View
@@ -44,22 +35,13 @@ export function HiveHeaderIllustration({
       className="items-center justify-center"
       style={{
         width: size,
-        height:
-          ILLUSTRATION_HEIGHT *
-          scale,
+        height: ILLUSTRATION_HEIGHT * scale,
       }}
     >
       <Image
-        source={
-          require(
-            '../../../../assets/images/hive_background.png',
-          )
-        }
+        source={require('../../../../assets/images/hive_background.png')}
         contentFit="contain"
-        tintColor={
-          colorHex ??
-          colors.surfaceWarm
-        }
+        tintColor={colorHex ?? colors.surfaceWarm}
         style={{
           position: 'absolute',
           width: size,
@@ -73,11 +55,7 @@ export function HiveHeaderIllustration({
       />
 
       <Image
-        source={
-          require(
-            '../../../../assets/images/hive.png',
-          )
-        }
+        source={require('../../../../assets/images/hive.png')}
         contentFit="contain"
         style={{
           width: size,

@@ -12,8 +12,7 @@ export function useRecordHiveInsulation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: RecordHiveInsulationRequest) =>
-      recordHiveInsulation(request),
+    mutationFn: (request: RecordHiveInsulationRequest) => recordHiveInsulation(request),
     onSuccess: async (_response, request) => {
       await Promise.all([
         ...request.hives.flatMap((hive) => [

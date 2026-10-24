@@ -1,51 +1,20 @@
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  useState,
-} from 'react';
+import { useState } from 'react';
 
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
-import {
-  useCurrentColony,
-} from '../hooks/use-current-colony';
+import { useCurrentColony } from '../hooks/use-current-colony';
 
-import {
-  useCurrentQueen,
-} from '@/features/queens/hooks/use-current-queen';
-import {
-  QueenMarkingColorSwatch,
-} from '@/features/queens/components/queen-marking-color-swatch';
-import {
-  ActionOverflowSheet,
-} from '@/shared/components/contextual-action-bar/action-overflow-sheet';
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import type {
-  ContextualAction,
-} from '@/shared/components/contextual-action-bar/types';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
+import { useCurrentQueen } from '@/features/queens/hooks/use-current-queen';
+import { QueenMarkingColorSwatch } from '@/features/queens/components/queen-marking-color-swatch';
+import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import type { ContextualAction } from '@/shared/components/contextual-action-bar/types';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
 
 type ColonyDetailsScreenProps = {
   hiveId: string;
@@ -160,25 +129,16 @@ function getIntroductionOutcomeLabel(outcome: string | null) {
   }
 }
 
-export function ColonyDetailsScreen({
-  hiveId,
-  colonyId,
-}: ColonyDetailsScreenProps) {
-  const {
-    openDrawer,
-  } = useAppDrawer();
+export function ColonyDetailsScreen({ hiveId, colonyId }: ColonyDetailsScreenProps) {
+  const { openDrawer } = useAppDrawer();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const colonyQuery = useCurrentColony(hiveId);
-  const colony = colonyQuery.data?.id === colonyId
-    ? colonyQuery.data
-    : null;
+  const colony = colonyQuery.data?.id === colonyId ? colonyQuery.data : null;
   const queenQuery = useCurrentQueen(colony?.id ?? null);
   const queen = queenQuery.data ?? null;
 
-  const header = (
-    <AppHeader onMenuPress={openDrawer} />
-  );
+  const header = <AppHeader onMenuPress={openDrawer} />;
 
   if (colonyQuery.isLoading) {
     return (
@@ -202,9 +162,7 @@ export function ColonyDetailsScreen({
             }}
             className="mt-5 rounded-2xl bg-primary px-5 py-3"
           >
-            <Text className="font-bold text-background">
-              Pokušaj ponovo
-            </Text>
+            <Text className="font-bold text-background">Pokušaj ponovo</Text>
           </Pressable>
         </View>
       </Screen>
@@ -303,8 +261,7 @@ export function ColonyDetailsScreen({
                 accessibilityLabel: 'Izmeni podatke o društvu',
                 onPress: () => {
                   router.push({
-                    pathname:
-                      '/hives/[hiveId]/colonies/[colonyId]/edit',
+                    pathname: '/hives/[hiveId]/colonies/[colonyId]/edit',
                     params: {
                       hiveId,
                       colonyId,
@@ -338,9 +295,7 @@ export function ColonyDetailsScreen({
             }}
             className="mb-3 mt-3 self-start py-2"
           >
-            <Text className="text-sm font-semibold text-primary">
-              ← Košnica
-            </Text>
+            <Text className="text-sm font-semibold text-primary">← Košnica</Text>
           </Pressable>
 
           <Text className="text-xs font-bold uppercase tracking-widest text-muted">
@@ -376,9 +331,7 @@ export function ColonyDetailsScreen({
             <>
               <SectionTitle>Napomena o društvu</SectionTitle>
               <DetailsCard>
-                <Text className="text-base leading-6 text-foreground">
-                  {colony.notes}
-                </Text>
+                <Text className="text-base leading-6 text-foreground">{colony.notes}</Text>
               </DetailsCard>
             </>
           )}
@@ -388,9 +341,7 @@ export function ColonyDetailsScreen({
             <DetailsCard>
               <View className="items-center py-4">
                 <ActivityIndicator color={colors.primary} />
-                <Text className="mt-2 text-sm text-muted">
-                  Učitavanje matice...
-                </Text>
+                <Text className="mt-2 text-sm text-muted">Učitavanje matice...</Text>
               </View>
             </DetailsCard>
           ) : queen ? (
@@ -399,8 +350,7 @@ export function ColonyDetailsScreen({
               accessibilityLabel="Otvori detalje matice"
               onPress={() => {
                 router.push({
-                  pathname:
-                    '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
+                  pathname: '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
                   params: {
                     hiveId,
                     colonyId,
@@ -421,17 +371,19 @@ export function ColonyDetailsScreen({
               <InfoRow label="Odgajivač" value={queen.breeder ?? '—'} />
               <InfoRow
                 label="Boja"
-                value={
-                  <QueenMarkingColorSwatch
-                    colorHex={queen.markingColorHex}
-                  />
-                }
+                value={<QueenMarkingColorSwatch colorHex={queen.markingColorHex} />}
               />
               <InfoRow label="Izlegla se" value={formatDate(queen.emergedOn)} />
               <InfoRow label="Nabavljena" value={formatDate(queen.acquiredOn)} />
               <InfoRow label="U društvu od" value={formatDate(queen.startedOn)} />
-              <InfoRow label="Način dodavanja" value={getIntroductionMethodLabel(queen.introductionMethod)} />
-              <InfoRow label="Ishod dodavanja" value={getIntroductionOutcomeLabel(queen.introductionOutcome)} />
+              <InfoRow
+                label="Način dodavanja"
+                value={getIntroductionMethodLabel(queen.introductionMethod)}
+              />
+              <InfoRow
+                label="Ishod dodavanja"
+                value={getIntroductionOutcomeLabel(queen.introductionOutcome)}
+              />
               <InfoRow label="Napomena o boravku" value={queen.stayNotes ?? '—'} />
               <InfoRow label="Napomena o matici" value={queen.notes ?? '—'} last />
             </Pressable>
@@ -446,10 +398,11 @@ export function ColonyDetailsScreen({
                 className="mt-4 min-h-12 items-center justify-center rounded-2xl bg-primary px-4"
                 onPress={() =>
                   router.push({
-                    pathname: "/hives/[hiveId]/colonies/[colonyId]/queens/create",
+                    pathname: '/hives/[hiveId]/colonies/[colonyId]/queens/create',
                     params: { hiveId, colonyId },
                   } as never)
-                }>
+                }
+              >
                 <Text className="font-bold text-background">Dodaj maticu</Text>
               </Pressable>
             </DetailsCard>
@@ -479,19 +432,11 @@ function LoadingState({ label }: { label: string }) {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-8 text-lg font-bold text-foreground">{children}</Text>;
 }
 
 function DetailsCard({ children }: { children: React.ReactNode }) {
-  return (
-    <View className="rounded-3xl border border-border bg-surface px-5 py-1">
-      {children}
-    </View>
-  );
+  return <View className="rounded-3xl border border-border bg-surface px-5 py-1">{children}</View>;
 }
 
 function InfoRow({
@@ -504,22 +449,12 @@ function InfoRow({
   last?: boolean;
 }) {
   return (
-    <View
-      className={last
-        ? 'py-4'
-        : 'border-b border-border py-4'}
-    >
-      <Text className="text-xs font-semibold uppercase tracking-wide text-muted">
-        {label}
-      </Text>
+    <View className={last ? 'py-4' : 'border-b border-border py-4'}>
+      <Text className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</Text>
       {typeof value === 'string' ? (
-        <Text className="mt-1 text-base text-foreground">
-          {value}
-        </Text>
+        <Text className="mt-1 text-base text-foreground">{value}</Text>
       ) : (
-        <View className="mt-2">
-          {value}
-        </View>
+        <View className="mt-2">{value}</View>
       )}
     </View>
   );

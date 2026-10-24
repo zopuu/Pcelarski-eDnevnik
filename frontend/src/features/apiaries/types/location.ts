@@ -27,10 +27,9 @@ export type CreateLocationRequest = {
   description: string | null;
 };
 
-export type CreateLocationResponse =
-  ApiaryLocation & {
-    createdAtUtc: string;
-  };
+export type CreateLocationResponse = ApiaryLocation & {
+  createdAtUtc: string;
+};
 
 export type UpdateLocationRequest = {
   name: string | null;

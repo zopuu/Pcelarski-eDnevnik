@@ -9,8 +9,7 @@ export function useRecordSyrupFeeding() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: RecordSyrupFeedingRequest) =>
-      recordSyrupFeeding(request),
+    mutationFn: (request: RecordSyrupFeedingRequest) => recordSyrupFeeding(request),
 
     onSuccess: async (_response, request) => {
       await Promise.all(

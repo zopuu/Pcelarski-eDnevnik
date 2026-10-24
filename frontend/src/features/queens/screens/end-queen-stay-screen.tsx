@@ -1,64 +1,25 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  Controller,
-  useForm,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  Alert,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useCurrentQueen,
-} from '../hooks/use-current-queen';
-import {
-  useEndQueenStay,
-} from '../hooks/use-end-queen-stay';
-import {
-  endQueenStaySchema,
-} from '../schemas/end-queen-stay-schema';
-import type {
-  EndQueenStayFormValues,
-} from '../schemas/end-queen-stay-schema';
-import type {
-  QueenStatus,
-} from '../types/queen';
+import { useCurrentQueen } from '../hooks/use-current-queen';
+import { useEndQueenStay } from '../hooks/use-end-queen-stay';
+import { endQueenStaySchema } from '../schemas/end-queen-stay-schema';
+import type { EndQueenStayFormValues } from '../schemas/end-queen-stay-schema';
+import type { QueenStatus } from '../types/queen';
 
-import {
-  DatePickerField,
-} from '@/shared/components/date-picker-field';
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  getCurrentUtcDateOnly,
-} from '@/shared/utils/date-only';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { getCurrentUtcDateOnly } from '@/shared/utils/date-only';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
 
 type EndQueenStayScreenProps = {
   hiveId: string;
@@ -67,13 +28,7 @@ type EndQueenStayScreenProps = {
 };
 
 type EndQueenStayReason =
-  | 'dead'
-  | 'killed'
-  | 'sold'
-  | 'removed'
-  | 'swarmed'
-  | 'colonyWithoutQueen'
-  | 'other';
+  'dead' | 'killed' | 'sold' | 'removed' | 'swarmed' | 'colonyWithoutQueen' | 'other';
 
 const endReasonOptions: {
   value: EndQueenStayReason;
@@ -99,27 +54,18 @@ const queenStatusOptions: {
   { value: 'removed', label: 'Uklonjena' },
 ];
 
-export function EndQueenStayScreen({
-  hiveId,
-  colonyId,
-  queenId,
-}: EndQueenStayScreenProps) {
+export function EndQueenStayScreen({ hiveId, colonyId, queenId }: EndQueenStayScreenProps) {
   const { openDrawer } = useAppDrawer();
   const queenQuery = useCurrentQueen(colonyId);
   const mutation = useEndQueenStay(colonyId);
   const today = getCurrentUtcDateOnly();
-  const queen = queenQuery.data?.id === queenId
-    ? queenQuery.data
-    : null;
+  const queen = queenQuery.data?.id === queenId ? queenQuery.data : null;
 
   const {
     control,
     handleSubmit,
     setValue,
-    watch,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<EndQueenStayFormValues>({
     resolver: zodResolver(endQueenStaySchema),
     defaultValues: {
@@ -128,32 +74,26 @@ export function EndQueenStayScreen({
       queenStatus: 'active',
     },
   });
-  const endReason = watch('endReason');
+  const endReason = useWatch({ control, name: 'endReason' });
 
   const confirmCancellation = () => {
-    Alert.alert(
-      'Otkaži završavanje boravka?',
-      'Uneti podaci neće biti sačuvani.',
-      [
-        { text: 'Nastavi unos', style: 'cancel' },
-        {
-          text: 'Otkaži unos',
-          style: 'destructive',
-          onPress: () => {
-            router.back();
-          },
+    Alert.alert('Otkaži završavanje boravka?', 'Uneti podaci neće biti sačuvani.', [
+      { text: 'Nastavi unos', style: 'cancel' },
+      {
+        text: 'Otkaži unos',
+        style: 'destructive',
+        onPress: () => {
+          router.back();
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const onSubmit = async (values: EndQueenStayFormValues) => {
     try {
       await mutation.mutateAsync({
         endedOn: values.endedOn,
-        endReason: values.endReason === 'sold'
-          ? 'removed'
-          : values.endReason,
+        endReason: values.endReason === 'sold' ? 'removed' : values.endReason,
         queenStatus: values.queenStatus,
       });
 
@@ -223,14 +163,10 @@ export function EndQueenStayScreen({
           }}
           className="self-start py-2"
         >
-          <Text className="text-sm font-semibold text-primary">
-            ← Matica
-          </Text>
+          <Text className="text-sm font-semibold text-primary">← Matica</Text>
         </Pressable>
 
-        <Text className="mt-3 text-2xl font-bold text-foreground">
-          Završi boravak matice
-        </Text>
+        <Text className="mt-3 text-2xl font-bold text-foreground">Završi boravak matice</Text>
 
         <Text className="mt-1 text-sm text-muted">
           Boravak se zatvara bez evidentiranja nove matice u društvu.
@@ -238,9 +174,7 @@ export function EndQueenStayScreen({
 
         <StayFlow />
 
-        <Text className="mb-4 mt-5 text-lg font-bold text-foreground">
-          Završetak boravka
-        </Text>
+        <Text className="mb-4 mt-5 text-lg font-bold text-foreground">Završetak boravka</Text>
 
         <Controller
           control={control}
@@ -349,30 +283,26 @@ function StayFlow() {
   );
 }
 
-function FlowStep({
-  label,
-  active = false,
-}: {
-  label: string;
-  active?: boolean;
-}) {
+function FlowStep({ label, active = false }: { label: string; active?: boolean }) {
   return (
     <View className="w-24 items-center">
       <View className="h-10 w-10 items-center justify-center rounded-full bg-background">
-        <View className={`h-8 w-8 items-center justify-center rounded-full ${
-          active ? 'bg-primary' : 'bg-border'
-        }`}>
-          <Text className={`text-xs font-bold ${
-            active ? 'text-background' : 'text-muted'
-          }`}>
+        <View
+          className={`h-8 w-8 items-center justify-center rounded-full ${
+            active ? 'bg-primary' : 'bg-border'
+          }`}
+        >
+          <Text className={`text-xs font-bold ${active ? 'text-background' : 'text-muted'}`}>
             {active ? '1' : '2'}
           </Text>
         </View>
       </View>
 
-      <Text className={`mt-2 text-center text-[11px] font-semibold ${
-        active ? 'text-primary' : 'text-muted'
-      }`}>
+      <Text
+        className={`mt-2 text-center text-[11px] font-semibold ${
+          active ? 'text-primary' : 'text-muted'
+        }`}
+      >
         {label}
       </Text>
     </View>
@@ -396,9 +326,7 @@ function ChoiceGroup<T extends string>({
 }) {
   return (
     <View className="mb-5">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       {options.map((option) => {
         const selected = value === option.value;
@@ -417,29 +345,23 @@ function ChoiceGroup<T extends string>({
               onChange(option.value);
             }}
             className={`mb-2 flex-row items-center rounded-2xl border px-4 py-3 ${
-              selected
-                ? 'border-primary bg-primary/10'
-                : 'border-border bg-surface'
+              selected ? 'border-primary bg-primary/10' : 'border-border bg-surface'
             } ${disabled ? 'opacity-50' : ''}`}
           >
-            <View className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
-              selected ? 'border-primary' : 'border-muted'
-            }`}>
-              {selected && (
-                <View className="h-2.5 w-2.5 rounded-full bg-primary" />
-              )}
+            <View
+              className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
+                selected ? 'border-primary' : 'border-muted'
+              }`}
+            >
+              {selected && <View className="h-2.5 w-2.5 rounded-full bg-primary" />}
             </View>
 
-            <Text className="ml-3 flex-1 text-base text-foreground">
-              {option.label}
-            </Text>
+            <Text className="ml-3 flex-1 text-base text-foreground">{option.label}</Text>
           </Pressable>
         );
       })}
 
-      {error && (
-        <Text className="mt-1 text-sm text-error">{error}</Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }

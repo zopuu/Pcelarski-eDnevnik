@@ -1,59 +1,27 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  QueenMarkingColorPicker,
-} from '../components/queen-marking-color-picker';
-import {
-  useCreateQueen,
-} from '../hooks/use-create-queen';
-import {
-  createQueenSchema,
-} from '../schemas/create-queen-schema';
-import type {
-  CreateQueenFormInput,
-  CreateQueenFormValues,
-} from '../schemas/create-queen-schema';
-import type {
-  CreateQueenRequest,
-} from '../types/create-queen';
+import { QueenMarkingColorPicker } from '../components/queen-marking-color-picker';
+import { useCreateQueen } from '../hooks/use-create-queen';
+import { createQueenSchema } from '../schemas/create-queen-schema';
+import type { CreateQueenFormInput, CreateQueenFormValues } from '../schemas/create-queen-schema';
+import type { CreateQueenRequest } from '../types/create-queen';
 import type {
   QueenIntroductionMethod,
   QueenIntroductionOutcome,
   QueenOrigin,
 } from '../types/queen';
 
-import {
-  DatePickerField,
-} from '@/shared/components/date-picker-field';
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  getCurrentUtcDateOnly,
-} from '@/shared/utils/date-only';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { colors } from '@/shared/theme/colors';
+import { getCurrentUtcDateOnly } from '@/shared/utils/date-only';
 
 type CreateQueenScreenProps = {
   hiveId: string;
@@ -66,23 +34,14 @@ function optionalText(value: string): string | null {
   return normalized || null;
 }
 
-export function CreateQueenScreen({
-  hiveId,
-  colonyId,
-}: CreateQueenScreenProps) {
+export function CreateQueenScreen({ hiveId, colonyId }: CreateQueenScreenProps) {
   const mutation = useCreateQueen(colonyId);
   const today = getCurrentUtcDateOnly();
   const {
     control,
     handleSubmit,
-    formState: {
-      errors,
-    },
-  } = useForm<
-    CreateQueenFormInput,
-    unknown,
-    CreateQueenFormValues
-  >({
+    formState: { errors },
+  } = useForm<CreateQueenFormInput, unknown, CreateQueenFormValues>({
     resolver: zodResolver(createQueenSchema),
     defaultValues: {
       markingColorHex: '',
@@ -152,103 +111,175 @@ export function CreateQueenScreen({
 
         <SectionTitle>Podaci o matici</SectionTitle>
 
-        <Controller control={control} name="origin" render={({ field }) => (
-          <ChoiceGroup
-            label="Poreklo *"
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.origin?.message}
-            options={[
-              { value: 'purchased', label: 'Kupljena' },
-              { value: 'produced', label: 'Odgojena' },
-              { value: 'unknown', label: 'Nepoznato' },
-            ] as { value: QueenOrigin; label: string }[]}
-          />
-        )} />
+        <Controller
+          control={control}
+          name="origin"
+          render={({ field }) => (
+            <ChoiceGroup
+              label="Poreklo *"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.origin?.message}
+              options={
+                [
+                  { value: 'purchased', label: 'Kupljena' },
+                  { value: 'produced', label: 'Odgojena' },
+                  { value: 'unknown', label: 'Nepoznato' },
+                ] as { value: QueenOrigin; label: string }[]
+              }
+            />
+          )}
+        />
 
-        <Controller control={control} name="markingColorHex" render={({ field }) => (
-          <QueenMarkingColorPicker
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.markingColorHex?.message}
-          />
-        )} />
+        <Controller
+          control={control}
+          name="markingColorHex"
+          render={({ field }) => (
+            <QueenMarkingColorPicker
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.markingColorHex?.message}
+            />
+          )}
+        />
 
-        <Controller control={control} name="breed" render={({ field }) => (
-          <FormInput label="Rasa" value={field.value} onChangeText={field.onChange} error={errors.breed?.message} />
-        )} />
-        <Controller control={control} name="breeder" render={({ field }) => (
-          <FormInput label="Odgajivač" value={field.value} onChangeText={field.onChange} error={errors.breeder?.message} />
-        )} />
-        <Controller control={control} name="emergedOn" render={({ field }) => (
-          <DatePickerField
-            label="Datum izleganja"
-            value={field.value}
-            onChange={field.onChange}
-            maximumDate={acquiredOn && acquiredOn < today ? acquiredOn : today}
-            error={errors.emergedOn?.message}
-          />
-        )} />
-        <Controller control={control} name="acquiredOn" render={({ field }) => (
-          <DatePickerField
-            label="Datum nabavke"
-            value={field.value}
-            onChange={field.onChange}
-            minimumDate={emergedOn || undefined}
-            maximumDate={today}
-            error={errors.acquiredOn?.message}
-          />
-        )} />
-        <Controller control={control} name="notes" render={({ field }) => (
-          <FormInput label="Napomena o matici" value={field.value} onChangeText={field.onChange} error={errors.notes?.message} multiline />
-        )} />
+        <Controller
+          control={control}
+          name="breed"
+          render={({ field }) => (
+            <FormInput
+              label="Rasa"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={errors.breed?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="breeder"
+          render={({ field }) => (
+            <FormInput
+              label="Odgajivač"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={errors.breeder?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="emergedOn"
+          render={({ field }) => (
+            <DatePickerField
+              label="Datum izleganja"
+              value={field.value}
+              onChange={field.onChange}
+              maximumDate={acquiredOn && acquiredOn < today ? acquiredOn : today}
+              error={errors.emergedOn?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="acquiredOn"
+          render={({ field }) => (
+            <DatePickerField
+              label="Datum nabavke"
+              value={field.value}
+              onChange={field.onChange}
+              minimumDate={emergedOn || undefined}
+              maximumDate={today}
+              error={errors.acquiredOn?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="notes"
+          render={({ field }) => (
+            <FormInput
+              label="Napomena o matici"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={errors.notes?.message}
+              multiline
+            />
+          )}
+        />
 
         <SectionTitle>Boravak u društvu</SectionTitle>
 
-        <Controller control={control} name="startedOn" render={({ field }) => (
-          <DatePickerField
-            label="Početak boravka *"
-            value={field.value}
-            onChange={field.onChange}
-            minimumDate={emergedOn || undefined}
-            maximumDate={today}
-            required
-            error={errors.startedOn?.message}
-          />
-        )} />
-        <Controller control={control} name="introductionMethod" render={({ field }) => (
-          <ChoiceGroup
-            label="Način uvođenja *"
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.introductionMethod?.message}
-            options={[
-              { value: 'placement', label: 'Dodavanjem' },
-              { value: 'caged', label: 'U kavezu' },
-              { value: 'direct', label: 'Direktno' },
-              { value: 'unknown', label: 'Nepoznato' },
-              { value: 'other', label: 'Drugo' },
-            ] as { value: QueenIntroductionMethod; label: string }[]}
-          />
-        )} />
-        <Controller control={control} name="introductionOutcome" render={({ field }) => (
-          <ChoiceGroup
-            label="Ishod uvođenja"
-            value={field.value}
-            onChange={(value) => field.onChange(field.value === value ? null : value)}
-            error={errors.introductionOutcome?.message}
-            options={[
-              { value: 'accepted', label: 'Prihvaćena' },
-              { value: 'killed', label: 'Ubijena' },
-              { value: 'missing', label: 'Nestala' },
-              { value: 'unverified', label: 'Nije provereno' },
-              { value: 'other', label: 'Drugo' },
-            ] as { value: QueenIntroductionOutcome; label: string }[]}
-          />
-        )} />
-        <Controller control={control} name="stayNotes" render={({ field }) => (
-          <FormInput label="Napomena o boravku" value={field.value} onChangeText={field.onChange} error={errors.stayNotes?.message} multiline />
-        )} />
+        <Controller
+          control={control}
+          name="startedOn"
+          render={({ field }) => (
+            <DatePickerField
+              label="Početak boravka *"
+              value={field.value}
+              onChange={field.onChange}
+              minimumDate={emergedOn || undefined}
+              maximumDate={today}
+              required
+              error={errors.startedOn?.message}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="introductionMethod"
+          render={({ field }) => (
+            <ChoiceGroup
+              label="Način uvođenja *"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.introductionMethod?.message}
+              options={
+                [
+                  { value: 'placement', label: 'Dodavanjem' },
+                  { value: 'caged', label: 'U kavezu' },
+                  { value: 'direct', label: 'Direktno' },
+                  { value: 'unknown', label: 'Nepoznato' },
+                  { value: 'other', label: 'Drugo' },
+                ] as { value: QueenIntroductionMethod; label: string }[]
+              }
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="introductionOutcome"
+          render={({ field }) => (
+            <ChoiceGroup
+              label="Ishod uvođenja"
+              value={field.value}
+              onChange={(value) => field.onChange(field.value === value ? null : value)}
+              error={errors.introductionOutcome?.message}
+              options={
+                [
+                  { value: 'accepted', label: 'Prihvaćena' },
+                  { value: 'killed', label: 'Ubijena' },
+                  { value: 'missing', label: 'Nestala' },
+                  { value: 'unverified', label: 'Nije provereno' },
+                  { value: 'other', label: 'Drugo' },
+                ] as { value: QueenIntroductionOutcome; label: string }[]
+              }
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="stayNotes"
+          render={({ field }) => (
+            <FormInput
+              label="Napomena o boravku"
+              value={field.value}
+              onChangeText={field.onChange}
+              error={errors.stayNotes?.message}
+              multiline
+            />
+          )}
+        />
 
         {mutation.isError && (
           <Text className="mb-4 text-sm text-error">
@@ -307,9 +338,11 @@ function ChoiceGroup<T extends string>({
               selected ? 'border-primary bg-primary/10' : 'border-border bg-surface'
             }`}
           >
-            <View className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
-              selected ? 'border-primary' : 'border-muted'
-            }`}>
+            <View
+              className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
+                selected ? 'border-primary' : 'border-muted'
+              }`}
+            >
               {selected && <View className="h-2.5 w-2.5 rounded-full bg-primary" />}
             </View>
             <Text className="ml-3 flex-1 text-base text-foreground">{option.label}</Text>

@@ -1,22 +1,9 @@
-import {
-  Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  useState,
-} from 'react';
+import { Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
 
-import type {
-  ApiaryStatus,
-  ApiaryType,
-} from '../types/apiary';
+import type { ApiaryStatus, ApiaryType } from '../types/apiary';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type ApiaryListFiltersProps = {
   nameSearch: string;
@@ -60,32 +47,18 @@ export function ApiaryListFilters({
         <CompactFilter
           label="Status"
           selectedValue={selectedStatus ?? 'all'}
-          options={[
-            { value: 'all', label: 'Status' },
-            ...statusOptions,
-          ]}
+          options={[{ value: 'all', label: 'Status' }, ...statusOptions]}
           onSelect={(value) => {
-            onStatusChange(
-              value === 'all'
-                ? null
-                : value as ApiaryStatus,
-            );
+            onStatusChange(value === 'all' ? null : (value as ApiaryStatus));
           }}
         />
 
         <CompactFilter
           label="Tip"
           selectedValue={selectedType ?? 'all'}
-          options={[
-            { value: 'all', label: 'Tip' },
-            ...typeOptions,
-          ]}
+          options={[{ value: 'all', label: 'Tip' }, ...typeOptions]}
           onSelect={(value) => {
-            onTypeChange(
-              value === 'all'
-                ? null
-                : value as ApiaryType,
-            );
+            onTypeChange(value === 'all' ? null : (value as ApiaryType));
           }}
         />
       </View>
@@ -110,9 +83,7 @@ function CompactFilter({
   onSelect: (value: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find(
-    (option) => option.value === selectedValue,
-  );
+  const selectedOption = options.find((option) => option.value === selectedValue);
 
   return (
     <>
@@ -124,10 +95,7 @@ function CompactFilter({
         }}
         className="h-11 flex-1 flex-row items-center justify-center gap-1 rounded-2xl border border-border bg-surface px-2"
       >
-        <Text
-          numberOfLines={1}
-          className="text-sm font-semibold text-foreground"
-        >
+        <Text numberOfLines={1} className="text-sm font-semibold text-foreground">
           {selectedOption?.label ?? label}
         </Text>
         <Text className="text-xs text-muted">⌄</Text>
@@ -153,9 +121,7 @@ function CompactFilter({
             }}
             className="rounded-t-3xl bg-background px-5 pb-8 pt-5"
           >
-            <Text className="mb-4 text-xl font-bold text-foreground">
-              {label}
-            </Text>
+            <Text className="mb-4 text-xl font-bold text-foreground">{label}</Text>
 
             {options.map((option) => {
               const selected = option.value === selectedValue;
@@ -177,11 +143,7 @@ function CompactFilter({
                   <Text className="flex-1 text-base font-semibold text-foreground">
                     {option.label}
                   </Text>
-                  {selected && (
-                    <Text className="text-lg font-bold text-primary">
-                      ✓
-                    </Text>
-                  )}
+                  {selected && <Text className="text-lg font-bold text-primary">✓</Text>}
                 </Pressable>
               );
             })}

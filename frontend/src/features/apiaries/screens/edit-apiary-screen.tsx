@@ -1,130 +1,65 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useApiary,
-} from '@/features/apiaries/hooks/use-apiary';
+import { useApiary } from '@/features/apiaries/hooks/use-apiary';
 
-import {
-  useCurrentApiaryStay,
-} from '@/features/apiaries/hooks/use-current-apiary-stay';
+import { useCurrentApiaryStay } from '@/features/apiaries/hooks/use-current-apiary-stay';
 
-import {
-  useUpdateApiary,
-} from '@/features/apiaries/hooks/use-update-apiary';
-import {
-  ApiaryImagePicker,
-} from '@/features/apiaries/components/apiary-image-picker';
+import { useUpdateApiary } from '@/features/apiaries/hooks/use-update-apiary';
+import { ApiaryImagePicker } from '@/features/apiaries/components/apiary-image-picker';
 
-import {
-  useLocation,
-} from '@/features/apiaries/hooks/use-location';
+import { useLocation } from '@/features/apiaries/hooks/use-location';
 
-import {
-  updateApiarySchema,
-} from '@/features/apiaries/schemas/update-apiary-schema';
+import { updateApiarySchema } from '@/features/apiaries/schemas/update-apiary-schema';
 
-import type {
-  UpdateApiaryFormValues,
-} from '@/features/apiaries/schemas/update-apiary-schema';
+import type { UpdateApiaryFormValues } from '@/features/apiaries/schemas/update-apiary-schema';
 
-import type {
-  HiveEntranceOrientation,
-} from '@/features/apiaries/types/apiary-stay';
-import type {
-  ApiaryImageUpload,
-} from '@/features/apiaries/types/apiary-image';
+import type { HiveEntranceOrientation } from '@/features/apiaries/types/apiary-stay';
+import type { ApiaryImageUpload } from '@/features/apiaries/types/apiary-image';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
-import {
-  MapLocationPicker,
-} from '@/shared/components/map-location-picker/map-location-picker';
+import { MapLocationPicker } from '@/shared/components/map-location-picker/map-location-picker';
 
-import type {
-  GeographicCoordinates,
-} from '@/shared/api/open-topo-data';
+import type { GeographicCoordinates } from '@/shared/api/open-topo-data';
 
 type EditApiaryScreenProps = {
   apiaryId: string;
 };
 
-function optionalText(
-  value: string,
-): string | null {
-  const trimmed =
-    value.trim();
+function optionalText(value: string): string | null {
+  const trimmed = value.trim();
 
-  return trimmed.length > 0
-    ? trimmed
-    : null;
+  return trimmed.length > 0 ? trimmed : null;
 }
 
-function parseCoordinate(
-  value: string,
-): number {
-  return Number(
-    value
-      .trim()
-      .replace(',', '.'),
-  );
+function parseCoordinate(value: string): number {
+  return Number(value.trim().replace(',', '.'));
 }
 
-function parseSelectedCoordinate(
-  value: string,
-): number | null {
+function parseSelectedCoordinate(value: string): number | null {
   if (!value.trim()) {
     return null;
   }
 
-  const coordinate =
-    parseCoordinate(value);
+  const coordinate = parseCoordinate(value);
 
-  return Number.isFinite(coordinate)
-    ? coordinate
-    : null;
+  return Number.isFinite(coordinate) ? coordinate : null;
 }
 
-function parseOptionalInteger(
-  value: string,
-): number | null {
-  const trimmed =
-    value.trim();
+function parseOptionalInteger(value: string): number | null {
+  const trimmed = value.trim();
 
-  return trimmed.length > 0
-    ? Number(trimmed)
-    : null;
+  return trimmed.length > 0 ? Number(trimmed) : null;
 }
 
 const orientationOptions: {
@@ -165,287 +100,174 @@ const orientationOptions: {
   },
 ];
 
-export function EditApiaryScreen({
-  apiaryId,
-}: EditApiaryScreenProps) {
-  const {
-    data: apiary,
-    isLoading:
-      isApiaryLoading,
-    isError:
-      isApiaryError,
-  } =
-    useApiary(
-      apiaryId,
-    );
+export function EditApiaryScreen({ apiaryId }: EditApiaryScreenProps) {
+  const { data: apiary, isLoading: isApiaryLoading, isError: isApiaryError } = useApiary(apiaryId);
 
   const {
     data: currentStay,
-    isLoading:
-      isStayLoading,
-    isError:
-      isStayError,
-  } =
-    useCurrentApiaryStay(
-      apiaryId,
-    );
+    isLoading: isStayLoading,
+    isError: isStayError,
+  } = useCurrentApiaryStay(apiaryId);
 
   const {
     data: location,
-    isLoading:
-      isLocationLoading,
-    isError:
-      isLocationError,
-  } =
-    useLocation(
-      currentStay?.locationId ?? '',
-    );
+    isLoading: isLocationLoading,
+    isError: isLocationError,
+  } = useLocation(currentStay?.locationId ?? '');
 
-  const updateMutation =
-    useUpdateApiary();
-  const [image, setImage] =
-    useState<ApiaryImageUpload | null>(null);
+  const updateMutation = useUpdateApiary();
+  const [image, setImage] = useState<ApiaryImageUpload | null>(null);
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    formState: {
-      errors,
-      isDirty,
+    formState: { errors, isDirty },
+  } = useForm<UpdateApiaryFormValues>({
+    resolver: zodResolver(updateApiarySchema),
+
+    defaultValues: {
+      name: '',
+
+      identificationNumber: '',
+
+      type: undefined,
+
+      latitude: '',
+      longitude: '',
+      altitudeMeters: '',
+
+      orientation: null,
     },
-  } =
-    useForm<UpdateApiaryFormValues>({
-      resolver:
-        zodResolver(
-          updateApiarySchema,
-        ),
+  });
 
-      defaultValues: {
-        name: '',
+  const latitude = useWatch({
+    control,
+    name: 'latitude',
+  });
 
-        identificationNumber:
-          '',
+  const longitude = useWatch({
+    control,
+    name: 'longitude',
+  });
 
-        type: undefined,
+  const [isElevationLoading, setIsElevationLoading] = useState(false);
 
-        latitude: '',
-        longitude: '',
-        altitudeMeters: '',
+  const hasManualAltitudeOverride = useRef(false);
 
-        orientation:
-          null,
-      },
-    });
+  const latitudeNumber = parseSelectedCoordinate(latitude);
 
-  const latitude =
-    useWatch({
-      control,
-      name: 'latitude',
-    });
-
-  const longitude =
-    useWatch({
-      control,
-      name: 'longitude',
-    });
-
-  const [
-    isElevationLoading,
-    setIsElevationLoading,
-  ] = useState(false);
-
-  const hasManualAltitudeOverride =
-    useRef(false);
-
-  const latitudeNumber =
-    parseSelectedCoordinate(latitude);
-
-  const longitudeNumber =
-    parseSelectedCoordinate(longitude);
+  const longitudeNumber = parseSelectedCoordinate(longitude);
 
   const selectedLocation =
-    latitudeNumber !== null &&
-    longitudeNumber !== null
+    latitudeNumber !== null && longitudeNumber !== null
       ? {
-        latitude: latitudeNumber,
-        longitude: longitudeNumber,
-      }
+          latitude: latitudeNumber,
+          longitude: longitudeNumber,
+        }
       : null;
 
   useEffect(() => {
-    if (
-      !apiary ||
-      !currentStay ||
-      !location
-    ) {
+    if (!apiary || !currentStay || !location) {
       return;
     }
 
     reset({
-      name:
-        apiary.name,
+      name: apiary.name,
 
-      identificationNumber:
-        apiary
-          .identificationNumber ??
-        '',
+      identificationNumber: apiary.identificationNumber ?? '',
 
-      type:
-        apiary.type,
+      type: apiary.type,
 
-      latitude:
-        location.latitude.toString(),
+      latitude: location.latitude.toString(),
 
-      longitude:
-        location.longitude.toString(),
+      longitude: location.longitude.toString(),
 
-      altitudeMeters:
-        location.altitudeMeters
-          ?.toString() ??
-        '',
+      altitudeMeters: location.altitudeMeters?.toString() ?? '',
 
-      orientation:
-        currentStay
-          .orientation,
+      orientation: currentStay.orientation,
     });
-  }, [
-    apiary,
-    currentStay,
-    location,
-    reset,
-  ]);
+  }, [apiary, currentStay, location, reset]);
 
-  const handleLocationChange = (
-    coordinates: GeographicCoordinates,
-  ) => {
-    hasManualAltitudeOverride.current =
-      false;
+  const handleLocationChange = (coordinates: GeographicCoordinates) => {
+    hasManualAltitudeOverride.current = false;
 
-    setValue(
-      'latitude',
-      coordinates.latitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('latitude', coordinates.latitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
 
-    setValue(
-      'longitude',
-      coordinates.longitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('longitude', coordinates.longitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
-  const handleAltitudeChange = (
-    altitudeMeters: number | null,
-  ) => {
+  const handleAltitudeChange = (altitudeMeters: number | null) => {
     if (hasManualAltitudeOverride.current) {
       return;
     }
 
-    setValue(
-      'altitudeMeters',
-      altitudeMeters?.toString() ?? '',
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('altitudeMeters', altitudeMeters?.toString() ?? '', {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
-  const onSubmit =
-    async (
-      values:
-        UpdateApiaryFormValues,
-    ) => {
-      if (
-        !currentStay ||
-        !location
-      ) {
-        return;
-      }
+  const onSubmit = async (values: UpdateApiaryFormValues) => {
+    if (!currentStay || !location) {
+      return;
+    }
 
-      try {
-        await updateMutation
-          .mutateAsync({
-            apiaryId,
+    try {
+      await updateMutation.mutateAsync({
+        apiaryId,
 
-            stayId:
-              currentStay.id,
+        stayId: currentStay.id,
 
-            locationId:
-              location.id,
+        locationId: location.id,
 
-            apiary: {
-              image,
-              name:
-                values.name,
+        apiary: {
+          image,
+          name: values.name,
 
-              identificationNumber:
-                optionalText(
-                  values
-                    .identificationNumber,
-                ),
+          identificationNumber: optionalText(values.identificationNumber),
 
-              type:
-                values.type,
-            },
+          type: values.type,
+        },
 
-            stay: {
-              orientation:
-                values.orientation,
-            },
+        stay: {
+          orientation: values.orientation,
+        },
 
-            location: {
-              name:
-                location.name,
+        location: {
+          name: location.name,
 
-              latitude:
-                parseCoordinate(
-                  values.latitude,
-                ),
+          latitude: parseCoordinate(values.latitude),
 
-              longitude:
-                parseCoordinate(
-                  values.longitude,
-                ),
+          longitude: parseCoordinate(values.longitude),
 
-              altitudeMeters:
-                parseOptionalInteger(
-                  values.altitudeMeters,
-                ),
+          altitudeMeters: parseOptionalInteger(values.altitudeMeters),
 
-              cadastralParcelNumber:
-                location
-                  .cadastralParcelNumber,
+          cadastralParcelNumber: location.cadastralParcelNumber,
 
-              description:
-                location.description,
-            },
-          });
+          description: location.description,
+        },
+      });
 
-        router.back();
-      } catch {
-        /*
-         * Mutation error is
-         * displayed below.
-         */
-      }
-    };
+      router.back();
+    } catch {
+      /*
+       * Mutation error is
+       * displayed below.
+       */
+    }
+  };
 
-  const isLoading =
-    isApiaryLoading ||
-    isStayLoading ||
-    isLocationLoading;
+  const isLoading = isApiaryLoading || isStayLoading || isLocationLoading;
 
-  const hasChanges =
-    isDirty || image !== null;
+  const hasChanges = isDirty || image !== null;
 
   if (isLoading) {
     return (
@@ -457,12 +279,7 @@ export function EditApiaryScreen({
           bg-background
         "
       >
-        <ActivityIndicator
-          size="large"
-          color={
-            colors.primary
-          }
-        />
+        <ActivityIndicator size="large" color={colors.primary} />
 
         <Text
           className="
@@ -476,10 +293,7 @@ export function EditApiaryScreen({
     );
   }
 
-  if (
-    isApiaryError ||
-    !apiary
-  ) {
+  if (isApiaryError || !apiary) {
     return (
       <LoadError
         message="
@@ -490,12 +304,7 @@ export function EditApiaryScreen({
     );
   }
 
-  if (
-    isStayError ||
-    !currentStay ||
-    isLocationError ||
-    !location
-  ) {
+  if (isStayError || !currentStay || isLocationError || !location) {
     return (
       <LoadError
         message="
@@ -516,9 +325,7 @@ export function EditApiaryScreen({
       <KeyboardAwareScrollView
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 48,
@@ -562,8 +369,7 @@ export function EditApiaryScreen({
             text-muted
           "
         >
-          Izmenite osnovne podatke
-          o pčelinjaku.
+          Izmenite osnovne podatke o pčelinjaku.
         </Text>
 
         <Text
@@ -581,22 +387,13 @@ export function EditApiaryScreen({
         <Controller
           control={control}
           name="name"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Naziv *"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="npr. Glavni pčelinjak"
-              error={
-                errors.name
-                  ?.message
-              }
+              error={errors.name?.message}
             />
           )}
         />
@@ -604,24 +401,14 @@ export function EditApiaryScreen({
         <Controller
           control={control}
           name="identificationNumber"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Identifikacioni broj"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="RS123456789012"
               autoCapitalize="characters"
-              error={
-                errors
-                  .identificationNumber
-                  ?.message
-              }
+              error={errors.identificationNumber?.message}
             />
           )}
         />
@@ -629,9 +416,7 @@ export function EditApiaryScreen({
         <Controller
           control={control}
           name="type"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <View className="mb-4">
               <Text
                 className="
@@ -652,27 +437,17 @@ export function EditApiaryScreen({
               >
                 <Choice
                   label="Stacionarni"
-                  selected={
-                    field.value ===
-                    'stationary'
-                  }
+                  selected={field.value === 'stationary'}
                   onPress={() => {
-                    field.onChange(
-                      'stationary',
-                    );
+                    field.onChange('stationary');
                   }}
                 />
 
                 <Choice
                   label="Seleći"
-                  selected={
-                    field.value ===
-                    'migratory'
-                  }
+                  selected={field.value === 'migratory'}
                   onPress={() => {
-                    field.onChange(
-                      'migratory',
-                    );
+                    field.onChange('migratory');
                   }}
                 />
               </View>
@@ -711,60 +486,37 @@ export function EditApiaryScreen({
             text-muted
           "
         >
-          Dodirnite satelitski snimak da
-          promenite poziciju. Koordinate
-          i nadmorska visina se popunjavaju
-          automatski.
+          Dodirnite satelitski snimak da promenite poziciju. Koordinate i nadmorska visina se
+          popunjavaju automatski.
         </Text>
 
         <MapLocationPicker
           value={selectedLocation}
-          onLocationChange={
-            handleLocationChange
-          }
-          onAltitudeChange={
-            handleAltitudeChange
-          }
-          onElevationLoadingChange={
-            setIsElevationLoading
-          }
-          error={
-            errors.latitude?.message ??
-            errors.longitude?.message
-          }
+          onLocationChange={handleLocationChange}
+          onAltitudeChange={handleAltitudeChange}
+          onElevationLoadingChange={setIsElevationLoading}
+          error={errors.latitude?.message ?? errors.longitude?.message}
         />
 
         <Controller
           control={control}
           name="altitudeMeters"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Nadmorska visina (m)"
-              value={
-                field.value
-              }
+              value={field.value}
               onChangeText={(value) => {
-                hasManualAltitudeOverride.current =
-                  true;
+                hasManualAltitudeOverride.current = true;
                 field.onChange(value);
               }}
               placeholder="npr. 85"
               keyboardType="numbers-and-punctuation"
-              error={
-                errors.altitudeMeters
-                  ?.message
-              }
+              error={errors.altitudeMeters?.message}
             />
           )}
         />
 
-        <ApiaryImagePicker
-          value={image}
-          imageUrl={apiary.imageUrl}
-          onChange={setImage}
-        />
+        <ApiaryImagePicker value={image} imageUrl={apiary.imageUrl} onChange={setImage} />
 
         <Text
           className="
@@ -785,16 +537,13 @@ export function EditApiaryScreen({
             text-muted
           "
         >
-          Odaberite smer prema kome
-          su okrenuta leta košnica.
+          Odaberite smer prema kome su okrenuta leta košnica.
         </Text>
 
         <Controller
           control={control}
           name="orientation"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <View className="mb-4">
               <View
                 className="
@@ -803,34 +552,19 @@ export function EditApiaryScreen({
                   gap-2
                 "
               >
-                {orientationOptions.map(
-                  (option) => (
-                    <OrientationChoice
-                      key={
-                        option.value
-                      }
-                      label={
-                        option.label
-                      }
-                      selected={
-                        field.value ===
-                        option.value
-                      }
-                      onPress={() => {
-                        field.onChange(
-                          field.value ===
-                            option.value
-                            ? null
-                            : option.value,
-                        );
-                      }}
-                    />
-                  ),
-                )}
+                {orientationOptions.map((option) => (
+                  <OrientationChoice
+                    key={option.value}
+                    label={option.label}
+                    selected={field.value === option.value}
+                    onPress={() => {
+                      field.onChange(field.value === option.value ? null : option.value);
+                    }}
+                  />
+                ))}
               </View>
 
-              {errors.orientation
-                ?.message && (
+              {errors.orientation?.message && (
                 <Text
                   className="
                     mt-2
@@ -838,19 +572,14 @@ export function EditApiaryScreen({
                     text-error
                   "
                 >
-                  {
-                    errors
-                      .orientation
-                      .message
-                  }
+                  {errors.orientation.message}
                 </Text>
               )}
             </View>
           )}
         />
 
-        {updateMutation
-          .isError && (
+        {updateMutation.isError && (
           <View
             className="
               mb-4
@@ -868,28 +597,16 @@ export function EditApiaryScreen({
                 text-error
               "
             >
-              {updateMutation
-                .error instanceof
-              Error
-                ? updateMutation
-                    .error.message
+              {updateMutation.error instanceof Error
+                ? updateMutation.error.message
                 : 'Pčelinjak nije moguće ažurirati.'}
             </Text>
           </View>
         )}
 
         <Pressable
-          disabled={
-            updateMutation
-              .isPending ||
-            isElevationLoading ||
-            !hasChanges
-          }
-          onPress={
-            handleSubmit(
-              onSubmit,
-            )
-          }
+          disabled={updateMutation.isPending || isElevationLoading || !hasChanges}
+          onPress={handleSubmit(onSubmit)}
           className={`
             min-h-14
             items-center
@@ -897,14 +614,7 @@ export function EditApiaryScreen({
             rounded-2xl
             bg-primary
             px-5
-            ${
-              updateMutation
-                .isPending ||
-              isElevationLoading ||
-              !hasChanges
-                ? 'opacity-60'
-                : ''
-            }
+            ${updateMutation.isPending || isElevationLoading || !hasChanges ? 'opacity-60' : ''}
           `}
         >
           <Text
@@ -914,11 +624,7 @@ export function EditApiaryScreen({
               text-background
             "
           >
-            {updateMutation
-              .isPending ||
-              isElevationLoading
-              ? 'Čuvanje...'
-              : 'Sačuvaj izmene'}
+            {updateMutation.isPending || isElevationLoading ? 'Čuvanje...' : 'Sačuvaj izmene'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -930,9 +636,7 @@ type LoadErrorProps = {
   message: string;
 };
 
-function LoadError({
-  message,
-}: LoadErrorProps) {
+function LoadError({ message }: LoadErrorProps) {
   return (
     <View
       className="
@@ -983,21 +687,14 @@ type FormTextInputProps = {
   label: string;
   value: string;
 
-  onChangeText:
-    (value: string) => void;
+  onChangeText: (value: string) => void;
 
   placeholder?: string;
   error?: string;
 
-  keyboardType?:
-    | 'default'
-    | 'numbers-and-punctuation';
+  keyboardType?: 'default' | 'numbers-and-punctuation';
 
-  autoCapitalize?:
-    | 'none'
-    | 'sentences'
-    | 'words'
-    | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 };
 
 function FormTextInput({
@@ -1024,21 +721,11 @@ function FormTextInput({
 
       <TextInput
         value={value}
-        onChangeText={
-          onChangeText
-        }
-        placeholder={
-          placeholder
-        }
-        placeholderTextColor={
-          colors.muted
-        }
-        autoCapitalize={
-          autoCapitalize
-        }
-        keyboardType={
-          keyboardType
-        }
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.muted}
+        autoCapitalize={autoCapitalize}
+        keyboardType={keyboardType}
         className={`
           h-14
           rounded-2xl
@@ -1047,11 +734,7 @@ function FormTextInput({
           px-4
           text-base
           text-foreground
-          ${
-            error
-              ? 'border-error'
-              : 'border-border'
-          }
+          ${error ? 'border-error' : 'border-border'}
         `}
       />
 
@@ -1074,15 +757,10 @@ type ChoiceProps = {
   label: string;
   selected: boolean;
 
-  onPress:
-    () => void;
+  onPress: () => void;
 };
 
-function Choice({
-  label,
-  selected,
-  onPress,
-}: ChoiceProps) {
+function Choice({ label, selected, onPress }: ChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -1093,21 +771,13 @@ function Choice({
         border
         px-4
         py-3
-        ${
-          selected
-            ? 'border-primary bg-primary'
-            : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
         className={`
           font-semibold
-          ${
-            selected
-              ? 'text-background'
-              : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}
@@ -1120,15 +790,10 @@ type OrientationChoiceProps = {
   label: string;
   selected: boolean;
 
-  onPress:
-    () => void;
+  onPress: () => void;
 };
 
-function OrientationChoice({
-  label,
-  selected,
-  onPress,
-}: OrientationChoiceProps) {
+function OrientationChoice({ label, selected, onPress }: OrientationChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -1140,22 +805,14 @@ function OrientationChoice({
         border
         px-3
         py-3
-        ${
-          selected
-            ? 'border-primary bg-primary'
-            : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
         className={`
           text-sm
           font-semibold
-          ${
-            selected
-              ? 'text-background'
-              : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}

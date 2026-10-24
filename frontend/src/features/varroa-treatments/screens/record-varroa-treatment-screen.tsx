@@ -1,20 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import {
-  useForm,
-  Controller,
-  useWatch,
-  type Control,
-  type UseFormSetError,
-} from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useForm, Controller, useWatch, type Control, type UseFormSetError } from 'react-hook-form';
+import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import {
@@ -77,9 +64,7 @@ const doseUnitOptions: readonly {
 
 const today = formatDateOnly(new Date());
 
-export function RecordVarroaTreatmentScreen(
-  props: RecordVarroaTreatmentScreenProps,
-) {
+export function RecordVarroaTreatmentScreen(props: RecordVarroaTreatmentScreenProps) {
   const { openDrawer } = useAppDrawer();
   const hiveId = props.hiveId ?? '';
   const apiaryId = props.apiaryId ?? '';
@@ -110,9 +95,7 @@ export function RecordVarroaTreatmentScreen(
     name: 'selectedHiveIds',
   });
 
-  const isLoadingHives = isSingleHive
-    ? hiveQuery.isLoading
-    : apiaryHivesQuery.isLoading;
+  const isLoadingHives = isSingleHive ? hiveQuery.isLoading : apiaryHivesQuery.isLoading;
   const hasHiveError = isSingleHive
     ? hiveQuery.isError || !hiveQuery.data
     : apiaryHivesQuery.isError || !apiaryHivesQuery.data;
@@ -125,8 +108,7 @@ export function RecordVarroaTreatmentScreen(
   const onSubmit = async (values: RecordVarroaTreatmentFormValues) => {
     try {
       const response = await mutation.mutateAsync(toRequest(values));
-      const hiveWord =
-        response.affectedHiveCount === 1 ? 'košnicu' : 'košnice';
+      const hiveWord = response.affectedHiveCount === 1 ? 'košnicu' : 'košnice';
 
       Alert.alert(
         'Tretman je evidentiran',
@@ -135,11 +117,7 @@ export function RecordVarroaTreatmentScreen(
           {
             text: 'U redu',
             onPress: () => {
-              router.replace(
-                isSingleHive
-                  ? `/hives/${hiveId}`
-                  : `/apiaries/${apiaryId}`,
-              );
+              router.replace(isSingleHive ? `/hives/${hiveId}` : `/apiaries/${apiaryId}`);
             },
           },
         ],
@@ -149,10 +127,7 @@ export function RecordVarroaTreatmentScreen(
         return;
       }
 
-      Alert.alert(
-        'Tretman nije sačuvan',
-        getMutationErrorMessage(error),
-      );
+      Alert.alert('Tretman nije sačuvan', getMutationErrorMessage(error));
     }
   };
 
@@ -239,9 +214,7 @@ export function RecordVarroaTreatmentScreen(
           <Text className="text-sm font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Tretman protiv varoe
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Tretman protiv varoe</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
           Unesite preparat i dozu, a zatim označite košnice koje tretirate.
         </Text>
@@ -347,9 +320,7 @@ export function RecordVarroaTreatmentScreen(
         )}
 
         {errors.selectedHiveIds?.message && (
-          <Text className="mt-2 text-sm text-error">
-            {errors.selectedHiveIds.message}
-          </Text>
+          <Text className="mt-2 text-sm text-error">{errors.selectedHiveIds.message}</Text>
         )}
       </KeyboardAwareScrollView>
     </Screen>
@@ -390,9 +361,7 @@ function DoseAmountField({
   );
 }
 
-function toRequest(
-  values: RecordVarroaTreatmentFormValues,
-): RecordVarroaTreatmentRequest {
+function toRequest(values: RecordVarroaTreatmentFormValues): RecordVarroaTreatmentRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     productName: values.productName.trim(),
@@ -466,9 +435,7 @@ function getMutationErrorMessage(error: unknown) {
     return 'Proverite označena polja i pokušajte ponovo.';
   }
 
-  return error instanceof Error
-    ? error.message
-    : 'Tretman nije moguće sačuvati. Pokušajte ponovo.';
+  return error instanceof Error ? error.message : 'Tretman nije moguće sačuvati. Pokušajte ponovo.';
 }
 
 function LoadingState({ label }: { label: string }) {

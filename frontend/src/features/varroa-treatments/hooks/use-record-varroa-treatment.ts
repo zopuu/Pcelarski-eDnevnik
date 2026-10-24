@@ -9,8 +9,7 @@ export function useRecordVarroaTreatment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: RecordVarroaTreatmentRequest) =>
-      recordVarroaTreatment(request),
+    mutationFn: (request: RecordVarroaTreatmentRequest) => recordVarroaTreatment(request),
 
     onSuccess: async (_response, request) => {
       await Promise.all(

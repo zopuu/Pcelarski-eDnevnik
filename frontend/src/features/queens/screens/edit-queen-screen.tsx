@@ -1,59 +1,20 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  DateTimePicker,
-} from '@expo/ui/community/datetime-picker';
-import {
-  router,
-} from 'expo-router';
-import {
-  useEffect,
-  useState,
-} from 'react';
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import {
-  Alert,
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DateTimePicker } from '@expo/ui/community/datetime-picker';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Alert, ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useCurrentColony,
-} from '@/features/colonies/hooks/use-current-colony';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useCurrentColony } from '@/features/colonies/hooks/use-current-colony';
+import { colors } from '@/shared/theme/colors';
 
-import {
-  QueenMarkingColorPicker,
-} from '../components/queen-marking-color-picker';
-import {
-  useCurrentQueen,
-} from '../hooks/use-current-queen';
-import {
-  useUpdateQueen,
-} from '../hooks/use-update-queen';
-import {
-  updateQueenSchema,
-} from '../schemas/update-queen-schema';
-import type {
-  UpdateQueenFormValues,
-} from '../schemas/update-queen-schema';
-import type {
-  QueenIntroductionOutcome,
-  QueenOrigin,
-} from '../types/queen';
+import { QueenMarkingColorPicker } from '../components/queen-marking-color-picker';
+import { useCurrentQueen } from '../hooks/use-current-queen';
+import { useUpdateQueen } from '../hooks/use-update-queen';
+import { updateQueenSchema } from '../schemas/update-queen-schema';
+import type { UpdateQueenFormValues } from '../schemas/update-queen-schema';
+import type { QueenIntroductionOutcome, QueenOrigin } from '../types/queen';
 
 type EditQueenScreenProps = {
   hiveId: string;
@@ -81,9 +42,7 @@ const introductionOutcomeOptions: {
 function parseDateOnly(value: string) {
   const [year, month, day] = value.split('-').map(Number);
 
-  return year && month && day
-    ? new Date(year, month - 1, day)
-    : new Date();
+  return year && month && day ? new Date(year, month - 1, day) : new Date();
 }
 
 function formatDateOnly(value: Date) {
@@ -97,9 +56,7 @@ function formatDateOnly(value: Date) {
 function formatDate(value: string) {
   const [year, month, day] = value.split('-');
 
-  return year && month && day
-    ? `${day}.${month}.${year}.`
-    : 'Izaberite datum';
+  return year && month && day ? `${day}.${month}.${year}.` : 'Izaberite datum';
 }
 
 function optionalText(value: string) {
@@ -108,29 +65,18 @@ function optionalText(value: string) {
   return normalized || null;
 }
 
-export function EditQueenScreen({
-  hiveId,
-  colonyId,
-  queenId,
-}: EditQueenScreenProps) {
+export function EditQueenScreen({ hiveId, colonyId, queenId }: EditQueenScreenProps) {
   const colonyQuery = useCurrentColony(hiveId);
-  const colony = colonyQuery.data?.id === colonyId
-    ? colonyQuery.data
-    : null;
+  const colony = colonyQuery.data?.id === colonyId ? colonyQuery.data : null;
   const queenQuery = useCurrentQueen(colony?.id ?? null);
-  const queen = queenQuery.data?.id === queenId
-    ? queenQuery.data
-    : null;
+  const queen = queenQuery.data?.id === queenId ? queenQuery.data : null;
   const updateMutation = useUpdateQueen();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: {
-      errors,
-      isDirty,
-    },
+    formState: { errors, isDirty },
   } = useForm<UpdateQueenFormValues>({
     resolver: zodResolver(updateQueenSchema),
     defaultValues: {
@@ -171,11 +117,9 @@ export function EditQueenScreen({
   }, [queen, reset]);
 
   const introductionOutcome = queen?.introductionOutcome ?? null;
-  const canEditIntroductionOutcome = introductionOutcome === null || [
-    'missing',
-    'unverified',
-    'other',
-  ].includes(introductionOutcome);
+  const canEditIntroductionOutcome =
+    introductionOutcome === null ||
+    ['missing', 'unverified', 'other'].includes(introductionOutcome);
 
   const saveChanges = async (values: UpdateQueenFormValues) => {
     try {
@@ -189,10 +133,9 @@ export function EditQueenScreen({
           breed: optionalText(values.breed),
           emergedOn: optionalText(values.emergedOn),
           acquiredOn: optionalText(values.acquiredOn),
-          introductionOutcome:
-            canEditIntroductionOutcome
-              ? values.introductionOutcome ?? undefined
-              : undefined,
+          introductionOutcome: canEditIntroductionOutcome
+            ? (values.introductionOutcome ?? undefined)
+            : undefined,
           notes: optionalText(values.notes),
         },
       });
@@ -259,9 +202,7 @@ export function EditQueenScreen({
         </Pressable>
 
         <Text className="text-2xl font-bold text-foreground">Izmeni maticu</Text>
-        <Text className="mt-1 text-sm text-muted">
-          Izmenite osnovne podatke o matici.
-        </Text>
+        <Text className="mt-1 text-sm text-muted">Izmenite osnovne podatke o matici.</Text>
 
         <SectionTitle>Osnovni podaci</SectionTitle>
 
@@ -284,10 +225,7 @@ export function EditQueenScreen({
               control={control}
               name="introductionOutcome"
               render={({ field }) => (
-                <IntroductionOutcomeChoices
-                  value={field.value}
-                  onChange={field.onChange}
-                />
+                <IntroductionOutcomeChoices value={field.value} onChange={field.onChange} />
               )}
             />
           </>
@@ -296,9 +234,7 @@ export function EditQueenScreen({
         <Controller
           control={control}
           name="origin"
-          render={({ field }) => (
-            <OriginChoices value={field.value} onChange={field.onChange} />
-          )}
+          render={({ field }) => <OriginChoices value={field.value} onChange={field.onChange} />}
         />
 
         <Controller
@@ -336,11 +272,7 @@ export function EditQueenScreen({
             <DatePickerField
               label="Datum izleganja"
               value={field.value}
-              maximumDate={
-                acquiredOn
-                  ? parseDateOnly(acquiredOn)
-                  : undefined
-              }
+              maximumDate={acquiredOn ? parseDateOnly(acquiredOn) : undefined}
               onChange={field.onChange}
               error={errors.emergedOn?.message}
             />
@@ -354,11 +286,7 @@ export function EditQueenScreen({
             <DatePickerField
               label="Datum nabavke"
               value={field.value}
-              minimumDate={
-                emergedOn
-                  ? parseDateOnly(emergedOn)
-                  : undefined
-              }
+              minimumDate={emergedOn ? parseDateOnly(emergedOn) : undefined}
               onChange={field.onChange}
               error={errors.acquiredOn?.message}
             />
@@ -381,7 +309,9 @@ export function EditQueenScreen({
 
         {updateMutation.isError && (
           <View className="mb-4 rounded-2xl border border-error/30 bg-surface px-4 py-3">
-            <Text className="text-sm text-error">Maticu nije moguće ažurirati. Pokušajte ponovo.</Text>
+            <Text className="text-sm text-error">
+              Maticu nije moguće ažurirati. Pokušajte ponovo.
+            </Text>
           </View>
         )}
 
@@ -415,7 +345,7 @@ function DatePickerField({
   error?: string;
 }) {
   const [isPickerVisible, setIsPickerVisible] = useState(false);
-  const pickerValue = value ? parseDateOnly(value) : minimumDate ?? maximumDate ?? new Date();
+  const pickerValue = value ? parseDateOnly(value) : (minimumDate ?? maximumDate ?? new Date());
 
   return (
     <View className="mb-4">
@@ -495,7 +425,9 @@ function OriginChoices({
               }}
               className={`min-h-12 flex-1 items-center justify-center rounded-2xl border px-3 ${isSelected ? 'border-primary bg-primary' : 'border-border bg-surface'}`}
             >
-              <Text className={`font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}>
+              <Text
+                className={`font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}
+              >
                 {option.label}
               </Text>
             </Pressable>
@@ -515,9 +447,7 @@ function IntroductionOutcomeChoices({
 }) {
   return (
     <View className="mb-4 gap-2">
-      <Text className="text-sm text-muted">
-        Dopunite ishod kada je provereno stanje matice.
-      </Text>
+      <Text className="text-sm text-muted">Dopunite ishod kada je provereno stanje matice.</Text>
       {introductionOutcomeOptions.map((option) => {
         const isSelected = value === option.value;
 
@@ -583,7 +513,9 @@ function LoadingState({ label }: { label: string }) {
 function LoadError() {
   return (
     <View className="flex-1 items-center justify-center bg-background px-8">
-      <Text className="text-center text-base font-semibold text-error">Nije moguće učitati podatke o matici.</Text>
+      <Text className="text-center text-base font-semibold text-error">
+        Nije moguće učitati podatke o matici.
+      </Text>
       <Pressable
         onPress={() => {
           router.back();

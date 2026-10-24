@@ -17,9 +17,7 @@ export const recordHoneyFrameFeedingSchema = z.object({
       (value) => value <= formatDateOnly(new Date()),
       'Datum prihrane ne može biti u budućnosti.',
     ),
-  frameSource: z
-    .string()
-    .max(100, 'Poreklo ramova može imati najviše 100 znakova.'),
+  frameSource: z.string().max(100, 'Poreklo ramova može imati najviše 100 znakova.'),
   notes: z.string().max(1000, 'Napomena može imati najviše 1000 znakova.'),
   hives: z
     .array(
@@ -31,6 +29,4 @@ export const recordHoneyFrameFeedingSchema = z.object({
     .min(1, 'Izaberite najmanje jednu košnicu.'),
 });
 
-export type RecordHoneyFrameFeedingFormValues = z.infer<
-  typeof recordHoneyFrameFeedingSchema
->;
+export type RecordHoneyFrameFeedingFormValues = z.infer<typeof recordHoneyFrameFeedingSchema>;

@@ -1,10 +1,6 @@
-import {
-  useQuery,
-} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
-import {
-  getApiaries,
-} from '../api/get-apiaries';
+import { getApiaries } from '../api/get-apiaries';
 
 export const apiaryKeys = {
   all: ['apiaries'] as const,

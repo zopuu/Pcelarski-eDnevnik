@@ -1,11 +1,6 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  TransferColonyRequest,
-  TransferColonyResponse,
-} from '../types/transfer-colony';
+import type { TransferColonyRequest, TransferColonyResponse } from '../types/transfer-colony';
 
 export function transferColony(
   colonyId: string,

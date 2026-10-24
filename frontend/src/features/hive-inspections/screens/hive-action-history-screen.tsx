@@ -2,13 +2,7 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { TimelineDate } from '@/shared/components/timeline/timeline-date';
 import { TimelineItem } from '@/shared/components/timeline/timeline-item';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
 import { useHiveActionHistory } from '@/features/hive-actions/hooks/use-hive-action-history';
 import type { HiveActionHistoryItem } from '@/features/hive-actions/types/hive-action-history';
@@ -27,9 +21,7 @@ type HiveActionHistoryScreenProps = {
   hiveId: string;
 };
 
-export function HiveActionHistoryScreen({
-  hiveId,
-}: HiveActionHistoryScreenProps) {
+export function HiveActionHistoryScreen({ hiveId }: HiveActionHistoryScreenProps) {
   const { openDrawer } = useAppDrawer();
   const hiveQuery = useHive(hiveId);
   const historyQuery = useHiveActionHistory(hiveId);
@@ -71,9 +63,7 @@ export function HiveActionHistoryScreen({
               onPress={() => router.back()}
               className="self-start py-2"
             >
-              <Text className="text-sm font-semibold text-primary">
-                ← Košnica
-              </Text>
+              <Text className="text-sm font-semibold text-primary">← Košnica</Text>
             </Pressable>
             <Text className="mt-3 text-xs font-bold uppercase tracking-widest text-muted">
               Košnica
@@ -81,12 +71,9 @@ export function HiveActionHistoryScreen({
             <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
               {hiveQuery.data.label}
             </Text>
-            <Text className="mt-8 text-xl font-bold text-foreground">
-              Istorija aktivnosti
-            </Text>
+            <Text className="mt-8 text-xl font-bold text-foreground">Istorija aktivnosti</Text>
             <Text className="mt-1 text-sm leading-5 text-muted">
-              Pregledi, prihrane, tretmani i radovi na košnici, od najnovijeg
-              ka najstarijem.
+              Pregledi, prihrane, tretmani i radovi na košnici, od najnovijeg ka najstarijem.
             </Text>
           </View>
         }
@@ -156,21 +143,13 @@ function HiveActionTimelineItem({
       >
         <View className="flex-row items-start">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
-            <Ionicons
-              name={getActionIcon(action)}
-              size={21}
-              color={colors.primary}
-            />
+            <Ionicons name={getActionIcon(action)} size={21} color={colors.primary} />
           </View>
           <View className="ml-3 flex-1">
             <Text className="text-base font-bold text-foreground">{title}</Text>
-            <Text className="mt-1 text-sm text-muted">
-              {getActionDescription(action)}
-            </Text>
+            <Text className="mt-1 text-sm text-muted">{getActionDescription(action)}</Text>
           </View>
-          {hasDetailScreen && (
-            <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-          )}
+          {hasDetailScreen && <Ionicons name="chevron-forward" size={20} color={colors.muted} />}
         </View>
 
         <ActionSummary action={action} />
@@ -218,9 +197,7 @@ function InspectionSummary({
       {action.summary.hasHealthIssue && (
         <View className="mt-3 flex-row items-center self-start rounded-full bg-error/10 px-3 py-1.5">
           <Ionicons name="medkit-outline" size={15} color={colors.error} />
-          <Text className="ml-1.5 text-xs font-bold text-error">
-            Uočeno zdravstveno zapažanje
-          </Text>
+          <Text className="ml-1.5 text-xs font-bold text-error">Uočeno zdravstveno zapažanje</Text>
         </View>
       )}
     </>
@@ -242,7 +219,11 @@ function SyrupFeedingSummary({
 }) {
   return (
     <View className="mt-4 border-t border-border pt-3">
-      <SummaryRow label="Dato sirupa" value={formatSyrupQuantity(action.summary.quantityMl)} compact />
+      <SummaryRow
+        label="Dato sirupa"
+        value={formatSyrupQuantity(action.summary.quantityMl)}
+        compact
+      />
       <SummaryRow label="Odnos šećer : voda" value={formatSyrupRatio(action)} compact />
     </View>
   );
@@ -266,12 +247,7 @@ function HoneyFrameFeedingSummary({
 }: {
   action: Extract<HiveActionHistoryItem, { type: 'honeyFrameFeeding' }>;
 }) {
-  return (
-    <SummaryRow
-      label="Dato ramova"
-      value={formatFrames(action.summary.frameCount)}
-    />
-  );
+  return <SummaryRow label="Dato ramova" value={formatFrames(action.summary.frameCount)} />;
 }
 
 function InsulationSummary({
@@ -287,12 +263,7 @@ function SuperManagementSummary({
 }: {
   action: Extract<HiveActionHistoryItem, { type: 'superManagement' }>;
 }) {
-  return (
-    <SummaryRow
-      label="Obuhvaćeno"
-      value={getSuperManagementDescription(action)}
-    />
-  );
+  return <SummaryRow label="Obuhvaćeno" value={getSuperManagementDescription(action)} />;
 }
 
 function SummaryRow({
@@ -334,7 +305,8 @@ function getActionTitle(action: HiveActionHistoryItem) {
       const superSummary = getSuperManagementSummary(action);
       if (!superSummary.available) return 'Upravljanje nastavcima';
       if (superSummary.addedSuperCount > 0) return 'Dodavanje nastavaka';
-      if (superSummary.removeForHarvestCount > 0 && superSummary.removeAndArchiveCount > 0) return 'Skidanje nastavaka';
+      if (superSummary.removeForHarvestCount > 0 && superSummary.removeAndArchiveCount > 0)
+        return 'Skidanje nastavaka';
       if (superSummary.removeForHarvestCount > 0) return 'Skidanje nastavaka za vrcanje';
       return 'Arhiviranje nastavaka';
   }
@@ -388,8 +360,7 @@ function getSuperManagementSummary(
     return typeof value === 'number' ? value : 0;
   };
   const available =
-    typeof source.affectedSuperCount === 'number' ||
-    typeof source.AffectedSuperCount === 'number';
+    typeof source.affectedSuperCount === 'number' || typeof source.AffectedSuperCount === 'number';
 
   return {
     available,
@@ -480,9 +451,7 @@ function openActionDetail(hiveId: string, action: HiveActionHistoryItem) {
   }
 }
 
-function formatTreatmentDose(
-  action: Extract<HiveActionHistoryItem, { type: 'varroaTreatment' }>,
-) {
+function formatTreatmentDose(action: Extract<HiveActionHistoryItem, { type: 'varroaTreatment' }>) {
   const unitLabels = {
     ml: 'ml',
     strips: 'trake',
@@ -508,9 +477,7 @@ function formatSyrupQuantity(quantityMl: number) {
   return `${new Intl.NumberFormat('sr-Latn-RS').format(quantityMl)} ml`;
 }
 
-function formatSyrupRatio(
-  action: Extract<HiveActionHistoryItem, { type: 'syrupFeeding' }>,
-) {
+function formatSyrupRatio(action: Extract<HiveActionHistoryItem, { type: 'syrupFeeding' }>) {
   const formatter = new Intl.NumberFormat('sr-Latn-RS', {
     maximumFractionDigits: 4,
   });
@@ -518,9 +485,7 @@ function formatSyrupRatio(
   return `${formatter.format(action.summary.sugarParts)} : ${formatter.format(action.summary.waterParts)}`;
 }
 
-function getInsulationMaterials(
-  action: Extract<HiveActionHistoryItem, { type: 'insulation' }>,
-) {
+function getInsulationMaterials(action: Extract<HiveActionHistoryItem, { type: 'insulation' }>) {
   return [
     action.summary.paper ? 'Papir' : null,
     action.summary.eps ? 'Stiropor' : null,

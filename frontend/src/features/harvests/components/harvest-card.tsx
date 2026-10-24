@@ -48,7 +48,9 @@ export function HarvestCard({
 
         <View className="mt-4 border-t border-border pt-4">
           <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
-            {hasDistinctBatchName(harvest.batchName, harvest.batchCode) ? harvest.batchName : harvest.batchCode}
+            {hasDistinctBatchName(harvest.batchName, harvest.batchCode)
+              ? harvest.batchName
+              : harvest.batchCode}
           </Text>
           {hasDistinctBatchName(harvest.batchName, harvest.batchCode) && (
             <Text className="mt-0.5 text-xs text-muted">{harvest.batchCode}</Text>
@@ -59,7 +61,13 @@ export function HarvestCard({
   );
 }
 
-function Metric({ icon, value }: { icon: React.ComponentProps<typeof Ionicons>['name']; value: string }) {
+function Metric({
+  icon,
+  value,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  value: string;
+}) {
   return (
     <View className="flex-row items-center gap-1.5">
       <Ionicons name={icon} size={16} color={colors.muted} />

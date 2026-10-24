@@ -58,8 +58,12 @@ export const laboratoryHoneyBatchCompositionSchema = z.object({
 
 export type HoneyBatchCompositionFormInput = {
   evidenceReference?: string;
-  items: Array<{ forageType: string; percentage: string; notes: string }>;
+  items: { forageType: string; percentage: string; notes: string }[];
 };
 
-export type ManualHoneyBatchCompositionFormValues = z.output<typeof manualHoneyBatchCompositionSchema>;
-export type LaboratoryHoneyBatchCompositionFormValues = z.output<typeof laboratoryHoneyBatchCompositionSchema>;
+export type ManualHoneyBatchCompositionFormValues = z.output<
+  typeof manualHoneyBatchCompositionSchema
+>;
+export type LaboratoryHoneyBatchCompositionFormValues = z.output<
+  typeof laboratoryHoneyBatchCompositionSchema
+>;

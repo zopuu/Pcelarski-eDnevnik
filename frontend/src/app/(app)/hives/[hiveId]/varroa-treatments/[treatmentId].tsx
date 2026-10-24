@@ -8,10 +8,5 @@ export default function VarroaTreatmentDetailsRoute() {
     treatmentId: string;
   }>();
 
-  return (
-    <VarroaTreatmentDetailsScreen
-      hiveId={hiveId}
-      treatmentId={treatmentId}
-    />
-  );
+  return <VarroaTreatmentDetailsScreen hiveId={hiveId} treatmentId={treatmentId} />;
 }

@@ -1,23 +1,14 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  Pressable,
-  type PressableProps,
-} from 'react-native';
+import { Pressable, type PressableProps } from 'react-native';
 
-type IconName =
-  React.ComponentProps<
-    typeof Ionicons
-  >['name'];
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 type IconButtonProps = {
   icon: IconName;
   accessibilityLabel: string;
   iconSize?: number;
   iconColor?: string;
-} & Omit<
-  PressableProps,
-  'children'
->;
+} & Omit<PressableProps, 'children'>;
 
 export function IconButton({
   icon,
@@ -30,9 +21,7 @@ export function IconButton({
     <Pressable
       {...props}
       accessibilityRole="button"
-      accessibilityLabel={
-        accessibilityLabel
-      }
+      accessibilityLabel={accessibilityLabel}
       hitSlop={8}
       className="
         h-12
@@ -43,11 +32,7 @@ export function IconButton({
         active:bg-black/10
       "
     >
-      <Ionicons
-        name={icon}
-        size={iconSize}
-        color={iconColor}
-      />
+      <Ionicons name={icon} size={iconSize} color={iconColor} />
     </Pressable>
   );
 }

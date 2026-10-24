@@ -1,76 +1,33 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  router,
-} from 'expo-router';
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useEffect,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 
-import {
-  ObservationPhotoPicker,
-} from '../components/observation-photo-picker';
-import type {
-  ObservationPhotoDraft,
-} from '../components/observation-photo-picker';
-import {
-  useCreateForageObservation,
-} from '../hooks/use-create-forage-observation';
-import {
-  useForageObservation,
-} from '../hooks/use-forage-observation';
-import {
-  useUpdateForageObservation,
-} from '../hooks/use-update-forage-observation';
-import {
-  createForageObservationSchema,
-} from '../schemas/create-forage-observation-schema';
+import { ObservationPhotoPicker } from '../components/observation-photo-picker';
+import type { ObservationPhotoDraft } from '../components/observation-photo-picker';
+import { useCreateForageObservation } from '../hooks/use-create-forage-observation';
+import { useForageObservation } from '../hooks/use-forage-observation';
+import { useUpdateForageObservation } from '../hooks/use-update-forage-observation';
+import { createForageObservationSchema } from '../schemas/create-forage-observation-schema';
 import type {
   CreateForageObservationFormInput,
   CreateForageObservationFormValues,
   ObservationForageType,
 } from '../schemas/create-forage-observation-schema';
-import type {
-  CreateForageObservationRequest,
-} from '../types/forage-observation';
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import type {
-  GeographicCoordinates,
-} from '@/shared/api/open-topo-data';
-import {
-  MapLocationPicker,
-} from '@/shared/components/map-location-picker/map-location-picker';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import type { CreateForageObservationRequest } from '../types/forage-observation';
+import { ApiError } from '@/shared/api/api-error';
+import type { GeographicCoordinates } from '@/shared/api/open-topo-data';
+import { MapLocationPicker } from '@/shared/components/map-location-picker/map-location-picker';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
-const forageTypeOptions: Array<{
+const forageTypeOptions: {
   value: ObservationForageType;
   label: string;
-}> = [
+}[] = [
   { value: 'meadow', label: 'Livada' },
   { value: 'forest', label: 'Šuma' },
   { value: 'sunflower', label: 'Suncokret' },
@@ -88,27 +45,18 @@ function optionalText(value: string) {
   return value.trim() || null;
 }
 
-function parseSelectedCoordinate(
-  value: string,
-): number | null {
+function parseSelectedCoordinate(value: string): number | null {
   if (!value.trim()) {
     return null;
   }
 
-  const coordinate = Number(
-    value.trim().replace(',', '.'),
-  );
+  const coordinate = Number(value.trim().replace(',', '.'));
 
-  return Number.isFinite(coordinate)
-    ? coordinate
-    : null;
+  return Number.isFinite(coordinate) ? coordinate : null;
 }
 
 function getCreateErrorMessage(error: unknown) {
-  if (
-    error instanceof ApiError &&
-    error.status === 400
-  ) {
+  if (error instanceof ApiError && error.status === 400) {
     return 'Proverite unete podatke i pokušajte ponovo.';
   }
 
@@ -123,32 +71,18 @@ export function CreateForageObservationScreen({
   observationId,
 }: CreateForageObservationScreenProps) {
   const isEditing = Boolean(observationId);
-  const createMutation =
-    useCreateForageObservation();
-  const observationQuery =
-    useForageObservation(observationId);
-  const updateMutation =
-    useUpdateForageObservation(
-      observationId ?? '',
-    );
-  const [photo, setPhoto] =
-    useState<ObservationPhotoDraft | null>(null);
+  const createMutation = useCreateForageObservation();
+  const observationQuery = useForageObservation(observationId);
+  const updateMutation = useUpdateForageObservation(observationId ?? '');
+  const [photo, setPhoto] = useState<ObservationPhotoDraft | null>(null);
   const {
     control,
     handleSubmit,
     reset,
     setValue,
-    formState: {
-      errors,
-    },
-  } = useForm<
-    CreateForageObservationFormInput,
-    unknown,
-    CreateForageObservationFormValues
-  >({
-    resolver: zodResolver(
-      createForageObservationSchema,
-    ),
+    formState: { errors },
+  } = useForm<CreateForageObservationFormInput, unknown, CreateForageObservationFormValues>({
+    resolver: zodResolver(createForageObservationSchema),
     defaultValues: {
       forageType: null,
       intensity: 3,
@@ -166,38 +100,25 @@ export function CreateForageObservationScreen({
     control,
     name: 'longitude',
   });
-  const latitudeNumber =
-    parseSelectedCoordinate(latitude);
-  const longitudeNumber =
-    parseSelectedCoordinate(longitude);
+  const latitudeNumber = parseSelectedCoordinate(latitude);
+  const longitudeNumber = parseSelectedCoordinate(longitude);
   const selectedLocation =
-    latitudeNumber !== null &&
-    longitudeNumber !== null
+    latitudeNumber !== null && longitudeNumber !== null
       ? {
-        latitude: latitudeNumber,
-        longitude: longitudeNumber,
-      }
+          latitude: latitudeNumber,
+          longitude: longitudeNumber,
+        }
       : null;
 
-  const handleLocationChange = (
-    coordinates: GeographicCoordinates,
-  ) => {
-    setValue(
-      'latitude',
-      coordinates.latitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
-    setValue(
-      'longitude',
-      coordinates.longitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+  const handleLocationChange = (coordinates: GeographicCoordinates) => {
+    setValue('latitude', coordinates.latitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    setValue('longitude', coordinates.longitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   useEffect(() => {
@@ -206,22 +127,15 @@ export function CreateForageObservationScreen({
     }
 
     reset({
-      forageType:
-        observationQuery.data.forageType,
-      intensity:
-        observationQuery.data.intensity,
-      notes:
-        observationQuery.data.notes ?? '',
-      latitude:
-        observationQuery.data.latitude.toFixed(6),
-      longitude:
-        observationQuery.data.longitude.toFixed(6),
+      forageType: observationQuery.data.forageType,
+      intensity: observationQuery.data.intensity,
+      notes: observationQuery.data.notes ?? '',
+      latitude: observationQuery.data.latitude.toFixed(6),
+      longitude: observationQuery.data.longitude.toFixed(6),
     });
   }, [observationQuery.data, reset]);
 
-  const onSubmit = async (
-    values: CreateForageObservationFormValues,
-  ) => {
+  const onSubmit = async (values: CreateForageObservationFormValues) => {
     const request: CreateForageObservationRequest = {
       observedAt: new Date().toISOString(),
       forageType: values.forageType!,
@@ -233,61 +147,41 @@ export function CreateForageObservationScreen({
     };
 
     try {
-      const response =
-        isEditing
-          ? await updateMutation.mutateAsync({
+      const response = isEditing
+        ? await updateMutation.mutateAsync({
             ...request,
-            observedAt:
-              observationQuery.data?.observedAt ??
-              request.observedAt,
+            observedAt: observationQuery.data?.observedAt ?? request.observedAt,
           })
-          : await createMutation.mutateAsync(request);
+        : await createMutation.mutateAsync(request);
 
       router.replace(
         isEditing
-          ? `/forage-observations/${response.id}` as never
-          : '/forage-observations' as never,
+          ? (`/forage-observations/${response.id}` as never)
+          : ('/forage-observations' as never),
       );
     } catch {
       // The recoverable server error remains visible beneath the form.
     }
   };
 
-  const isSaving =
-    isEditing
-      ? updateMutation.isPending
-      : createMutation.isPending;
-  const mutationError =
-    isEditing
-      ? updateMutation.error
-      : createMutation.error;
+  const isSaving = isEditing ? updateMutation.isPending : createMutation.isPending;
+  const mutationError = isEditing ? updateMutation.error : createMutation.error;
 
-  if (
-    isEditing &&
-    observationQuery.isLoading
-  ) {
+  if (isEditing && observationQuery.isLoading) {
     return (
       <Screen>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-muted">
-            Učitavanje zapažanja...
-          </Text>
+          <Text className="text-muted">Učitavanje zapažanja...</Text>
         </View>
       </Screen>
     );
   }
 
-  if (
-    isEditing &&
-    (observationQuery.isError ||
-      !observationQuery.data)
-  ) {
+  if (isEditing && (observationQuery.isError || !observationQuery.data)) {
     return (
       <Screen>
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-error">
-            Zapažanje nije moguće učitati.
-          </Text>
+          <Text className="text-center text-error">Zapažanje nije moguće učitati.</Text>
         </View>
       </Screen>
     );
@@ -309,15 +203,11 @@ export function CreateForageObservationScreen({
           onPress={() => router.back()}
           className="mb-5 self-start py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Zapažanja
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Zapažanja</Text>
         </Pressable>
 
         <Text className="text-2xl font-bold tracking-tight text-foreground">
-          {isEditing
-            ? 'Izmeni zapažanje'
-            : 'Novo zapažanje'}
+          {isEditing ? 'Izmeni zapažanje' : 'Novo zapažanje'}
         </Text>
         <Text className="mt-1 text-sm text-muted">
           Izaberite vrstu paše i označite mesto na kom ste je primetili.
@@ -338,12 +228,7 @@ export function CreateForageObservationScreen({
         <Controller
           control={control}
           name="intensity"
-          render={({ field }) => (
-            <IntensityPicker
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
+          render={({ field }) => <IntensityPicker value={field.value} onChange={field.onChange} />}
         />
 
         <MapLocationPicker
@@ -352,10 +237,7 @@ export function CreateForageObservationScreen({
           onAltitudeChange={() => {
             // Altitude is not persisted for a forage observation.
           }}
-          error={
-            errors.latitude?.message ??
-            errors.longitude?.message
-          }
+          error={errors.latitude?.message ?? errors.longitude?.message}
         />
 
         <Controller
@@ -383,9 +265,7 @@ export function CreateForageObservationScreen({
 
         {mutationError && (
           <View className="mb-4 rounded-2xl border border-error/30 bg-error/10 px-4 py-3">
-            <Text className="text-sm text-error">
-              {getCreateErrorMessage(mutationError)}
-            </Text>
+            <Text className="text-sm text-error">{getCreateErrorMessage(mutationError)}</Text>
           </View>
         )}
 
@@ -399,11 +279,7 @@ export function CreateForageObservationScreen({
           className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${isSaving ? 'opacity-60' : ''}`}
         >
           <Text className="text-base font-bold text-background">
-            {isSaving
-              ? 'Čuvanje...'
-              : isEditing
-                ? 'Sačuvaj izmene'
-                : 'Sačuvaj zapažanje'}
+            {isSaving ? 'Čuvanje...' : isEditing ? 'Sačuvaj izmene' : 'Sačuvaj zapažanje'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -422,17 +298,14 @@ function ForageTypePicker({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Vrsta paše *
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Vrsta paše *</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8 }}
       >
         {forageTypeOptions.map((option) => {
-          const isSelected =
-            option.value === value;
+          const isSelected = option.value === value;
 
           return (
             <Pressable
@@ -444,18 +317,16 @@ function ForageTypePicker({
               onPress={() => onChange(option.value)}
               className={`min-h-11 items-center justify-center rounded-xl border px-3 ${isSelected ? 'border-primary bg-primary' : 'border-border bg-surface'}`}
             >
-              <Text className={`text-sm font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}>
+              <Text
+                className={`text-sm font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}
+              >
                 {option.label}
               </Text>
             </Pressable>
           );
         })}
       </ScrollView>
-      {error && (
-        <Text className="mt-1 text-sm text-error">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
@@ -469,13 +340,10 @@ function IntensityPicker({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Jačina paše *
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Jačina paše *</Text>
       <View className="flex-row gap-2">
         {[1, 2, 3, 4, 5].map((intensity) => {
-          const isSelected =
-            intensity === value;
+          const isSelected = intensity === value;
 
           return (
             <Pressable
@@ -518,9 +386,7 @@ function FormTextInput({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -531,23 +397,11 @@ function FormTextInput({
         textAlignVertical={multiline ? 'top' : 'center'}
         className={`${multiline ? 'min-h-28 py-3' : 'h-14'} rounded-2xl border bg-surface px-4 text-base text-foreground ${error ? 'border-error' : 'border-border'}`}
       />
-      {error && (
-        <Text className="mt-1 text-sm text-error">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
 
-function SectionTitle({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <Text className="mb-3 mt-8 text-lg font-bold text-foreground">{children}</Text>;
 }

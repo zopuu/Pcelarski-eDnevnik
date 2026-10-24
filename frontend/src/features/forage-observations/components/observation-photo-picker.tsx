@@ -1,29 +1,12 @@
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
-import {
-  Image,
-} from 'expo-image';
-import * as ImagePicker
-  from 'expo-image-picker';
-import {
-  useState,
-} from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  environment,
-} from '@/shared/config/environment';
-import type {
-  ImageUpload,
-} from '@/shared/api/image-upload';
+import { colors } from '@/shared/theme/colors';
+import { environment } from '@/shared/config/environment';
+import type { ImageUpload } from '@/shared/api/image-upload';
 
 export type ObservationPhotoDraft = ImageUpload & {
   width: number;
@@ -33,9 +16,7 @@ export type ObservationPhotoDraft = ImageUpload & {
 type ObservationPhotoPickerProps = {
   value: ObservationPhotoDraft | null;
   imageUrl?: string | null;
-  onChange: (
-    photo: ObservationPhotoDraft | null,
-  ) => void;
+  onChange: (photo: ObservationPhotoDraft | null) => void;
 };
 
 const imagePickerOptions: ImagePicker.ImagePickerOptions = {
@@ -45,37 +26,22 @@ const imagePickerOptions: ImagePicker.ImagePickerOptions = {
 };
 
 const maximumImageSizeBytes = 5 * 1024 * 1024;
-const allowedMimeTypes = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-export function ObservationPhotoPicker({
-  value,
-  imageUrl,
-  onChange,
-}: ObservationPhotoPickerProps) {
-  const [isPicking, setIsPicking] =
-    useState(false);
-  const [error, setError] =
-    useState<string | null>(null);
-  const previewUri = value?.uri ??
-    (imageUrl ? `${environment.apiUrl}${imageUrl}` : null);
+export function ObservationPhotoPicker({ value, imageUrl, onChange }: ObservationPhotoPickerProps) {
+  const [isPicking, setIsPicking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const previewUri = value?.uri ?? (imageUrl ? `${environment.apiUrl}${imageUrl}` : null);
 
-  const selectPhoto = async (
-    source: 'camera' | 'library',
-  ) => {
+  const selectPhoto = async (source: 'camera' | 'library') => {
     setError(null);
     setIsPicking(true);
 
     try {
       const permission =
         source === 'camera'
-          ? await ImagePicker
-            .requestCameraPermissionsAsync()
-          : await ImagePicker
-            .requestMediaLibraryPermissionsAsync();
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
         setError(
@@ -88,17 +54,10 @@ export function ObservationPhotoPicker({
 
       const result =
         source === 'camera'
-          ? await ImagePicker.launchCameraAsync(
-            imagePickerOptions,
-          )
-          : await ImagePicker.launchImageLibraryAsync(
-            imagePickerOptions,
-          );
+          ? await ImagePicker.launchCameraAsync(imagePickerOptions)
+          : await ImagePicker.launchImageLibraryAsync(imagePickerOptions);
 
-      if (
-        result.canceled ||
-        !result.assets[0]
-      ) {
+      if (result.canceled || !result.assets[0]) {
         return;
       }
 
@@ -109,19 +68,14 @@ export function ObservationPhotoPicker({
         return;
       }
 
-      if (!allowedMimeTypes.includes(
-        asset.mimeType as typeof allowedMimeTypes[number],
-      )) {
+      if (!allowedMimeTypes.includes(asset.mimeType as (typeof allowedMimeTypes)[number])) {
         setError('Izaberite JPEG, PNG ili WebP fotografiju.');
         return;
       }
 
       const mimeType = asset.mimeType as ImageUpload['mimeType'];
-      const extension = mimeType === 'image/png'
-        ? 'png'
-        : mimeType === 'image/webp'
-          ? 'webp'
-          : 'jpg';
+      const extension =
+        mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
 
       onChange({
         uri: asset.uri,
@@ -131,9 +85,7 @@ export function ObservationPhotoPicker({
         height: asset.height,
       });
     } catch {
-      setError(
-        'Fotografiju nije moguće otvoriti. Pokušajte ponovo.',
-      );
+      setError('Fotografiju nije moguće otvoriti. Pokušajte ponovo.');
     } finally {
       setIsPicking(false);
     }
@@ -141,12 +93,8 @@ export function ObservationPhotoPicker({
 
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Fotografija
-      </Text>
-      <Text className="mb-3 text-sm text-muted">
-        Možete dodati jednu fotografiju zapažanja.
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Fotografija</Text>
+      <Text className="mb-3 text-sm text-muted">Možete dodati jednu fotografiju zapažanja.</Text>
 
       {previewUri ? (
         <View className="overflow-hidden rounded-3xl border border-border bg-surface">
@@ -171,11 +119,7 @@ export function ObservationPhotoPicker({
                 onPress={() => onChange(null)}
                 className="min-h-11 min-w-11 items-center justify-center rounded-full bg-error/10"
               >
-                <Ionicons
-                  name="trash-outline"
-                  size={20}
-                  color={colors.error}
-                />
+                <Ionicons name="trash-outline" size={20} color={colors.error} />
               </Pressable>
             )}
           </View>
@@ -221,24 +165,13 @@ export function ObservationPhotoPicker({
 
       {isPicking && (
         <View className="mt-3 flex-row items-center gap-2">
-          <ActivityIndicator
-            size="small"
-            color={colors.primary}
-          />
-          <Text className="text-sm text-muted">
-            Otvaranje fotografija...
-          </Text>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text className="text-sm text-muted">Otvaranje fotografija...</Text>
         </View>
       )}
 
-      {error && (
-        <Text className="mt-2 text-sm text-error">
-          {error}
-        </Text>
-      )}
-      <Text className="mt-2 text-sm text-muted">
-        JPEG, PNG ili WebP, najviše 5 MB.
-      </Text>
+      {error && <Text className="mt-2 text-sm text-error">{error}</Text>}
+      <Text className="mt-2 text-sm text-muted">JPEG, PNG ili WebP, najviše 5 MB.</Text>
     </View>
   );
 }
@@ -262,21 +195,11 @@ function PhotoAction({
       onPress={onPress}
       className="min-h-14 flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-4"
       style={({ pressed }) => ({
-        opacity: disabled
-          ? 0.5
-          : pressed
-            ? 0.7
-            : 1,
+        opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
       })}
     >
-      <Ionicons
-        name={icon}
-        size={21}
-        color={colors.primary}
-      />
-      <Text className="font-semibold text-foreground">
-        {label}
-      </Text>
+      <Ionicons name={icon} size={21} color={colors.primary} />
+      <Text className="font-semibold text-foreground">{label}</Text>
     </Pressable>
   );
 }

@@ -1,7 +1,4 @@
-import type {
-  RelocationKind,
-  RelocationTransportMethod,
-} from './create-relocation';
+import type { RelocationKind, RelocationTransportMethod } from './create-relocation';
 
 export type ApiaryRelocationHistoryItem = {
   id: string;

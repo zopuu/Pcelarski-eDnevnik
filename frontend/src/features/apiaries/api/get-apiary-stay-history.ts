@@ -1,10 +1,6 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  ApiaryStayHistoryPage,
-} from '../types/apiary-stay';
+import type { ApiaryStayHistoryPage } from '../types/apiary-stay';
 
 export function getApiaryStayHistory(
   apiaryId: string,

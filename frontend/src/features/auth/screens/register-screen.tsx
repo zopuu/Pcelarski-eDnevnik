@@ -13,25 +13,16 @@ import {
   View,
 } from 'react-native';
 
-import {
-  registerSchema,
-  RegisterFormValues,
-} from '@/features/auth/schemas/register-schema';
+import { registerSchema, RegisterFormValues } from '@/features/auth/schemas/register-schema';
 import { useRegister } from '@/features/auth/hooks/use-register';
 import { ApiError } from '@/shared/api/api-error';
 
-function getErrorMessage(
-  error: unknown,
-): string {
+function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    const validationErrors =
-      error.problem?.errors;
+    const validationErrors = error.problem?.errors;
 
     if (validationErrors) {
-      const firstMessage =
-        Object.values(validationErrors)
-          .flat()
-          .find(Boolean);
+      const firstMessage = Object.values(validationErrors).flat().find(Boolean);
 
       if (firstMessage) {
         return firstMessage;
@@ -70,9 +61,7 @@ export function RegisterScreen() {
     },
   });
 
-  const onSubmit = async (
-    values: RegisterFormValues,
-  ) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     try {
       await registration.mutateAsync({
         firstName: values.firstName.trim(),
@@ -80,18 +69,13 @@ export function RegisterScreen() {
         email: values.email.trim(),
         password: values.password,
 
-        hid:
-          values.hid.trim() || null,
+        hid: values.hid.trim() || null,
 
-        phone:
-          values.phone.trim() || null,
+        phone: values.phone.trim() || null,
 
-        agriculturalHoldingNumber:
-          values.agriculturalHoldingNumber
-            ? Number(
-                values.agriculturalHoldingNumber,
-              )
-            : null,
+        agriculturalHoldingNumber: values.agriculturalHoldingNumber
+          ? Number(values.agriculturalHoldingNumber)
+          : null,
       });
 
       router.replace({
@@ -108,24 +92,13 @@ export function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={
-        Platform.OS === 'ios'
-          ? 'padding'
-          : undefined
-      }
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
-          <Text style={styles.title}>
-            Kreiranje naloga
-          </Text>
+          <Text style={styles.title}>Kreiranje naloga</Text>
 
-          <Text style={styles.subtitle}>
-            Unesite osnovne podatke za registraciju.
-          </Text>
+          <Text style={styles.subtitle}>Unesite osnovne podatke za registraciju.</Text>
 
           <Controller
             control={control}
@@ -202,9 +175,7 @@ export function RegisterScreen() {
                 value={field.value}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-                error={
-                  errors.confirmPassword?.message
-                }
+                error={errors.confirmPassword?.message}
                 secureTextEntry
                 autoCapitalize="none"
                 autoComplete="new-password"
@@ -255,22 +226,14 @@ export function RegisterScreen() {
                 value={field.value}
                 onChangeText={field.onChange}
                 onBlur={field.onBlur}
-                error={
-                  errors
-                    .agriculturalHoldingNumber
-                    ?.message
-                }
+                error={errors.agriculturalHoldingNumber?.message}
                 keyboardType="number-pad"
               />
             )}
           />
 
           {registration.isError && (
-            <Text style={styles.apiError}>
-              {getErrorMessage(
-                registration.error,
-              )}
-            </Text>
+            <Text style={styles.apiError}>{getErrorMessage(registration.error)}</Text>
           )}
 
           <Pressable
@@ -278,35 +241,23 @@ export function RegisterScreen() {
             onPress={handleSubmit(onSubmit)}
             style={({ pressed }) => [
               styles.primaryButton,
-              pressed &&
-                styles.primaryButtonPressed,
-              registration.isPending &&
-                styles.disabled,
+              pressed && styles.primaryButtonPressed,
+              registration.isPending && styles.disabled,
             ]}
           >
             {registration.isPending ? (
               <ActivityIndicator />
             ) : (
-              <Text
-                style={styles.primaryButtonText}
-              >
-                Registruj se
-              </Text>
+              <Text style={styles.primaryButtonText}>Registruj se</Text>
             )}
           </Pressable>
 
           <Pressable
             disabled={registration.isPending}
-            onPress={() =>
-              router.replace('/login')
-            }
+            onPress={() => router.replace('/login')}
             style={styles.secondaryButton}
           >
-            <Text
-              style={styles.secondaryButtonText}
-            >
-              Već imate nalog? Prijavite se
-            </Text>
+            <Text style={styles.secondaryButtonText}>Već imate nalog? Prijavite se</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -314,19 +265,13 @@ export function RegisterScreen() {
   );
 }
 
-interface FormFieldProps
-  extends React.ComponentProps<typeof TextInput> {
+interface FormFieldProps extends React.ComponentProps<typeof TextInput> {
   label: string;
   error?: string;
   optional?: boolean;
 }
 
-function FormField({
-  label,
-  error,
-  optional = false,
-  ...inputProps
-}: FormFieldProps) {
+function FormField({ label, error, optional = false, ...inputProps }: FormFieldProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>
@@ -336,18 +281,11 @@ function FormField({
 
       <TextInput
         {...inputProps}
-        style={[
-          styles.input,
-          error ? styles.inputError : null,
-        ]}
+        style={[styles.input, error ? styles.inputError : null]}
         placeholderTextColor="#777"
       />
 
-      {error && (
-        <Text style={styles.fieldError}>
-          {error}
-        </Text>
-      )}
+      {error && <Text style={styles.fieldError}>{error}</Text>}
     </View>
   );
 }

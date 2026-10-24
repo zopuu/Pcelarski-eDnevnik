@@ -1,22 +1,9 @@
-import {
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
-import {
-  useState,
-} from 'react';
+import { useState } from 'react';
 
-import {
-  ColorHexagon,
-} from '@/shared/components/color-hexagon/color-hexagon';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { ColorHexagon } from '@/shared/components/color-hexagon/color-hexagon';
+import { colors } from '@/shared/theme/colors';
 
 type HiveColorPickerProps = {
   value: string;
@@ -156,15 +143,8 @@ const colorVariants: ColorOption[] = [
   },
 ];
 
-export function HiveColorPicker({
-  value,
-  onChange,
-  error,
-}: HiveColorPickerProps) {
-  const [
-    pickerVisible,
-    setPickerVisible,
-  ] = useState(false);
+export function HiveColorPicker({ value, onChange, error }: HiveColorPickerProps) {
+  const [pickerVisible, setPickerVisible] = useState(false);
 
   const colorVariantsContent = (
     <>
@@ -175,21 +155,19 @@ export function HiveColorPicker({
           gap-4
         "
       >
-        {colorVariants.map(
-          (color) => (
-            <ColorButton
-              key={color.hex}
-              color={color.hex}
-              selected={value === color.hex}
-              onPress={() => {
-                onChange(color.hex);
+        {colorVariants.map((color) => (
+          <ColorButton
+            key={color.hex}
+            color={color.hex}
+            selected={value === color.hex}
+            onPress={() => {
+              onChange(color.hex);
 
-                setPickerVisible(false);
-              }}
-              large
-            />
-          ),
-        )}
+              setPickerVisible(false);
+            }}
+            large
+          />
+        ))}
       </View>
 
       {value && (
@@ -244,32 +222,20 @@ export function HiveColorPicker({
             gap-3
           "
         >
-          {basicColors.map(
-            (color) => (
-              <ColorButton
-                key={color.hex}
-                color={color.hex}
-                selected={
-                  value ===
-                  color.hex
-                }
-                onPress={() => {
-                  onChange(
-                    value ===
-                      color.hex
-                      ? ''
-                      : color.hex,
-                  );
-                }}
-              />
-            ),
-          )}
+          {basicColors.map((color) => (
+            <ColorButton
+              key={color.hex}
+              color={color.hex}
+              selected={value === color.hex}
+              onPress={() => {
+                onChange(value === color.hex ? '' : color.hex);
+              }}
+            />
+          ))}
 
           <Pressable
             onPress={() => {
-              setPickerVisible(
-                true,
-              );
+              setPickerVisible(true);
             }}
             className={`
               h-12
@@ -280,31 +246,18 @@ export function HiveColorPicker({
           >
             <ColorHexagon
               colorHex={
-                value &&
-                !basicColors.some(
-                  (color) => color.hex === value,
-                )
-                  ? value
-                  : colors.surface
+                value && !basicColors.some((color) => color.hex === value) ? value : colors.surface
               }
               size={48}
               borderColor={
-                value &&
-                !basicColors.some(
-                  (color) => color.hex === value,
-                )
+                value && !basicColors.some((color) => color.hex === value)
                   ? colors.primary
                   : colors.border
               }
             />
 
-            {(!value ||
-              basicColors.some(
-                (color) => color.hex === value,
-              )) && (
-              <Text className="absolute text-2xl font-semibold text-foreground">
-                +
-              </Text>
+            {(!value || basicColors.some((color) => color.hex === value)) && (
+              <Text className="absolute text-2xl font-semibold text-foreground">+</Text>
             )}
           </Pressable>
         </View>
@@ -318,11 +271,7 @@ export function HiveColorPicker({
             "
           >
             <View className="mr-2">
-              <ColorHexagon
-                colorHex={value}
-                size={20}
-                borderColor={colors.primary}
-              />
+              <ColorHexagon colorHex={value} size={20} borderColor={colors.primary} />
             </View>
 
             <Text
@@ -354,9 +303,7 @@ export function HiveColorPicker({
         transparent
         animationType="slide"
         onRequestClose={() => {
-          setPickerVisible(
-            false,
-          );
+          setPickerVisible(false);
         }}
       >
         <Pressable
@@ -366,15 +313,11 @@ export function HiveColorPicker({
             bg-black/40
           "
           onPress={() => {
-            setPickerVisible(
-              false,
-            );
+            setPickerVisible(false);
           }}
         >
           <Pressable
-            onPress={(
-              event,
-            ) => {
+            onPress={(event) => {
               event.stopPropagation();
             }}
             className="
@@ -412,16 +355,13 @@ export function HiveColorPicker({
                     text-muted
                   "
                 >
-                  Odaberite željenu
-                  nijansu košnice.
+                  Odaberite željenu nijansu košnice.
                 </Text>
               </View>
 
               <Pressable
                 onPress={() => {
-                  setPickerVisible(
-                    false,
-                  );
+                  setPickerVisible(false);
                 }}
                 className="
                   h-10
@@ -444,18 +384,11 @@ export function HiveColorPicker({
             </View>
 
             {Platform.OS === 'web' ? (
-              <View
-                className="max-h-[420px]"
-                style={{ overflow: 'scroll' }}
-              >
+              <View className="max-h-[420px]" style={{ overflow: 'scroll' }}>
                 {colorVariantsContent}
               </View>
             ) : (
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-              >
-                {colorVariantsContent}
-              </ScrollView>
+              <ScrollView showsVerticalScrollIndicator={false}>{colorVariantsContent}</ScrollView>
             )}
           </Pressable>
         </Pressable>
@@ -471,37 +404,22 @@ type ColorButtonProps = {
   large?: boolean;
 };
 
-function ColorButton({
-  color,
-  selected,
-  onPress,
-  large = false,
-}: ColorButtonProps) {
+function ColorButton({ color, selected, onPress, large = false }: ColorButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={
-        `Izaberi boju ${color}`
-      }
+      accessibilityLabel={`Izaberi boju ${color}`}
       onPress={onPress}
       className={`
         items-center
         justify-center
-        ${
-          large
-            ? 'h-16 w-16'
-            : 'h-12 w-12'
-        }
+        ${large ? 'h-16 w-16' : 'h-12 w-12'}
       `}
     >
       <ColorHexagon
         colorHex={color}
         size={large ? 64 : 48}
-        borderColor={
-          selected
-            ? colors.primary
-            : colors.border
-        }
+        borderColor={selected ? colors.primary : colors.border}
       />
 
       {selected && (

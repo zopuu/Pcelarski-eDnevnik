@@ -1,28 +1,13 @@
 import '../global.css';
-import {
-  Stack,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Stack } from 'expo-router';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import {
-  useAuth,
-} from '@/features/auth/hooks/use-auth';
-import {
-  AuthProvider,
-} from '@/providers/auth-provider';
-import {
-  QueryProvider,
-} from '@/providers/query-provider';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { AuthProvider } from '@/providers/auth-provider';
+import { QueryProvider } from '@/providers/query-provider';
 
 function RootNavigator() {
-  const {
-    status,
-    isAuthenticated,
-  } = useAuth();
+  const { status, isAuthenticated } = useAuth();
 
   if (status === 'loading') {
     return (
@@ -38,28 +23,16 @@ function RootNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Protected
-        guard={!isAuthenticated}
-      >
-        <Stack.Screen
-          name="(auth)"
-        />
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="(auth)" />
       </Stack.Protected>
 
-      <Stack.Protected
-        guard={isAuthenticated}
-      >
-        <Stack.Screen
-          name="(app)"
-        />
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(app)" />
       </Stack.Protected>
 
-      <Stack.Screen
-        name="auth/callback"
-      />
-      <Stack.Screen
-        name="auth/logout-callback"
-      />
+      <Stack.Screen name="auth/callback" />
+      <Stack.Screen name="auth/logout-callback" />
     </Stack>
   );
 }

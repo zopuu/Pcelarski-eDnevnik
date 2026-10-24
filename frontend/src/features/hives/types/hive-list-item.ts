@@ -1,13 +1,9 @@
-import type {
-  HiveStatus,
-  HiveType,
-} from './hive';
+import type { HiveStatus, HiveType } from './hive';
 
 export type HiveListItem = {
   id: string;
 
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
   label: string;
 

@@ -1,22 +1,12 @@
-import {
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import {
-  ColorHexagon,
-} from '@/shared/components/color-hexagon/color-hexagon';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { ColorHexagon } from '@/shared/components/color-hexagon/color-hexagon';
+import { colors } from '@/shared/theme/colors';
 
 type QueenMarkingColorPickerProps = {
   value: string;
 
-  onChange: (
-    value: string,
-  ) => void;
+  onChange: (value: string) => void;
 
   error?: string;
 };
@@ -44,11 +34,7 @@ const markingColors = [
   },
 ] as const;
 
-export function QueenMarkingColorPicker({
-  value,
-  onChange,
-  error,
-}: QueenMarkingColorPickerProps) {
+export function QueenMarkingColorPicker({ value, onChange, error }: QueenMarkingColorPickerProps) {
   return (
     <View
       className="
@@ -72,58 +58,42 @@ export function QueenMarkingColorPicker({
           justify-between
         "
       >
-        {markingColors.map(
-          (color) => {
-            const selected =
-              value.toUpperCase() ===
-              color.value;
+        {markingColors.map((color) => {
+          const selected = value.toUpperCase() === color.value;
 
-            return (
-              <Pressable
-                key={
-                  color.value
-                }
-                accessibilityLabel={
-                  color.label
-                }
-                onPress={() => {
-                  onChange(
-                    selected
-                      ? ''
-                      : color.value,
-                  );
-                }}
-                className="
+          return (
+            <Pressable
+              key={color.value}
+              accessibilityLabel={color.label}
+              onPress={() => {
+                onChange(selected ? '' : color.value);
+              }}
+              className="
                   items-center
                 "
-                style={{
-                  width: '18%',
-                }}
-              >
-                <ColorHexagon
-                  colorHex={color.value}
-                  size={48}
-                  borderColor={
-                    selected
-                      ? colors.primary
-                      : colors.border
-                  }
-                />
+              style={{
+                width: '18%',
+              }}
+            >
+              <ColorHexagon
+                colorHex={color.value}
+                size={48}
+                borderColor={selected ? colors.primary : colors.border}
+              />
 
-                <Text
-                  className="
+              <Text
+                className="
                     mt-2
                     text-center
                     text-xs
                     text-muted
                   "
-                >
-                  {color.label}
-                </Text>
-              </Pressable>
-            );
-          },
-        )}
+              >
+                {color.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {error && (

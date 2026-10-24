@@ -1,6 +1,4 @@
-import {
-  z,
-} from 'zod';
+import { z } from 'zod';
 
 function getToday() {
   const now = new Date();
@@ -13,13 +11,10 @@ function getToday() {
 
 export const transferColonySchema = z.object({
   destinationHiveId: z.string().uuid('Izaberite ciljnu košnicu.'),
-  transferredOn: z.string()
+  transferredOn: z
+    .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Izaberite ispravan datum.')
-    .refine(
-      (value) => value <= getToday(),
-      'Datum premeštanja ne može biti u budućnosti.',
-    ),
+    .refine((value) => value <= getToday(), 'Datum premeštanja ne može biti u budućnosti.'),
 });
 
-export type TransferColonyFormValues =
-  z.infer<typeof transferColonySchema>;
+export type TransferColonyFormValues = z.infer<typeof transferColonySchema>;

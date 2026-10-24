@@ -1,66 +1,26 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  useEffect,
-} from 'react';
+import { useEffect } from 'react';
 
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  HiveColorPicker,
-} from '../components/hive-color-picker';
-import {
-  useHive,
-} from '../hooks/use-hive';
-import {
-  useUpdateHive,
-} from '../hooks/use-update-hive';
-import {
-  updateHiveSchema,
-} from '../schemas/update-hive-schema';
-import type {
-  UpdateHiveFormInput,
-  UpdateHiveFormValues,
-} from '../schemas/update-hive-schema';
-import type {
-  HiveMaterial,
-  HiveType,
-} from '../types/hive';
-import type {
-  UpdateHiveRequest,
-} from '../types/update-hive';
+import { HiveColorPicker } from '../components/hive-color-picker';
+import { useHive } from '../hooks/use-hive';
+import { useUpdateHive } from '../hooks/use-update-hive';
+import { updateHiveSchema } from '../schemas/update-hive-schema';
+import type { UpdateHiveFormInput, UpdateHiveFormValues } from '../schemas/update-hive-schema';
+import type { HiveMaterial, HiveType } from '../types/hive';
+import type { UpdateHiveRequest } from '../types/update-hive';
 
-import {
-  DatePickerField,
-} from '@/shared/components/date-picker-field';
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  getCurrentUtcDateOnly,
-} from '@/shared/utils/date-only';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { colors } from '@/shared/theme/colors';
+import { getCurrentUtcDateOnly } from '@/shared/utils/date-only';
 
 type EditHiveScreenProps = {
   hiveId: string;
@@ -95,9 +55,7 @@ function optionalText(value: string): string | null {
   return normalized || null;
 }
 
-export function EditHiveScreen({
-  hiveId,
-}: EditHiveScreenProps) {
+export function EditHiveScreen({ hiveId }: EditHiveScreenProps) {
   const hiveQuery = useHive(hiveId);
   const updateMutation = useUpdateHive();
 
@@ -105,15 +63,8 @@ export function EditHiveScreen({
     control,
     handleSubmit,
     reset,
-    formState: {
-      errors,
-      isDirty,
-    },
-  } = useForm<
-    UpdateHiveFormInput,
-    unknown,
-    UpdateHiveFormValues
-  >({
+    formState: { errors, isDirty },
+  } = useForm<UpdateHiveFormInput, unknown, UpdateHiveFormValues>({
     resolver: zodResolver(updateHiveSchema),
     defaultValues: {
       label: '',
@@ -176,9 +127,7 @@ export function EditHiveScreen({
       material: values.material,
       purchaseDate: optionalText(values.purchaseDate),
       hasFeeder: values.hasFeeder,
-      feederVolumeMl: values.hasFeeder
-        ? Number(values.feederVolumeMl)
-        : null,
+      feederVolumeMl: values.hasFeeder ? Number(values.feederVolumeMl) : null,
       note: optionalText(values.note),
     };
 
@@ -221,18 +170,12 @@ export function EditHiveScreen({
           }}
           className="mb-5 self-start py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Nazad
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Izmeni košnicu
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Izmeni košnicu</Text>
 
-        <Text className="mt-1 text-sm text-muted">
-          Izmenite osnovne podatke i opremu košnice.
-        </Text>
+        <Text className="mt-1 text-sm text-muted">Izmenite osnovne podatke i opremu košnice.</Text>
 
         <SectionTitle>Osnovni podaci</SectionTitle>
 
@@ -331,11 +274,7 @@ export function EditHiveScreen({
               label="Datum proizvodnje"
               value={field.value}
               onChange={field.onChange}
-              maximumDate={
-                purchaseDate && purchaseDate < today
-                  ? purchaseDate
-                  : today
-              }
+              maximumDate={purchaseDate && purchaseDate < today ? purchaseDate : today}
               error={errors.manufactureDate?.message}
             />
           )}
@@ -398,9 +337,7 @@ export function EditHiveScreen({
           name="note"
           render={({ field }) => (
             <View className="mb-4">
-              <Text className="mb-2 text-sm font-semibold text-foreground">
-                Napomena
-              </Text>
+              <Text className="mb-2 text-sm font-semibold text-foreground">Napomena</Text>
 
               <TextInput
                 value={field.value}
@@ -415,9 +352,7 @@ export function EditHiveScreen({
               />
 
               {errors.note?.message && (
-                <Text className="mt-1 text-sm text-error">
-                  {errors.note.message}
-                </Text>
+                <Text className="mt-1 text-sm text-error">{errors.note.message}</Text>
               )}
             </View>
           )}
@@ -450,11 +385,7 @@ export function EditHiveScreen({
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-8 text-lg font-bold text-foreground">{children}</Text>;
 }
 
 function ChoiceGroup<T extends string | boolean>({
@@ -472,9 +403,7 @@ function ChoiceGroup<T extends string | boolean>({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       <View className="flex-row flex-wrap gap-2">
         {options.map((option) => {
@@ -489,14 +418,10 @@ function ChoiceGroup<T extends string | boolean>({
                 onChange(option.value);
               }}
               className={`min-h-12 min-w-[30%] flex-1 items-center justify-center rounded-2xl border px-3 ${
-                selected
-                  ? 'border-primary bg-primary'
-                  : 'border-border bg-surface'
+                selected ? 'border-primary bg-primary' : 'border-border bg-surface'
               }`}
             >
-              <Text className={`font-semibold ${
-                selected ? 'text-background' : 'text-foreground'
-              }`}>
+              <Text className={`font-semibold ${selected ? 'text-background' : 'text-foreground'}`}>
                 {option.label}
               </Text>
             </Pressable>
@@ -504,9 +429,7 @@ function ChoiceGroup<T extends string | boolean>({
         })}
       </View>
 
-      {error && (
-        <Text className="mt-2 text-sm text-error">{error}</Text>
-      )}
+      {error && <Text className="mt-2 text-sm text-error">{error}</Text>}
     </View>
   );
 }
@@ -530,9 +453,7 @@ function FormTextInput({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       <TextInput
         value={value}
@@ -546,9 +467,7 @@ function FormTextInput({
         }`}
       />
 
-      {error && (
-        <Text className="mt-1 text-sm text-error">{error}</Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }

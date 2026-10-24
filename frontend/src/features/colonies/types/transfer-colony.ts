@@ -1,7 +1,4 @@
-import type {
-  HiveStatus,
-  HiveType,
-} from '@/features/hives/types/hive';
+import type { HiveStatus, HiveType } from '@/features/hives/types/hive';
 
 export type TransferDestinationHive = {
   id: string;

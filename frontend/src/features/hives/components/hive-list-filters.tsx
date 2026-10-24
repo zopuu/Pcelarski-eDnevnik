@@ -1,23 +1,10 @@
-import {
-  Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  useState,
-} from 'react';
+import { useState } from 'react';
 
-import type {
-  HiveStatus,
-  HiveType,
-} from '../types/hive';
+import type { HiveStatus, HiveType } from '../types/hive';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type HiveListFiltersProps = {
   labelSearch: string;
@@ -60,19 +47,11 @@ export function HiveListFilters({
   availableColors,
   hasColorlessHives,
 }: HiveListFiltersProps) {
-  const statusFilterOptions: FilterOption[] = [
-    { value: 'all', label: 'Status' },
-    ...statusOptions,
-  ];
-  const typeFilterOptions: FilterOption[] = [
-    { value: 'all', label: 'Tip' },
-    ...typeOptions,
-  ];
+  const statusFilterOptions: FilterOption[] = [{ value: 'all', label: 'Status' }, ...statusOptions];
+  const typeFilterOptions: FilterOption[] = [{ value: 'all', label: 'Tip' }, ...typeOptions];
   const colorFilterOptions: FilterOption[] = [
     { value: 'all', label: 'Boja' },
-    ...(hasColorlessHives
-      ? [{ value: 'none', label: 'Bez boje' }]
-      : []),
+    ...(hasColorlessHives ? [{ value: 'none', label: 'Bez boje' }] : []),
     ...availableColors.map((color) => ({
       value: color,
       label: 'Boja',
@@ -98,11 +77,7 @@ export function HiveListFilters({
           selectedValue={selectedStatus ?? 'all'}
           options={statusFilterOptions}
           onSelect={(value) => {
-            onStatusChange(
-              value === 'all'
-                ? null
-                : value as HiveStatus,
-            );
+            onStatusChange(value === 'all' ? null : (value as HiveStatus));
           }}
         />
 
@@ -111,32 +86,18 @@ export function HiveListFilters({
           selectedValue={selectedType ?? 'all'}
           options={typeFilterOptions}
           onSelect={(value) => {
-            onTypeChange(
-              value === 'all'
-                ? null
-                : value as HiveType,
-            );
+            onTypeChange(value === 'all' ? null : (value as HiveType));
           }}
         />
 
         <CompactFilter
           label="Boja"
           selectedValue={
-            selectedColor === undefined
-              ? 'all'
-              : selectedColor === null
-                ? 'none'
-                : selectedColor
+            selectedColor === undefined ? 'all' : selectedColor === null ? 'none' : selectedColor
           }
           options={colorFilterOptions}
           onSelect={(value) => {
-            onColorChange(
-              value === 'all'
-                ? undefined
-                : value === 'none'
-                  ? null
-                  : value,
-            );
+            onColorChange(value === 'all' ? undefined : value === 'none' ? null : value);
           }}
         />
       </View>
@@ -162,13 +123,9 @@ function CompactFilter({
   onSelect: (value: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find(
-    (option) => option.value === selectedValue,
-  );
+  const selectedOption = options.find((option) => option.value === selectedValue);
   const selectedColor = selectedOption?.colorHex;
-  const selectedTextColor = selectedColor
-    ? getTextColor(selectedColor)
-    : undefined;
+  const selectedTextColor = selectedColor ? getTextColor(selectedColor) : undefined;
 
   return (
     <>
@@ -179,25 +136,19 @@ function CompactFilter({
           setIsOpen(true);
         }}
         className="h-11 flex-1 flex-row items-center justify-center gap-1 rounded-2xl border border-border bg-surface px-2"
-        style={selectedColor
-          ? { backgroundColor: selectedColor }
-          : undefined}
+        style={selectedColor ? { backgroundColor: selectedColor } : undefined}
       >
         <Text
           numberOfLines={1}
           className="text-sm font-semibold text-foreground"
-          style={selectedTextColor
-            ? { color: selectedTextColor }
-            : undefined}
+          style={selectedTextColor ? { color: selectedTextColor } : undefined}
         >
           {selectedOption?.label ?? label}
         </Text>
 
         <Text
           className="text-xs text-muted"
-          style={selectedTextColor
-            ? { color: selectedTextColor }
-            : undefined}
+          style={selectedTextColor ? { color: selectedTextColor } : undefined}
         >
           ⌄
         </Text>
@@ -223,9 +174,7 @@ function CompactFilter({
             }}
             className="rounded-t-3xl bg-background px-5 pb-8 pt-5"
           >
-            <Text className="mb-4 text-xl font-bold text-foreground">
-              {label}
-            </Text>
+            <Text className="mb-4 text-xl font-bold text-foreground">{label}</Text>
 
             {options.map((option) => {
               const selected = option.value === selectedValue;
@@ -234,9 +183,9 @@ function CompactFilter({
                 <Pressable
                   key={option.value}
                   accessibilityRole="button"
-                  accessibilityLabel={option.colorHex
-                    ? `Filtriraj po boji ${option.colorHex}`
-                    : option.label}
+                  accessibilityLabel={
+                    option.colorHex ? `Filtriraj po boji ${option.colorHex}` : option.label
+                  }
                   accessibilityState={{ selected }}
                   onPress={() => {
                     onSelect(option.value);
@@ -245,9 +194,7 @@ function CompactFilter({
                   className={`mb-2 min-h-12 flex-row items-center rounded-2xl px-4 ${
                     selected ? 'bg-primary/10' : 'bg-surface'
                   }`}
-                  style={option.colorHex
-                    ? { backgroundColor: option.colorHex }
-                    : undefined}
+                  style={option.colorHex ? { backgroundColor: option.colorHex } : undefined}
                 >
                   {!option.colorHex && (
                     <Text className="flex-1 text-base font-semibold text-foreground">
@@ -260,9 +207,7 @@ function CompactFilter({
                   {selected && (
                     <Text
                       className="text-lg font-bold text-primary"
-                      style={option.colorHex
-                        ? { color: getTextColor(option.colorHex) }
-                        : undefined}
+                      style={option.colorHex ? { color: getTextColor(option.colorHex) } : undefined}
                     >
                       ✓
                     </Text>

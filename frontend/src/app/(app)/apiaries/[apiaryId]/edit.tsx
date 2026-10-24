@@ -1,24 +1,11 @@
-import {
-  useLocalSearchParams,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import {
-  EditApiaryScreen,
-} from '@/features/apiaries/screens/edit-apiary-screen';
+import { EditApiaryScreen } from '@/features/apiaries/screens/edit-apiary-screen';
 
 export default function EditApiaryRoute() {
-  const {
-    apiaryId,
-  } =
-    useLocalSearchParams<{
-      apiaryId: string;
-    }>();
+  const { apiaryId } = useLocalSearchParams<{
+    apiaryId: string;
+  }>();
 
-  return (
-    <EditApiaryScreen
-      apiaryId={
-        apiaryId
-      }
-    />
-  );
+  return <EditApiaryScreen apiaryId={apiaryId} />;
 }

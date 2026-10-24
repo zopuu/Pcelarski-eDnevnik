@@ -1,56 +1,20 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  DateTimePicker,
-} from '@expo/ui/community/datetime-picker';
-import {
-  router,
-} from 'expo-router';
-import {
-  useState,
-} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DateTimePicker } from '@expo/ui/community/datetime-picker';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  HiveHeaderIllustration,
-} from '@/features/hives/components/hive-header-illustration';
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
+import { ApiError } from '@/shared/api/api-error';
+import { colors } from '@/shared/theme/colors';
 
-import {
-  useCurrentColony,
-} from '../hooks/use-current-colony';
-import {
-  useTransferColony,
-} from '../hooks/use-transfer-colony';
-import {
-  useTransferDestinations,
-} from '../hooks/use-transfer-destinations';
-import {
-  transferColonySchema,
-} from '../schemas/transfer-colony-schema';
-import type {
-  TransferColonyFormValues,
-} from '../schemas/transfer-colony-schema';
-import type {
-  TransferDestinationHive,
-} from '../types/transfer-colony';
+import { useCurrentColony } from '../hooks/use-current-colony';
+import { useTransferColony } from '../hooks/use-transfer-colony';
+import { useTransferDestinations } from '../hooks/use-transfer-destinations';
+import { transferColonySchema } from '../schemas/transfer-colony-schema';
+import type { TransferColonyFormValues } from '../schemas/transfer-colony-schema';
+import type { TransferDestinationHive } from '../types/transfer-colony';
 
 type TransferColonyScreenProps = {
   hiveId: string;
@@ -72,17 +36,13 @@ function formatDateOnly(value: Date) {
 function parseDateOnly(value: string) {
   const [year, month, day] = value.split('-').map(Number);
 
-  return year && month && day
-    ? new Date(year, month - 1, day)
-    : new Date();
+  return year && month && day ? new Date(year, month - 1, day) : new Date();
 }
 
 function formatDate(value: string) {
   const [year, month, day] = value.split('-');
 
-  return year && month && day
-    ? `${day}.${month}.${year}.`
-    : 'Izaberite datum';
+  return year && month && day ? `${day}.${month}.${year}.` : 'Izaberite datum';
 }
 
 function getTransferErrorMessage(error: unknown) {
@@ -112,10 +72,7 @@ function getTransferErrorMessage(error: unknown) {
   return 'Premeštanje društva nije uspelo. Pokušajte ponovo.';
 }
 
-export function TransferColonyScreen({
-  hiveId,
-  colonyId,
-}: TransferColonyScreenProps) {
+export function TransferColonyScreen({ hiveId, colonyId }: TransferColonyScreenProps) {
   const currentColonyQuery = useCurrentColony(hiveId);
   const destinationsQuery = useTransferDestinations(colonyId);
   const transferMutation = useTransferColony();
@@ -124,9 +81,7 @@ export function TransferColonyScreen({
     control,
     handleSubmit,
     setError,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<TransferColonyFormValues>({
     resolver: zodResolver(transferColonySchema),
     defaultValues: {
@@ -177,13 +132,9 @@ export function TransferColonyScreen({
         params: { hiveId: result.destinationHiveId },
       } as never);
     } catch (error) {
-      const apiError = error instanceof ApiError
-        ? error.problem?.errors
-        : undefined;
-      const destinationError = apiError?.DestinationHiveId?.[0] ??
-        apiError?.destinationHiveId?.[0];
-      const dateError = apiError?.TransferredOn?.[0] ??
-        apiError?.transferredOn?.[0];
+      const apiError = error instanceof ApiError ? error.problem?.errors : undefined;
+      const destinationError = apiError?.DestinationHiveId?.[0] ?? apiError?.destinationHiveId?.[0];
+      const dateError = apiError?.TransferredOn?.[0] ?? apiError?.transferredOn?.[0];
 
       if (destinationError) {
         setError('destinationHiveId', {
@@ -215,10 +166,7 @@ export function TransferColonyScreen({
     return (
       <LoadError
         onRetry={() => {
-          void Promise.all([
-            destinationsQuery.refetch(),
-            currentColonyQuery.refetch(),
-          ]);
+          void Promise.all([destinationsQuery.refetch(), currentColonyQuery.refetch()]);
         }}
       />
     );
@@ -231,20 +179,20 @@ export function TransferColonyScreen({
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={(
+        ListHeaderComponent={
           <TransferHeader
             onBack={() => {
               router.back();
             }}
           />
-        )}
-        ListEmptyComponent={(
+        }
+        ListEmptyComponent={
           <View className="rounded-3xl border border-border bg-surface px-5 py-6">
             <Text className="text-center text-base font-semibold text-foreground">
               Nema slobodnih košnica u trenutnom pčelinjaku.
             </Text>
           </View>
-        )}
+        }
         renderItem={({ item }) => (
           <Controller
             control={control}
@@ -260,12 +208,10 @@ export function TransferColonyScreen({
             )}
           />
         )}
-        ListFooterComponent={(
+        ListFooterComponent={
           <View className="pt-4">
             {errors.destinationHiveId && (
-              <Text className="mb-4 text-sm text-error">
-                {errors.destinationHiveId.message}
-              </Text>
+              <Text className="mb-4 text-sm text-error">{errors.destinationHiveId.message}</Text>
             )}
 
             <Controller
@@ -297,17 +243,13 @@ export function TransferColonyScreen({
               </Text>
             </Pressable>
           </View>
-        )}
+        }
       />
     </View>
   );
 }
 
-function TransferHeader({
-  onBack,
-}: {
-  onBack: () => void;
-}) {
+function TransferHeader({ onBack }: { onBack: () => void }) {
   return (
     <View>
       <Pressable
@@ -324,9 +266,7 @@ function TransferHeader({
         Izaberite slobodnu košnicu. Matica ostaje povezana sa društvom i prelazi zajedno sa njim.
       </Text>
 
-      <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-        Ciljna košnica
-      </Text>
+      <Text className="mb-3 mt-8 text-lg font-bold text-foreground">Ciljna košnica</Text>
     </View>
   );
 }
@@ -347,19 +287,13 @@ function DestinationHiveCard({
       onPress={onSelect}
       className={`mb-3 min-h-24 flex-row items-center rounded-3xl border px-4 py-3 ${selected ? 'border-primary bg-primary/10' : 'border-border bg-surface'}`}
     >
-      <HiveHeaderIllustration
-        colorHex={hive.colorHex}
-        size={52}
-        accessible={false}
-      />
+      <HiveHeaderIllustration colorHex={hive.colorHex} size={52} accessible={false} />
       <View className="ml-4 flex-1">
         <Text className="text-base font-bold text-foreground">{hive.label}</Text>
         <Text className="mt-1 text-sm text-muted">
           {hive.identificationNumber ?? 'Bez identifikacionog broja'}
         </Text>
-        <Text className="mt-1 text-xs font-semibold text-success">
-          Slobodna
-        </Text>
+        <Text className="mt-1 text-xs font-semibold text-success">Slobodna</Text>
       </View>
       <View
         className={`h-6 w-6 items-center justify-center rounded-full border-2 ${selected ? 'border-primary bg-primary' : 'border-border'}`}
@@ -416,11 +350,7 @@ function TransferDateField({
   );
 }
 
-function LoadingState({
-  label,
-}: {
-  label: string;
-}) {
+function LoadingState({ label }: { label: string }) {
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <ActivityIndicator size="large" color={colors.primary} />
@@ -429,11 +359,7 @@ function LoadingState({
   );
 }
 
-function LoadError({
-  onRetry,
-}: {
-  onRetry: () => void;
-}) {
+function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <View className="flex-1 items-center justify-center bg-background px-8">
       <Text className="text-center text-base font-semibold text-error">

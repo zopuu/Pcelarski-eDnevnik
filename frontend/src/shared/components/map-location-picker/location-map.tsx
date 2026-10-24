@@ -1,3 +1,1 @@
-export {
-  LocationMap,
-} from './location-map.native';
+export { LocationMap } from './location-map.native';

@@ -8,8 +8,8 @@ import type {
 export function registerBeekeeper(
   request: RegisterBeekeeperRequest,
 ): Promise<RegisterBeekeeperResponse> {
-  return apiClient.post<
-    RegisterBeekeeperResponse,
-    RegisterBeekeeperRequest
-  >('/api/auth/register', request);
+  return apiClient.post<RegisterBeekeeperResponse, RegisterBeekeeperRequest>(
+    '/api/auth/register',
+    request,
+  );
 }

@@ -1,5 +1,4 @@
-export type ValidationErrors =
-  Record<string, string[]>;
+export type ValidationErrors = Record<string, string[]>;
 
 export interface ProblemDetails {
   type?: string;
@@ -19,12 +18,7 @@ export class ApiError extends Error {
   readonly problem?: ProblemDetails;
   readonly payload?: unknown;
 
-  constructor(
-    status: number,
-    message: string,
-    problem?: ProblemDetails,
-    payload?: unknown,
-  ) {
+  constructor(status: number, message: string, problem?: ProblemDetails, payload?: unknown) {
     super(message);
 
     this.name = 'ApiError';
@@ -36,9 +30,7 @@ export class ApiError extends Error {
 
 export class MissingAccessTokenError extends Error {
   constructor() {
-    super(
-      'An authenticated API request was attempted without an access token.',
-    );
+    super('An authenticated API request was attempted without an access token.');
 
     this.name = 'MissingAccessTokenError';
   }

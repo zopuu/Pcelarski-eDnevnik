@@ -1,11 +1,5 @@
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useHive } from '@/features/hives/hooks/use-hive';
 import { colors } from '@/shared/theme/colors';
@@ -48,12 +42,7 @@ export function VarroaTreatmentDetailsScreen({
     return <LoadingState />;
   }
 
-  if (
-    hiveQuery.isError ||
-    treatmentQuery.isError ||
-    !hiveQuery.data ||
-    !treatmentQuery.data
-  ) {
+  if (hiveQuery.isError || treatmentQuery.isError || !hiveQuery.data || !treatmentQuery.data) {
     return (
       <ErrorState
         onRetry={() => {
@@ -81,14 +70,10 @@ export function VarroaTreatmentDetailsScreen({
         onPress={() => router.back()}
         className="mb-3 min-h-11 self-start justify-center py-2"
       >
-        <Text className="text-base font-semibold text-primary">
-          ← Istorija aktivnosti
-        </Text>
+        <Text className="text-base font-semibold text-primary">← Istorija aktivnosti</Text>
       </Pressable>
 
-      <Text className="text-2xl font-bold text-foreground">
-        Tretman protiv varoe
-      </Text>
+      <Text className="text-2xl font-bold text-foreground">Tretman protiv varoe</Text>
       <Text className="mt-1 text-sm leading-5 text-muted">
         Evidentirani podaci o tretmanu za košnicu {hiveQuery.data.label}.
       </Text>
@@ -120,9 +105,7 @@ function Details({ treatment }: { treatment: VarroaTreatmentDetails }) {
 
   return (
     <>
-      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-        Podaci o tretmanu
-      </Text>
+      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Podaci o tretmanu</Text>
       <View className="rounded-3xl border border-border bg-surface px-5 py-1">
         {rows.map((row, index) => (
           <View
@@ -141,13 +124,9 @@ function Details({ treatment }: { treatment: VarroaTreatmentDetails }) {
 
       {treatment.notes?.trim() && (
         <>
-          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-            Napomena
-          </Text>
+          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Napomena</Text>
           <View className="rounded-3xl border border-border bg-surface px-5 py-4">
-            <Text className="text-base leading-6 text-foreground">
-              {treatment.notes.trim()}
-            </Text>
+            <Text className="text-base leading-6 text-foreground">{treatment.notes.trim()}</Text>
           </View>
         </>
       )}

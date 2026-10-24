@@ -9,15 +9,7 @@ import {
   useWatch,
   type UseFormSetError,
 } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  Modal,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, Modal, Pressable, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { FormTextInput } from '@/features/hive-inspections/components/inspection-form-controls';
@@ -55,9 +47,7 @@ type RecordHoneyFrameFeedingScreenProps =
 const today = formatDateOnly(new Date());
 const frameCountOptions = Array.from({ length: 10 }, (_, index) => index + 1);
 
-export function RecordHoneyFrameFeedingScreen(
-  props: RecordHoneyFrameFeedingScreenProps,
-) {
+export function RecordHoneyFrameFeedingScreen(props: RecordHoneyFrameFeedingScreenProps) {
   const { openDrawer } = useAppDrawer();
   const isSingleHive = 'hiveId' in props;
   const hiveId = props.hiveId ?? '';
@@ -105,14 +95,11 @@ export function RecordHoneyFrameFeedingScreen(
     replace([{ hiveId, frameCount: 1 }]);
   }, [hiveId, hiveQuery.data, isSingleHive, replace, selectedHives]);
 
-  const isLoadingHives = isSingleHive
-    ? hiveQuery.isLoading
-    : apiaryHivesQuery.isLoading;
+  const isLoadingHives = isSingleHive ? hiveQuery.isLoading : apiaryHivesQuery.isLoading;
   const hasHiveError = isSingleHive
     ? hiveQuery.isError || !hiveQuery.data
     : apiaryHivesQuery.isError || !apiaryHivesQuery.data;
-  const hivesError =
-    typeof errors.hives?.message === 'string' ? errors.hives.message : undefined;
+  const hivesError = typeof errors.hives?.message === 'string' ? errors.hives.message : undefined;
 
   const toggleHive = (selectedHiveId: string) => {
     if (isSingleHive) {
@@ -183,16 +170,12 @@ export function RecordHoneyFrameFeedingScreen(
           <Text className="text-sm font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Prihrana ramovima meda
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Prihrana ramovima meda</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
           Unesite opšte podatke, a zatim odaberite košnice i broj ramova za svaku.
         </Text>
 
-        <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-          Opšti podaci
-        </Text>
+        <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Opšti podaci</Text>
         <View className="rounded-3xl border border-border bg-surface px-5 pb-1 pt-5">
           <Controller
             control={control}
@@ -251,9 +234,7 @@ export function RecordHoneyFrameFeedingScreen(
         ) : (
           <View className="gap-3">
             {selectableHives.map((hive) => {
-              const selectedIndex = fields.findIndex(
-                (field) => field.hiveId === hive.id,
-              );
+              const selectedIndex = fields.findIndex((field) => field.hiveId === hive.id);
               const selected = selectedIndex >= 0;
 
               return (
@@ -263,11 +244,7 @@ export function RecordHoneyFrameFeedingScreen(
                   selected={selected}
                   selectionDisabled={isSingleHive}
                   frameCount={selectedHives?.[selectedIndex]?.frameCount ?? 1}
-                  error={
-                    selected
-                      ? errors.hives?.[selectedIndex]?.frameCount?.message
-                      : undefined
-                  }
+                  error={selected ? errors.hives?.[selectedIndex]?.frameCount?.message : undefined}
                   onToggle={() => toggleHive(hive.id)}
                   onFrameCountChange={(frameCount) => {
                     if (selectedIndex < 0) {
@@ -443,15 +420,11 @@ function FrameCountSelect({
                     setIsOpen(false);
                   }}
                   className={`h-11 w-11 items-center justify-center rounded-xl border ${
-                    option === value
-                      ? 'border-primary bg-primary'
-                      : 'border-border bg-background'
+                    option === value ? 'border-primary bg-primary' : 'border-border bg-background'
                   }`}
                 >
                   <Text
-                    className={`font-bold ${
-                      option === value ? 'text-white' : 'text-foreground'
-                    }`}
+                    className={`font-bold ${option === value ? 'text-white' : 'text-foreground'}`}
                   >
                     {option}
                   </Text>
@@ -465,9 +438,7 @@ function FrameCountSelect({
   );
 }
 
-function toRequest(
-  values: RecordHoneyFrameFeedingFormValues,
-): RecordHoneyFrameFeedingRequest {
+function toRequest(values: RecordHoneyFrameFeedingFormValues): RecordHoneyFrameFeedingRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     frameSource: optionalText(values.frameSource),

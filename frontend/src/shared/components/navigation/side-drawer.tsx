@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 
 import {
@@ -16,12 +12,8 @@ import {
   Text,
 } from 'react-native';
 
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/shared/theme/colors';
 
 type SideDrawerProps = {
   visible: boolean;
@@ -44,118 +36,75 @@ export function SideDrawer({
   onLogout,
   isLoggingOut = false,
 }: SideDrawerProps) {
-  const { width } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   /*
    * 60% of phone width.
    * Maximum prevents it becoming huge
    * on tablets/web.
    */
-  const drawerWidth =
-    Math.min(
-      width * 0.6,
-      360,
-    );
+  const drawerWidth = Math.min(width * 0.6, 360);
 
-  const animation =
-    useRef(
-      new Animated.Value(0),
-    ).current;
+  const [animation] = useState(() => new Animated.Value(0));
 
-  const [mounted, setMounted] =
-    useState(visible);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      setMounted(true);
-
-      Animated.timing(
-        animation,
-        {
-          toValue: 1,
-          duration:
-            ANIMATION_DURATION,
-          useNativeDriver: true,
-        },
-      ).start();
-
-      return;
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    Animated.timing(
-      animation,
-      {
-        toValue: 0,
-        duration:
-          ANIMATION_DURATION,
+      Animated.timing(animation, {
+        toValue: 1,
+        duration: ANIMATION_DURATION,
         useNativeDriver: true,
-      },
-    ).start(({ finished }) => {
+      }).start(({ finished }) => {
+        if (finished) {
+          setMounted(true);
+        }
+      });
+
+      return;
+    }
+
+    Animated.timing(animation, {
+      toValue: 0,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
       if (finished) {
         setMounted(false);
       }
     });
-  }, [
-    animation,
-    mounted,
-    visible,
-  ]);
+  }, [animation, visible]);
 
-  if (!mounted) {
+  if (!visible && !mounted) {
     return null;
   }
 
-  const translateX =
-    animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [
-        -drawerWidth,
-        0,
-      ],
-    });
+  const translateX = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-drawerWidth, 0],
+  });
 
-  const overlayOpacity =
-    animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [
-        0,
-        0.4,
-      ],
-    });
+  const overlayOpacity = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.4],
+  });
 
   return (
     <Modal
       transparent
-      visible={mounted}
+      visible={visible || mounted}
       animationType="none"
       statusBarTranslucent
-      onRequestClose={
-        onClose
-      }
+      onRequestClose={onClose}
     >
-      <View
-        style={styles.root}
-      >
-        <Pressable
-          style={
-            StyleSheet.absoluteFill
-          }
-          onPress={
-            onClose
-          }
-        >
+      <View style={styles.root}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
           <Animated.View
             style={[
               StyleSheet.absoluteFill,
               styles.overlay,
               {
-                opacity:
-                  overlayOpacity,
+                opacity: overlayOpacity,
               },
             ]}
           />
@@ -165,8 +114,7 @@ export function SideDrawer({
           style={[
             styles.drawer,
             {
-              width:
-                drawerWidth,
+              width: drawerWidth,
 
               transform: [
                 {
@@ -177,10 +125,7 @@ export function SideDrawer({
           ]}
         >
           <SafeAreaView
-            edges={[
-              'top',
-              'bottom',
-            ]}
+            edges={['top', 'bottom']}
             className="
     flex-1
     bg-surface
@@ -211,19 +156,11 @@ export function SideDrawer({
                     bg-primary/15
                   "
                 >
-                  <Ionicons
-                    name="person"
-                    size={38}
-                    color={colors.primaryDark}
-                  />
+                  <Ionicons name="person" size={38} color={colors.primaryDark} />
                 </View>
 
                 {isProfileLoading ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.primary}
-                    className="mt-3"
-                  />
+                  <ActivityIndicator size="small" color={colors.primary} className="mt-3" />
                 ) : (
                   <Text
                     numberOfLines={2}
@@ -276,16 +213,9 @@ export function SideDrawer({
         "
                 >
                   {isLoggingOut ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={colors.error}
-                    />
+                    <ActivityIndicator size="small" color={colors.error} />
                   ) : (
-                    <Ionicons
-                      name="log-out-outline"
-                      size={24}
-                      color={colors.error}
-                    />
+                    <Ionicons name="log-out-outline" size={24} color={colors.error} />
                   )}
 
                   <Text
@@ -296,9 +226,7 @@ export function SideDrawer({
             text-error
           "
                   >
-                    {isLoggingOut
-                      ? 'Odjavljivanje...'
-                      : 'Odjavi se'}
+                    {isLoggingOut ? 'Odjavljivanje...' : 'Odjavi se'}
                   </Text>
                 </Pressable>
               </View>
@@ -310,31 +238,28 @@ export function SideDrawer({
   );
 }
 
-const styles =
-  StyleSheet.create({
-    root: {
-      flex: 1,
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+
+  overlay: {
+    backgroundColor: '#000000',
+  },
+
+  drawer: {
+    flex: 1,
+
+    shadowColor: '#000000',
+
+    shadowOffset: {
+      width: 4,
+      height: 0,
     },
 
-    overlay: {
-      backgroundColor:
-        '#000000',
-    },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
 
-    drawer: {
-      flex: 1,
-
-      shadowColor:
-        '#000000',
-
-      shadowOffset: {
-        width: 4,
-        height: 0,
-      },
-
-      shadowOpacity: 0.2,
-      shadowRadius: 12,
-
-      elevation: 12,
-    },
-  });
+    elevation: 12,
+  },
+});

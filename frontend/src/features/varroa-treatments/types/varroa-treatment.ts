@@ -7,17 +7,11 @@ export const varroaApplicationMethods = [
   'other',
 ] as const;
 
-export const varroaDoseUnits = [
-  'ml',
-  'strips',
-  'g',
-] as const;
+export const varroaDoseUnits = ['ml', 'strips', 'g'] as const;
 
-export type VarroaApplicationMethod =
-  (typeof varroaApplicationMethods)[number];
+export type VarroaApplicationMethod = (typeof varroaApplicationMethods)[number];
 
-export type VarroaDoseUnit =
-  (typeof varroaDoseUnits)[number];
+export type VarroaDoseUnit = (typeof varroaDoseUnits)[number];
 
 export type RecordVarroaTreatmentRequest = {
   performedAt: string;

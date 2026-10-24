@@ -1,15 +1,9 @@
-import {
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 
-import {
-  Image,
-} from 'expo-image';
+import { Image } from 'expo-image';
 
 type QueenHeaderIllustrationProps = {
-  markingColorHex:
-    | string
-    | null;
+  markingColorHex: string | null;
 
   size?: number;
 };
@@ -24,37 +18,26 @@ export function QueenHeaderIllustration({
   markingColorHex,
   size = ILLUSTRATION_WIDTH,
 }: QueenHeaderIllustrationProps) {
-  const scale =
-    size / ILLUSTRATION_WIDTH;
+  const scale = size / ILLUSTRATION_WIDTH;
 
   return (
     <View
       accessible
       accessibilityLabel={
-        markingColorHex
-          ? `Matica sa oznakom boje ${markingColorHex}`
-          : 'Matica bez oznake boje'
+        markingColorHex ? `Matica sa oznakom boje ${markingColorHex}` : 'Matica bez oznake boje'
       }
       className="items-center justify-center"
       style={{
         width: size,
-        height:
-          ILLUSTRATION_HEIGHT *
-          scale,
+        height: ILLUSTRATION_HEIGHT * scale,
       }}
     >
       <Image
-        source={
-          require(
-            '../../../../assets/images/bee_queen.png',
-          )
-        }
+        source={require('../../../../assets/images/bee_queen.png')}
         contentFit="contain"
         style={{
           width: size,
-          height:
-            ILLUSTRATION_HEIGHT *
-            scale,
+          height: ILLUSTRATION_HEIGHT * scale,
         }}
       />
 
@@ -65,24 +48,15 @@ export function QueenHeaderIllustration({
             rounded-full
           "
           style={{
-            backgroundColor:
-              markingColorHex,
+            backgroundColor: markingColorHex,
 
-            left:
-              MARKING_LEFT *
-              scale,
+            left: MARKING_LEFT * scale,
 
-            top:
-              MARKING_TOP *
-              scale,
+            top: MARKING_TOP * scale,
 
-            width:
-              MARKING_SIZE *
-              scale,
+            width: MARKING_SIZE * scale,
 
-            height:
-              MARKING_SIZE *
-              scale,
+            height: MARKING_SIZE * scale,
           }}
         />
       )}

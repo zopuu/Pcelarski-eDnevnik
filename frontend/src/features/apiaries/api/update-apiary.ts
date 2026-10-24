@@ -1,14 +1,7 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  UpdateApiaryRequest,
-  UpdateApiaryResponse,
-} from '../types/update-apiary';
-import {
-  appendApiaryImage,
-} from './apiary-image-form-data';
+import type { UpdateApiaryRequest, UpdateApiaryResponse } from '../types/update-apiary';
+import { appendApiaryImage } from './apiary-image-form-data';
 
 export async function updateApiary(
   apiaryId: string,
@@ -28,11 +21,7 @@ export async function updateApiary(
 
   await appendApiaryImage(formData, request.image);
 
-  return apiClient.put<UpdateApiaryResponse, FormData>(
-    `/api/apiaries/${apiaryId}`,
-    formData,
-    {
-      authenticated: true,
-    },
-  );
+  return apiClient.put<UpdateApiaryResponse, FormData>(`/api/apiaries/${apiaryId}`, formData, {
+    authenticated: true,
+  });
 }

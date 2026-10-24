@@ -1,37 +1,14 @@
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
-import {
-  router,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
-import {
-  useRelocation,
-} from '@/features/relocations/hooks/use-relocation';
-import type {
-  RelocationDetails,
-} from '@/features/relocations/types/relocation-details';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  LocationMap,
-} from '@/shared/components/map-location-picker/location-map';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useRelocation } from '@/features/relocations/hooks/use-relocation';
+import type { RelocationDetails } from '@/features/relocations/types/relocation-details';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { LocationMap } from '@/shared/components/map-location-picker/location-map';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
 type RelocationDetailsScreenProps = {
   relocationId: string;
@@ -117,9 +94,8 @@ export function RelocationDetailsScreen({
             {subject === 'hive' ? 'Selidba košnice' : 'Selidba'}
           </Text>
           <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-            {relocationQuery.data.origin.location.name?.trim() ||
-              'Polazište'} → {relocationQuery.data.destination.location.name?.trim() ||
-              'Odredište'}
+            {relocationQuery.data.origin.location.name?.trim() || 'Polazište'} →{' '}
+            {relocationQuery.data.destination.location.name?.trim() || 'Odredište'}
           </Text>
           <Text className="mt-2 text-sm text-muted">
             {formatDateTime(relocationQuery.data.occurredAtUtc)}
@@ -145,24 +121,31 @@ export function RelocationDetailsScreen({
   );
 }
 
-function GeneralDetails({
-  relocation,
-}: {
-  relocation: RelocationDetails;
-}) {
-  const relocationKindLabel = relocation.kind === 'wholeApiary'
-    ? 'Ceo pčelinjak'
-    : `${relocation.hiveCount ?? 0} košnica`;
+function GeneralDetails({ relocation }: { relocation: RelocationDetails }) {
+  const relocationKindLabel =
+    relocation.kind === 'wholeApiary' ? 'Ceo pčelinjak' : `${relocation.hiveCount ?? 0} košnica`;
 
   return (
     <View className="rounded-3xl border border-border bg-surface px-4 py-4">
       <DetailRow icon="swap-horizontal-outline" label="Obuhvat" value={relocationKindLabel} />
-      <DetailRow icon="car-outline" label="Prevoz" value={transportMethodLabels[relocation.transportMethod]} />
+      <DetailRow
+        icon="car-outline"
+        label="Prevoz"
+        value={transportMethodLabels[relocation.transportMethod]}
+      />
       {relocation.distanceKm !== null && (
-        <DetailRow icon="navigate-outline" label="Udaljenost" value={`${relocation.distanceKm} km`} />
+        <DetailRow
+          icon="navigate-outline"
+          label="Udaljenost"
+          value={`${relocation.distanceKm} km`}
+        />
       )}
       {relocation.costAmount !== null && (
-        <DetailRow icon="cash-outline" label="Trošak" value={`${relocation.costAmount} ${relocation.currencyCode ?? ''}`.trim()} />
+        <DetailRow
+          icon="cash-outline"
+          label="Trošak"
+          value={`${relocation.costAmount} ${relocation.currencyCode ?? ''}`.trim()}
+        />
       )}
       {relocation.notes && (
         <View className="mt-3 border-t border-border pt-3">
@@ -203,7 +186,9 @@ function PlaceDetails({
             <Text className="mt-1 text-sm text-muted">{place.location.altitudeMeters} m n/v</Text>
           )}
           {place.location.cadastralParcelNumber && (
-            <Text className="mt-1 text-sm text-muted">Parcela: {place.location.cadastralParcelNumber}</Text>
+            <Text className="mt-1 text-sm text-muted">
+              Parcela: {place.location.cadastralParcelNumber}
+            </Text>
           )}
           {place.location.description && (
             <Text className="mt-2 text-sm leading-5 text-muted">{place.location.description}</Text>
@@ -211,12 +196,24 @@ function PlaceDetails({
         </View>
 
         <View className="mt-4 gap-3">
-          <DetailRow icon="calendar-outline" label="Početak boravka" value={formatDate(place.stay.startedAtUtc)} />
+          <DetailRow
+            icon="calendar-outline"
+            label="Početak boravka"
+            value={formatDate(place.stay.startedAtUtc)}
+          />
           {endedAtUtc && (
-            <DetailRow icon="calendar-clear-outline" label="Kraj boravka" value={formatDate(endedAtUtc)} />
+            <DetailRow
+              icon="calendar-clear-outline"
+              label="Kraj boravka"
+              value={formatDate(endedAtUtc)}
+            />
           )}
           {place.stay.orientation && (
-            <DetailRow icon="compass-outline" label="Orijentacija ulaza" value={orientationLabels[place.stay.orientation]} />
+            <DetailRow
+              icon="compass-outline"
+              label="Orijentacija ulaza"
+              value={orientationLabels[place.stay.orientation]}
+            />
           )}
           {place.stay.note && (
             <DetailRow icon="chatbox-outline" label="Napomena boravka" value={place.stay.note} />
@@ -260,9 +257,27 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 function LoadingState() {
-  return <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color={colors.primary} /><Text className="mt-3 text-muted">Učitavanje selidbe...</Text></View>;
+  return (
+    <View className="flex-1 items-center justify-center">
+      <ActivityIndicator size="large" color={colors.primary} />
+      <Text className="mt-3 text-muted">Učitavanje selidbe...</Text>
+    </View>
+  );
 }
 
 function LoadError({ onRetry }: { onRetry: () => void }) {
-  return <View className="flex-1 items-center justify-center px-8"><Text className="text-center text-base font-semibold text-error">Nije moguće učitati selidbu.</Text><Pressable accessibilityRole="button" onPress={onRetry} className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"><Text className="font-bold text-background">Pokušaj ponovo</Text></Pressable></View>;
+  return (
+    <View className="flex-1 items-center justify-center px-8">
+      <Text className="text-center text-base font-semibold text-error">
+        Nije moguće učitati selidbu.
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
+      >
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
+      </Pressable>
+    </View>
+  );
 }

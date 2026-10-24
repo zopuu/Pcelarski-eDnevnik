@@ -21,21 +21,14 @@ export function SyrupFeedingResultModal({
   }
 
   return (
-    <Modal
-      transparent
-      animationType="fade"
-      visible
-      onRequestClose={onDone}
-    >
+    <Modal transparent animationType="fade" visible onRequestClose={onDone}>
       <View className="flex-1 items-center justify-center bg-black/45 px-5">
         <View className="w-full max-w-md overflow-hidden rounded-3xl bg-surface">
           <View className="items-center bg-primary px-6 pb-6 pt-7">
             <View className="h-14 w-14 items-center justify-center rounded-full bg-surface">
               <Ionicons name="checkmark" size={32} color={colors.success} />
             </View>
-            <Text className="mt-3 text-xl font-bold text-white">
-              Prihrana je sačuvana
-            </Text>
+            <Text className="mt-3 text-xl font-bold text-white">Prihrana je sačuvana</Text>
             <Text className="mt-1 text-center text-sm leading-5 text-white/90">
               Evidentirana je za {result.affectedHiveCount}{' '}
               {result.affectedHiveCount === 1 ? 'košnicu.' : 'košnice.'}

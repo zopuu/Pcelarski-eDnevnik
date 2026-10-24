@@ -1,19 +1,10 @@
-import type {
-  ReactNode,
-} from 'react';
+import type { ReactNode } from 'react';
 
-import {
-  Platform,
-  View,
-} from 'react-native';
+import { Platform, View } from 'react-native';
 
-import {
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT,
-} from '@/shared/components/contextual-action-bar/layout';
+import { CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT } from '@/shared/components/contextual-action-bar/layout';
 
 type ScreenProps = {
   children: ReactNode;
@@ -23,26 +14,15 @@ type ScreenProps = {
   contextualActionBar?: ReactNode;
 };
 
-export function Screen({
-  children,
-  header,
-  contextualActionBar,
-}: ScreenProps) {
-  const insets =
-    useSafeAreaInsets();
+export function Screen({ children, header, contextualActionBar }: ScreenProps) {
+  const insets = useSafeAreaInsets();
 
-  const hasContextualActionBar =
-    contextualActionBar != null;
+  const hasContextualActionBar = contextualActionBar !== null && contextualActionBar !== undefined;
 
-  const isWeb =
-    Platform.OS === 'web';
+  const isWeb = Platform.OS === 'web';
 
   const mobileBottomSpace =
-    !isWeb &&
-    hasContextualActionBar
-      ? CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT +
-        insets.bottom
-      : 0;
+    !isWeb && hasContextualActionBar ? CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT + insets.bottom : 0;
 
   return (
     <View
@@ -53,21 +33,18 @@ export function Screen({
     >
       {header}
 
-      {isWeb &&
-        contextualActionBar}
+      {isWeb && contextualActionBar}
 
       <View
         className="flex-1"
         style={{
-          paddingBottom:
-            mobileBottomSpace,
+          paddingBottom: mobileBottomSpace,
         }}
       >
         {children}
       </View>
 
-      {!isWeb &&
-        contextualActionBar}
+      {!isWeb && contextualActionBar}
     </View>
   );
 }

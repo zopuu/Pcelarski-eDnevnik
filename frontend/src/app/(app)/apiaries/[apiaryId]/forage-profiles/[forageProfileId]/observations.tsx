@@ -1,21 +1,11 @@
-import {
-  useLocalSearchParams,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import {
-  ForageObservationsScreen,
-} from '@/features/forage-observations/screens/forage-observations-screen';
+import { ForageObservationsScreen } from '@/features/forage-observations/screens/forage-observations-screen';
 
 export default function ForageProfileObservationsRoute() {
-  const {
-    forageProfileId,
-  } = useLocalSearchParams<{
+  const { forageProfileId } = useLocalSearchParams<{
     forageProfileId: string;
   }>();
 
-  return (
-    <ForageObservationsScreen
-      forageProfileId={forageProfileId}
-    />
-  );
+  return <ForageObservationsScreen forageProfileId={forageProfileId} />;
 }

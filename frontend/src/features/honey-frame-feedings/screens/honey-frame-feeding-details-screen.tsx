@@ -1,12 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useHive } from '@/features/hives/hooks/use-hive';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
@@ -35,12 +29,7 @@ export function HoneyFrameFeedingDetailsScreen({
     return <LoadingState />;
   }
 
-  if (
-    hiveQuery.isError ||
-    feedingQuery.isError ||
-    !hiveQuery.data ||
-    !feedingQuery.data
-  ) {
+  if (hiveQuery.isError || feedingQuery.isError || !hiveQuery.data || !feedingQuery.data) {
     return (
       <ErrorState
         onRetry={() => {
@@ -66,14 +55,10 @@ export function HoneyFrameFeedingDetailsScreen({
           onPress={() => router.back()}
           className="mb-3 min-h-11 self-start justify-center py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Istorija aktivnosti
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Istorija aktivnosti</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Prihrana ramovima meda
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Prihrana ramovima meda</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
           Evidentirani podaci o prihrani za košnicu {hiveQuery.data.label}.
         </Text>
@@ -106,9 +91,7 @@ function Details({ feeding }: { feeding: HoneyFrameFeedingDetails }) {
 
   return (
     <>
-      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-        Podaci o prihrani
-      </Text>
+      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Podaci o prihrani</Text>
       <View className="rounded-3xl border border-border bg-surface px-5 py-1">
         {rows.map((row, index) => (
           <View
@@ -127,22 +110,16 @@ function Details({ feeding }: { feeding: HoneyFrameFeedingDetails }) {
 
       {feeding.notes?.trim() && (
         <>
-          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-            Napomena
-          </Text>
+          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Napomena</Text>
           <View className="rounded-3xl border border-border bg-surface px-5 py-4">
-            <Text className="text-base leading-6 text-foreground">
-              {feeding.notes.trim()}
-            </Text>
+            <Text className="text-base leading-6 text-foreground">{feeding.notes.trim()}</Text>
           </View>
         </>
       )}
 
       {feeding.imageUrl && (
         <>
-          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-            Fotografija
-          </Text>
+          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Fotografija</Text>
           <View className="h-64 overflow-hidden rounded-3xl border border-border bg-surface">
             <Image
               source={`${environment.apiUrl}${feeding.imageUrl}`}

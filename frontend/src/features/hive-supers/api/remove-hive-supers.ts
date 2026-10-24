@@ -1,9 +1,6 @@
 import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  RemoveHiveSupersRequest,
-  RemoveHiveSupersResponse,
-} from '../types/hive-super';
+import type { RemoveHiveSupersRequest, RemoveHiveSupersResponse } from '../types/hive-super';
 
 export function removeHiveSupers(
   hiveId: string,

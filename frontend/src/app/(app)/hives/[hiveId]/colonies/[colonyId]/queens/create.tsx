@@ -1,16 +1,9 @@
-import {
-  useLocalSearchParams,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import {
-  CreateQueenScreen,
-} from '@/features/queens/screens/create-queen-screen';
+import { CreateQueenScreen } from '@/features/queens/screens/create-queen-screen';
 
 export default function CreateQueenRoute() {
-  const {
-    hiveId,
-    colonyId,
-  } = useLocalSearchParams<{
+  const { hiveId, colonyId } = useLocalSearchParams<{
     hiveId: string;
     colonyId: string;
   }>();

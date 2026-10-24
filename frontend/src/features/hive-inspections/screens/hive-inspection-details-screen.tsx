@@ -1,20 +1,14 @@
-import { router } from "expo-router";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
-import { useCurrentColony } from "@/features/colonies/hooks/use-current-colony";
-import { useHive } from "@/features/hives/hooks/use-hive";
-import { useCurrentQueen } from "@/features/queens/hooks/use-current-queen";
-import { colors } from "@/shared/theme/colors";
+import { useCurrentColony } from '@/features/colonies/hooks/use-current-colony';
+import { useHive } from '@/features/hives/hooks/use-hive';
+import { useCurrentQueen } from '@/features/queens/hooks/use-current-queen';
+import { colors } from '@/shared/theme/colors';
 
-import { HiveInspectionHeader } from "../components/hive-inspection-header";
-import { useHiveInspection } from "../hooks/use-hive-inspection";
-import type { HiveInspectionDetails } from "../types/hive-inspection";
+import { HiveInspectionHeader } from '../components/hive-inspection-header';
+import { useHiveInspection } from '../hooks/use-hive-inspection';
+import type { HiveInspectionDetails } from '../types/hive-inspection';
 import {
   getBroodPatternLabel,
   getBroodStageLabel,
@@ -22,7 +16,7 @@ import {
   getInspectionTypeLabel,
   getPestLabel,
   getPredatorLabel,
-} from "../utils/inspection-labels";
+} from '../utils/inspection-labels';
 
 type HiveInspectionDetailsScreenProps = {
   hiveId: string;
@@ -35,12 +29,12 @@ type DetailRow = {
 };
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("sr-Latn-RS", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Intl.DateTimeFormat('sr-Latn-RS', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(new Date(value));
 }
 
@@ -48,12 +42,12 @@ function rating(value: number | null) {
   return value === null ? null : `${value}/5`;
 }
 
-function count(value: number | null, suffix = "") {
+function count(value: number | null, suffix = '') {
   return value === null ? null : `${value}${suffix}`;
 }
 
 function booleanValue(value: boolean | null) {
-  return value === null ? null : value ? "Da" : "Ne";
+  return value === null ? null : value ? 'Da' : 'Ne';
 }
 
 function selected<T>(value: T | null, getLabel: (item: T) => string) {
@@ -77,12 +71,7 @@ export function HiveInspectionDetailsScreen({
     return <LoadingState />;
   }
 
-  if (
-    hiveQuery.isError ||
-    inspectionQuery.isError ||
-    !hiveQuery.data ||
-    !inspectionQuery.data
-  ) {
+  if (hiveQuery.isError || inspectionQuery.isError || !hiveQuery.data || !inspectionQuery.data) {
     return (
       <ErrorState
         onRetry={() => {
@@ -92,8 +81,7 @@ export function HiveInspectionDetailsScreen({
     );
   }
 
-  const isQueenLoading =
-    colonyQuery.isLoading || Boolean(colonyQuery.data && queenQuery.isLoading);
+  const isQueenLoading = colonyQuery.isLoading || Boolean(colonyQuery.data && queenQuery.isLoading);
 
   return (
     <ScrollView
@@ -111,17 +99,11 @@ export function HiveInspectionDetailsScreen({
         onPress={() => router.back()}
         className="mb-3 min-h-11 self-start justify-center py-2"
       >
-        <Text className="text-base font-semibold text-primary">
-          ← Istorija aktivnosti
-        </Text>
+        <Text className="text-base font-semibold text-primary">← Istorija aktivnosti</Text>
       </Pressable>
 
-      <Text className="text-2xl font-bold text-foreground">
-        Pregled košnice
-      </Text>
-      <Text className="mt-1 text-sm leading-5 text-muted">
-        Evidentirani podaci sa pregleda.
-      </Text>
+      <Text className="text-2xl font-bold text-foreground">Pregled košnice</Text>
+      <Text className="mt-1 text-sm leading-5 text-muted">Evidentirani podaci sa pregleda.</Text>
 
       <HiveInspectionHeader
         hive={hiveQuery.data}
@@ -134,141 +116,131 @@ export function HiveInspectionDetailsScreen({
   );
 }
 
-function InspectionDetails({
-  inspection,
-}: {
-  inspection: HiveInspectionDetails;
-}) {
+function InspectionDetails({ inspection }: { inspection: HiveInspectionDetails }) {
   const overviewRows: DetailRow[] = [
     {
-      label: "Datum i vreme pregleda",
+      label: 'Datum i vreme pregleda',
       value: formatDateTime(inspection.performedAt),
     },
     {
-      label: "Vrsta pregleda",
+      label: 'Vrsta pregleda',
       value:
         inspection.inspectionType === null
           ? null
           : getInspectionTypeLabel(inspection.inspectionType),
     },
-    { label: "Opšte stanje", value: rating(inspection.overallConditionRating) },
-    { label: "Brojnost pčela", value: rating(inspection.populationRating) },
-    { label: "Mirnoća društva", value: rating(inspection.temperamentRating) },
-    { label: "Snaga društva", value: rating(inspection.colonyStrength) },
+    { label: 'Opšte stanje', value: rating(inspection.overallConditionRating) },
+    { label: 'Brojnost pčela', value: rating(inspection.populationRating) },
+    { label: 'Mirnoća društva', value: rating(inspection.temperamentRating) },
+    { label: 'Snaga društva', value: rating(inspection.colonyStrength) },
   ];
 
   const observationRows: DetailRow[] = [
-    { label: "Društvo se rojilo", value: booleanValue(inspection.hasSwarmed) },
-    { label: "Matica viđena", value: booleanValue(inspection.queenSeen) },
-    { label: "Matica obeležena", value: booleanValue(inspection.queenMarked) },
+    { label: 'Društvo se rojilo', value: booleanValue(inspection.hasSwarmed) },
+    { label: 'Matica viđena', value: booleanValue(inspection.queenSeen) },
+    { label: 'Matica obeležena', value: booleanValue(inspection.queenMarked) },
   ];
 
   const frameRows: DetailRow[] = [
     {
-      label: "Ramovi prekriveni pčelama",
+      label: 'Ramovi prekriveni pčelama',
       value: count(inspection.beeCoveredFrameCount),
     },
-    { label: "Ramovi sa leglom", value: count(inspection.broodFrameCount) },
-    { label: "Ramovi sa medom", value: count(inspection.honeyFrameCount) },
-    { label: "Ramovi sa polenom", value: count(inspection.pollenFrameCount) },
+    { label: 'Ramovi sa leglom', value: count(inspection.broodFrameCount) },
+    { label: 'Ramovi sa medom', value: count(inspection.honeyFrameCount) },
+    { label: 'Ramovi sa polenom', value: count(inspection.pollenFrameCount) },
     {
-      label: "Pokrivenost leglom",
-      value: count(inspection.broodCoveragePercentage, "%"),
+      label: 'Pokrivenost leglom',
+      value: count(inspection.broodCoveragePercentage, '%'),
     },
     {
-      label: "Ramovi sa otvorenim leglom",
+      label: 'Ramovi sa otvorenim leglom',
       value: count(inspection.openBroodFrameCount),
     },
     {
-      label: "Ramovi sa zatvorenim leglom",
+      label: 'Ramovi sa zatvorenim leglom',
       value: count(inspection.cappedBroodFrameCount),
     },
   ];
 
   const foodRows: DetailRow[] = [
-    { label: "Zalihe meda", value: rating(inspection.honeyStoresRating) },
-    { label: "Zalihe polena", value: rating(inspection.pollenStoresRating) },
+    { label: 'Zalihe meda', value: rating(inspection.honeyStoresRating) },
+    { label: 'Zalihe polena', value: rating(inspection.pollenStoresRating) },
     {
-      label: "Ukupna procena hrane",
+      label: 'Ukupna procena hrane',
       value: rating(inspection.foodStoreAssessment),
     },
     {
-      label: "Procena dostupnog polena",
+      label: 'Procena dostupnog polena',
       value: rating(inspection.pollenStoreAssessment),
     },
-    { label: "Rizik od gladovanja", value: rating(inspection.starvationRisk) },
+    { label: 'Rizik od gladovanja', value: rating(inspection.starvationRisk) },
   ];
 
   const broodRows: DetailRow[] = [
     {
-      label: "Obrazac legla",
+      label: 'Obrazac legla',
       value: selected(inspection.broodPattern, getBroodPatternLabel),
     },
     {
-      label: "Stadijum legla",
+      label: 'Stadijum legla',
       value: selected(inspection.broodStage, getBroodStageLabel),
     },
-    { label: "Prisustvo larvi", value: rating(inspection.larvaePresence) },
-    { label: "Kvalitet legla", value: rating(inspection.broodQuality) },
+    { label: 'Prisustvo larvi', value: rating(inspection.larvaePresence) },
+    { label: 'Kvalitet legla', value: rating(inspection.broodQuality) },
   ];
 
   const droneRows: DetailRow[] = [
     {
-      label: "Trutovsko leglo prisutno",
+      label: 'Trutovsko leglo prisutno',
       value: booleanValue(inspection.droneBroodPresent),
     },
     {
-      label: "Obim trutovskog legla",
+      label: 'Obim trutovskog legla',
       value: rating(inspection.droneBroodExtent),
     },
     {
-      label: "Odnos trutova i radilica",
+      label: 'Odnos trutova i radilica',
       value: rating(inspection.droneWorkerBalance),
     },
   ];
 
   const queenRows: DetailRow[] = [
-    { label: "Broj matičnjaka", value: count(inspection.queenCellCount) },
-    { label: "Stadijum matičnjaka", value: rating(inspection.queenCellStage) },
-    { label: "Nagon za rojenjem", value: rating(inspection.swarmingTendency) },
+    { label: 'Broj matičnjaka', value: count(inspection.queenCellCount) },
+    { label: 'Stadijum matičnjaka', value: rating(inspection.queenCellStage) },
+    { label: 'Nagon za rojenjem', value: rating(inspection.swarmingTendency) },
   ];
 
   const healthRows: DetailRow[] = [
-    { label: "Nivo varoe", value: rating(inspection.varroaLevel) },
+    { label: 'Nivo varoe', value: rating(inspection.varroaLevel) },
     {
-      label: "Bolest",
+      label: 'Bolest',
       value:
         inspection.disease === null
           ? null
-          : customValue(
-              getDiseaseLabel(inspection.disease),
-              inspection.diseaseOther,
-            ),
+          : customValue(getDiseaseLabel(inspection.disease), inspection.diseaseOther),
     },
     {
-      label: "Štetočina",
+      label: 'Štetočina',
       value:
         inspection.pest === null
           ? null
           : customValue(getPestLabel(inspection.pest), inspection.pestOther),
     },
     {
-      label: "Predator",
+      label: 'Predator',
       value:
         inspection.predator === null
           ? null
-          : customValue(
-              getPredatorLabel(inspection.predator),
-              inspection.predatorOther,
-            ),
+          : customValue(getPredatorLabel(inspection.predator), inspection.predatorOther),
     },
-    { label: "Prisustvo buđi", value: booleanValue(inspection.moldPresent) },
+    { label: 'Prisustvo buđi', value: booleanValue(inspection.moldPresent) },
     {
-      label: "Prekomerna vlaga",
+      label: 'Prekomerna vlaga',
       value: booleanValue(inspection.excessMoisturePresent),
     },
-    { label: "Nivo mrtvih pčela", value: rating(inspection.deadBeeLevel) },
-    { label: "Miris", value: rating(inspection.odor) },
+    { label: 'Nivo mrtvih pčela', value: rating(inspection.deadBeeLevel) },
+    { label: 'Miris', value: rating(inspection.odor) },
   ];
 
   return (
@@ -285,9 +257,7 @@ function InspectionDetails({
         <>
           <SectionTitle>Napomena</SectionTitle>
           <View className="rounded-3xl border border-border bg-surface px-5 py-4">
-            <Text className="text-base leading-6 text-foreground">
-              {inspection.notes.trim()}
-            </Text>
+            <Text className="text-base leading-6 text-foreground">{inspection.notes.trim()}</Text>
           </View>
         </>
       )}
@@ -310,7 +280,7 @@ function DetailsSection({ title, rows }: { title: string; rows: DetailRow[] }) {
           <View
             key={row.label}
             className={`flex-row items-start justify-between gap-6 py-3 ${
-              index === presentRows.length - 1 ? "" : "border-b border-border"
+              index === presentRows.length - 1 ? '' : 'border-b border-border'
             }`}
           >
             <Text className="flex-1 text-sm text-muted">{row.label}</Text>
@@ -325,11 +295,7 @@ function DetailsSection({ title, rows }: { title: string; rows: DetailRow[] }) {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-7 text-lg font-bold text-foreground">{children}</Text>;
 }
 
 function LoadingState() {

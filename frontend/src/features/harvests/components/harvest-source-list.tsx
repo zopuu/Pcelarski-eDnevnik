@@ -29,9 +29,7 @@ export function HarvestSourceList({ sources }: { sources: HarvestSource[] }) {
             <Text className="flex-1 text-base font-bold text-foreground">
               {group[0]?.hiveLabel || 'Košnica bez oznake'}
             </Text>
-            <Text className="text-xs font-semibold text-muted">
-              Broj nastavaka: {group.length}
-            </Text>
+            <Text className="text-xs font-semibold text-muted">Broj nastavaka: {group.length}</Text>
           </View>
           {group.map((source, index) => (
             <HarvestSourceItem
@@ -47,7 +45,15 @@ export function HarvestSourceList({ sources }: { sources: HarvestSource[] }) {
   );
 }
 
-function HarvestSourceItem({ source, position, separated }: { source: HarvestSource; position: number; separated: boolean }) {
+function HarvestSourceItem({
+  source,
+  position,
+  separated,
+}: {
+  source: HarvestSource;
+  position: number;
+  separated: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   return (
     <View className={`${separated ? 'border-t border-border' : ''} px-4 py-4`}>
@@ -74,13 +80,22 @@ function HarvestSourceItem({ source, position, separated }: { source: HarvestSou
             <Text className="flex-1 text-sm font-semibold text-primary">
               {expanded ? 'Sakrij istoriju lokacija' : 'Istorija lokacija'}
             </Text>
-            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={17} color={colors.primary} />
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={17}
+              color={colors.primary}
+            />
           </Pressable>
           {expanded && (
             <View className="mt-2 rounded-2xl bg-background px-4 py-3">
               {source.exposureSegments.map((segment, index) => (
-                <View key={`${segment.apiaryStayId}-${index}`} className={index > 0 ? 'mt-3 border-t border-border pt-3' : ''}>
-                  <Text className="font-semibold text-foreground">{segment.locationName || 'Lokacija bez naziva'}</Text>
+                <View
+                  key={`${segment.apiaryStayId}-${index}`}
+                  className={index > 0 ? 'mt-3 border-t border-border pt-3' : ''}
+                >
+                  <Text className="font-semibold text-foreground">
+                    {segment.locationName || 'Lokacija bez naziva'}
+                  </Text>
                   <Text className="mt-1 text-xs text-muted">
                     {formatPeriod(segment.startedOn, segment.endedOn)} · {segment.durationDays} dana
                   </Text>

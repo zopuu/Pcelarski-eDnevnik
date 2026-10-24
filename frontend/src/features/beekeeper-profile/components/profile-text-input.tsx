@@ -1,15 +1,7 @@
-import type {
-  TextInputProps,
-} from 'react-native';
-import {
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import type { TextInputProps } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type ProfileTextInputProps = {
   label: string;
@@ -54,9 +46,7 @@ export function ProfileTextInput({
       </Text>
 
       <TextInput
-        accessibilityLabel={
-          accessibilityLabel ?? label
-        }
+        accessibilityLabel={accessibilityLabel ?? label}
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
@@ -64,29 +54,19 @@ export function ProfileTextInput({
         placeholderTextColor={colors.muted}
         secureTextEntry={secureTextEntry}
         multiline={multiline}
-        textAlignVertical={
-          multiline ? 'top' : 'center'
-        }
+        textAlignVertical={multiline ? 'top' : 'center'}
         autoCapitalize={autoCapitalize}
         autoComplete={autoComplete}
         keyboardType={keyboardType}
         className={`
-          ${
-            multiline
-              ? 'min-h-24 py-3'
-              : 'h-14'
-          }
+          ${multiline ? 'min-h-24 py-3' : 'h-14'}
           rounded-2xl
           border
           bg-surface
           px-4
           text-base
           text-foreground
-          ${
-            error
-              ? 'border-error'
-              : 'border-border'
-          }
+          ${error ? 'border-error' : 'border-border'}
         `}
       />
 

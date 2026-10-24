@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from 'react-native';
 
-import Ionicons from "@react-native-vector-icons/ionicons";
+import Ionicons from '@react-native-vector-icons/ionicons';
 
-import { colors } from "@/shared/theme/colors";
+import { colors } from '@/shared/theme/colors';
 
 export type ChoiceOption<T extends string> = {
   value: T;
@@ -34,24 +34,12 @@ export function InspectionSection({
       >
         <View className="flex-1 pr-3">
           <Text className="text-base font-bold text-foreground">{title}</Text>
-          {description && (
-            <Text className="mt-1 text-xs leading-4 text-muted">
-              {description}
-            </Text>
-          )}
+          {description && <Text className="mt-1 text-xs leading-4 text-muted">{description}</Text>}
         </View>
-        <Ionicons
-          name={isOpen ? "chevron-up" : "chevron-down"}
-          size={21}
-          color={colors.muted}
-        />
+        <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={21} color={colors.muted} />
       </Pressable>
 
-      {isOpen && (
-        <View className="border-t border-border px-5 pb-1 pt-5">
-          {children}
-        </View>
-      )}
+      {isOpen && <View className="border-t border-border px-5 pb-1 pt-5">{children}</View>}
     </View>
   );
 }
@@ -70,12 +58,8 @@ export function RatingField({
   return (
     <View className="mb-5">
       <View className="mb-2 flex-row items-center justify-between">
-        <Text className="flex-1 text-sm font-semibold text-foreground">
-          {label}
-        </Text>
-        <Text className="ml-3 text-xs text-muted">
-          {value ? `${value}/5` : "Nije uneto"}
-        </Text>
+        <Text className="flex-1 text-sm font-semibold text-foreground">{label}</Text>
+        <Text className="ml-3 text-xs text-muted">{value ? `${value}/5` : 'Nije uneto'}</Text>
       </View>
       <View className="flex-row gap-2">
         {[1, 2, 3, 4, 5].map((rating) => {
@@ -89,14 +73,12 @@ export function RatingField({
               accessibilityState={{ selected }}
               onPress={() => onChange(selected ? null : rating)}
               className={`min-h-12 flex-1 items-center justify-center rounded-xl border ${
-                selected
-                  ? "border-primary bg-primary"
-                  : "border-border bg-background"
+                selected ? 'border-primary bg-primary' : 'border-border bg-background'
               }`}
             >
               <Text
                 className={`text-base font-bold ${
-                  selected ? "text-background" : "text-foreground"
+                  selected ? 'text-background' : 'text-foreground'
                 }`}
               >
                 {rating}
@@ -139,9 +121,7 @@ export function CountField({
 
   return (
     <View className="mb-5">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
       <View className="flex-row items-center gap-2">
         <Pressable
           accessibilityRole="button"
@@ -149,7 +129,7 @@ export function CountField({
           disabled={value === null}
           onPress={decrement}
           className={`h-14 w-14 items-center justify-center rounded-2xl border border-border bg-background ${
-            value === null ? "opacity-40" : ""
+            value === null ? 'opacity-40' : ''
           }`}
         >
           <Ionicons name="remove" size={24} color={colors.foreground} />
@@ -158,9 +138,9 @@ export function CountField({
         <View className="h-14 flex-1 flex-row items-center rounded-2xl border border-border bg-background px-3">
           <TextInput
             accessibilityLabel={label}
-            value={value === null ? "" : String(value)}
+            value={value === null ? '' : String(value)}
             onChangeText={(text) => {
-              const digits = text.replace(/[^0-9]/g, "");
+              const digits = text.replace(/[^0-9]/g, '');
               onChange(digits ? Number(digits) : null);
             }}
             keyboardType="number-pad"
@@ -170,11 +150,7 @@ export function CountField({
             selectionColor={colors.primary}
             className="flex-1 text-center text-lg font-bold text-foreground"
           />
-          {suffix && (
-            <Text className="ml-1 text-sm font-semibold text-muted">
-              {suffix}
-            </Text>
-          )}
+          {suffix && <Text className="ml-1 text-sm font-semibold text-muted">{suffix}</Text>}
         </View>
 
         <Pressable
@@ -183,7 +159,7 @@ export function CountField({
           disabled={value !== null && value >= maximum}
           onPress={increment}
           className={`h-14 w-14 items-center justify-center rounded-2xl border border-border bg-background ${
-            value !== null && value >= maximum ? "opacity-40" : ""
+            value !== null && value >= maximum ? 'opacity-40' : ''
           }`}
         >
           <Ionicons name="add" size={24} color={colors.foreground} />
@@ -205,13 +181,11 @@ export function BooleanField({
 }) {
   return (
     <View className="mb-5">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
       <View className="flex-row gap-2">
         {[
-          { value: true, label: "Da" },
-          { value: false, label: "Ne" },
+          { value: true, label: 'Da' },
+          { value: false, label: 'Ne' },
         ].map((option) => {
           const selected = value === option.value;
 
@@ -222,16 +196,10 @@ export function BooleanField({
               accessibilityState={{ selected }}
               onPress={() => onChange(selected ? null : option.value)}
               className={`min-h-12 flex-1 items-center justify-center rounded-2xl border ${
-                selected
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-background"
+                selected ? 'border-primary bg-primary/10' : 'border-border bg-background'
               }`}
             >
-              <Text
-                className={`font-bold ${
-                  selected ? "text-primary" : "text-foreground"
-                }`}
-              >
+              <Text className={`font-bold ${selected ? 'text-primary' : 'text-foreground'}`}>
                 {option.label}
               </Text>
             </Pressable>
@@ -258,9 +226,7 @@ export function EnumChoiceField<T extends string>({
   return (
     <View className="mb-5">
       <View className="mb-2 flex-row items-center justify-between">
-        <Text className="flex-1 text-sm font-semibold text-foreground">
-          {label}
-        </Text>
+        <Text className="flex-1 text-sm font-semibold text-foreground">{label}</Text>
         {value && (
           <Pressable
             accessibilityRole="button"
@@ -282,15 +248,11 @@ export function EnumChoiceField<T extends string>({
               accessibilityState={{ selected }}
               onPress={() => onChange(selected ? null : option.value)}
               className={`min-h-11 justify-center rounded-2xl border px-3 py-2 ${
-                selected
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-background"
+                selected ? 'border-primary bg-primary/10' : 'border-border bg-background'
               }`}
             >
               <Text
-                className={`text-sm font-semibold ${
-                  selected ? "text-primary" : "text-foreground"
-                }`}
+                className={`text-sm font-semibold ${selected ? 'text-primary' : 'text-foreground'}`}
               >
                 {option.label}
               </Text>
@@ -320,9 +282,7 @@ export function FormTextInput({
 }) {
   return (
     <View className="mb-5">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -330,10 +290,10 @@ export function FormTextInput({
         placeholderTextColor={colors.muted}
         selectionColor={colors.primary}
         multiline={multiline}
-        textAlignVertical={multiline ? "top" : "center"}
+        textAlignVertical={multiline ? 'top' : 'center'}
         className={`rounded-2xl border bg-background px-4 text-base text-foreground ${
-          multiline ? "min-h-28 py-4" : "h-14"
-        } ${error ? "border-error" : "border-border"}`}
+          multiline ? 'min-h-28 py-4' : 'h-14'
+        } ${error ? 'border-error' : 'border-border'}`}
       />
       {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>

@@ -8,9 +8,7 @@ import type {
 export function recordHiveInsulation(
   request: RecordHiveInsulationRequest,
 ): Promise<RecordHiveInsulationResponse> {
-  return apiClient.post<RecordHiveInsulationResponse>(
-    '/api/hive-actions/insulation',
-    request,
-    { authenticated: true },
-  );
+  return apiClient.post<RecordHiveInsulationResponse>('/api/hive-actions/insulation', request, {
+    authenticated: true,
+  });
 }

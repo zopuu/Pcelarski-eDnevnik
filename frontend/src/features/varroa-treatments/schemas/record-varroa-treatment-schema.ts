@@ -1,14 +1,8 @@
 import { z } from 'zod';
 
-import {
-  formatDateOnly,
-  isDateOnly,
-} from '@/shared/utils/date-only';
+import { formatDateOnly, isDateOnly } from '@/shared/utils/date-only';
 
-import {
-  varroaApplicationMethods,
-  varroaDoseUnits,
-} from '../types/varroa-treatment';
+import { varroaApplicationMethods, varroaDoseUnits } from '../types/varroa-treatment';
 
 export const recordVarroaTreatmentSchema = z.object({
   performedOn: z
@@ -36,15 +30,10 @@ export const recordVarroaTreatmentSchema = z.object({
     error: 'Izaberite jedinicu doze.',
   }),
   notes: z.string().max(1000, 'Napomena može imati najviše 1000 znakova.'),
-  selectedHiveIds: z.array(z.string().uuid()).min(
-    1,
-    'Izaberite najmanje jednu košnicu.',
-  ),
+  selectedHiveIds: z.array(z.string().uuid()).min(1, 'Izaberite najmanje jednu košnicu.'),
 });
 
-export type RecordVarroaTreatmentFormValues = z.infer<
-  typeof recordVarroaTreatmentSchema
->;
+export type RecordVarroaTreatmentFormValues = z.infer<typeof recordVarroaTreatmentSchema>;
 
 function isValidDose(value: string) {
   if (!/^\d+(?:[.,]\d{1,2})?$/.test(value)) {

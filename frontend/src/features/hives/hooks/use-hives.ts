@@ -1,30 +1,15 @@
-import {
-  useQuery,
-} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
-import {
-  getHives,
-} from '../api/get-hives';
+import { getHives } from '../api/get-hives';
 
-import {
-  hiveQueryKeys,
-} from '../api/hive-query-keys';
+import { hiveQueryKeys } from '../api/hive-query-keys';
 
-export function useHives(
-  apiaryId: string,
-) {
+export function useHives(apiaryId: string) {
   return useQuery({
-    queryKey:
-      hiveQueryKeys.byApiary(
-        apiaryId,
-      ),
+    queryKey: hiveQueryKeys.byApiary(apiaryId),
 
-    queryFn: () =>
-      getHives(
-        apiaryId,
-      ),
+    queryFn: () => getHives(apiaryId),
 
-    enabled:
-      apiaryId.length > 0,
+    enabled: apiaryId.length > 0,
   });
 }

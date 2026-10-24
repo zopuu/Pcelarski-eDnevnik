@@ -1,729 +1,496 @@
-import {
-    router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-    useState,
-} from 'react';
+import { useState } from 'react';
 
-import {
-    ActivityIndicator,
-    Alert,
-    Pressable,
-    ScrollView,
-    Text,
-    View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
-import {
-    useHive,
-} from '../hooks/use-hive';
+import { useHive } from '../hooks/use-hive';
 
-import {
-    useAppDrawer,
-} from '@/providers/app-drawer-provider';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
 
-import {
-    ActionOverflowSheet,
-} from '@/shared/components/contextual-action-bar/action-overflow-sheet';
+import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
 
-import {
-    ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import {
-    ContextualAction
-} from '@/shared/components/contextual-action-bar/types';
-import {
-    AppHeader,
-} from '@/shared/components/navigation/app-header';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { ContextualAction } from '@/shared/components/contextual-action-bar/types';
+import { AppHeader } from '@/shared/components/navigation/app-header';
 
-import {
-    Screen,
-} from '@/shared/components/screen/screen';
+import { Screen } from '@/shared/components/screen/screen';
 
-import {
-    colors,
-} from '@/shared/theme/colors';
-import {
-    useCurrentColony,
-} from '@/features/colonies/hooks/use-current-colony';
+import { colors } from '@/shared/theme/colors';
+import { useCurrentColony } from '@/features/colonies/hooks/use-current-colony';
 
-import {
-    useCurrentQueen,
-} from '@/features/queens/hooks/use-current-queen';
-import {
-    HiveHeaderIllustration,
-} from '@/features/hives/components/hive-header-illustration';
-import {
-    QueenMarkingColorSwatch,
-} from '@/features/queens/components/queen-marking-color-swatch';
-import {
-    useHiveSupers,
-} from '@/features/hive-supers/hooks/use-hive-supers';
+import { useCurrentQueen } from '@/features/queens/hooks/use-current-queen';
+import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
+import { QueenMarkingColorSwatch } from '@/features/queens/components/queen-marking-color-swatch';
+import { useHiveSupers } from '@/features/hive-supers/hooks/use-hive-supers';
 
 type HiveDetailsScreenProps = {
-    hiveId: string;
+  hiveId: string;
 };
 
-const hiveTypeLabels:
-    Record<string, string> = {
-    dadantBlatt: 'DB',
-    langstrothRoot: 'LR',
-    albertiZnidersic: 'AŽ',
-    farrar: 'Farar',
-    nucleus: 'Nukleus',
-    other: 'Ostalo',
+const hiveTypeLabels: Record<string, string> = {
+  dadantBlatt: 'DB',
+  langstrothRoot: 'LR',
+  albertiZnidersic: 'AŽ',
+  farrar: 'Farar',
+  nucleus: 'Nukleus',
+  other: 'Ostalo',
 };
 
-const hiveMaterialLabels:
-    Record<string, string> = {
-    wood: 'Drvo',
-    polystyrene:
-        'Polistiren',
-    polyurethane:
-        'Poliuretan',
-    plastic: 'Plastika',
-    other: 'Ostalo',
+const hiveMaterialLabels: Record<string, string> = {
+  wood: 'Drvo',
+  polystyrene: 'Polistiren',
+  polyurethane: 'Poliuretan',
+  plastic: 'Plastika',
+  other: 'Ostalo',
 };
 
-function getHiveTypeLabel(
-    value: string,
-) {
+function getHiveTypeLabel(value: string) {
+  return hiveTypeLabels[value] ?? value;
+}
+
+function getHiveMaterialLabel(value: string | null) {
+  if (!value) {
+    return '—';
+  }
+
+  return hiveMaterialLabels[value] ?? value;
+}
+
+function getHiveStatusLabel(value: string) {
+  switch (value.toLowerCase()) {
+    case 'active':
+      return 'Aktivna';
+
+    case 'inactive':
+      return 'Neaktivna';
+
+    case 'writtenoff':
+      return 'Rashodovana';
+
+    case 'underrepair':
+      return 'Na popravci';
+
+    default:
+      return value;
+  }
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return '—';
+  }
+
+  const [year, month, day] = value.split('-');
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return `${day}.${month}.${year}.`;
+}
+
+function formatFeederVolume(value: number | null) {
+  if (value === null) {
+    return '—';
+  }
+
+  const liters = value / 1000;
+
+  const formatted = liters
+    .toFixed(2)
+    .replace(/\.?0+$/, '')
+    .replace('.', ',');
+
+  return `${formatted} l`;
+}
+
+export function HiveDetailsScreen({ hiveId }: HiveDetailsScreenProps) {
+  const { openDrawer } = useAppDrawer();
+
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  const [isHiveActionsOpen, setIsHiveActionsOpen] = useState(false);
+
+  const { data: hive, isLoading, isError, refetch } = useHive(hiveId);
+  const currentColonyQuery = useCurrentColony(hiveId);
+  const hiveSupersQuery = useHiveSupers(hiveId);
+
+  const currentColony = currentColonyQuery.data ?? null;
+
+  const currentQueenQuery = useCurrentQueen(currentColony?.id ?? null);
+
+  const currentQueen = currentQueenQuery.data ?? null;
+
+  const header = <AppHeader onMenuPress={openDrawer} />;
+
+  if (isLoading) {
     return (
-        hiveTypeLabels[
-        value
-        ] ??
-        value
-    );
-}
-
-function getHiveMaterialLabel(
-    value:
-        | string
-        | null,
-) {
-    if (!value) {
-        return '—';
-    }
-
-    return (
-        hiveMaterialLabels[
-        value
-        ] ??
-        value
-    );
-}
-
-function getHiveStatusLabel(
-    value: string,
-) {
-    switch (
-    value.toLowerCase()
-    ) {
-        case 'active':
-            return 'Aktivna';
-
-        case 'inactive':
-            return 'Neaktivna';
-
-        case 'writtenoff':
-            return 'Rashodovana';
-
-        case 'underrepair':
-            return 'Na popravci';
-
-        default:
-            return value;
-    }
-}
-
-function formatDate(
-    value:
-        | string
-        | null,
-) {
-    if (!value) {
-        return '—';
-    }
-
-    const [
-        year,
-        month,
-        day,
-    ] =
-        value.split('-');
-
-    if (
-        !year ||
-        !month ||
-        !day
-    ) {
-        return value;
-    }
-
-    return `${day}.${month}.${year}.`;
-}
-
-function formatFeederVolume(
-    value:
-        | number
-        | null,
-) {
-    if (value === null) {
-        return '—';
-    }
-
-    const liters =
-        value / 1000;
-
-    const formatted =
-        liters
-            .toFixed(2)
-            .replace(
-                /\.?0+$/,
-                '',
-            )
-            .replace(
-                '.',
-                ',',
-            );
-
-    return `${formatted} l`;
-}
-
-export function HiveDetailsScreen({
-    hiveId,
-}: HiveDetailsScreenProps) {
-    const {
-        openDrawer,
-    } =
-        useAppDrawer();
-
-    const [
-        isMoreOpen,
-        setIsMoreOpen,
-    ] =
-        useState(false);
-
-    const [
-        isHiveActionsOpen,
-        setIsHiveActionsOpen,
-    ] =
-        useState(false);
-
-    const {
-        data: hive,
-        isLoading,
-        isError,
-        refetch,
-    } =
-        useHive(
-            hiveId,
-        );
-    const currentColonyQuery =
-        useCurrentColony(
-            hiveId,
-        );
-    const hiveSupersQuery =
-        useHiveSupers(
-            hiveId,
-        );
-
-    const currentColony =
-        currentColonyQuery.data ??
-        null;
-
-    const currentQueenQuery =
-        useCurrentQueen(
-            currentColony?.id ??
-            null,
-        );
-
-    const currentQueen =
-        currentQueenQuery.data ??
-        null;
-
-    const header = (
-        <AppHeader
-            onMenuPress={
-                openDrawer
-            }
-        />
-    );
-
-    if (isLoading) {
-        return (
-            <Screen
-                header={header}
-            >
-                <View
-                    className="
+      <Screen header={header}>
+        <View
+          className="
             flex-1
             items-center
             justify-center
           "
-                >
-                    <ActivityIndicator
-                        size="large"
-                        color={
-                            colors.primary
-                        }
-                    />
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
 
-                    <Text
-                        className="
+          <Text
+            className="
               mt-3
               text-muted
             "
-                    >
-                        Učitavanje košnice...
-                    </Text>
-                </View>
-            </Screen>
-        );
-    }
+          >
+            Učitavanje košnice...
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
 
-    if (
-        isError ||
-        !hive
-    ) {
-        return (
-            <Screen
-                header={header}
-            >
-                <View
-                    className="
+  if (isError || !hive) {
+    return (
+      <Screen header={header}>
+        <View
+          className="
             flex-1
             items-center
             justify-center
             px-8
           "
-                >
-                    <Text
-                        className="
+        >
+          <Text
+            className="
               text-center
               text-base
               font-semibold
               text-error
             "
-                    >
-                        Nije moguće učitati
-                        podatke o košnici.
-                    </Text>
+          >
+            Nije moguće učitati podatke o košnici.
+          </Text>
 
-                    <Pressable
-                        onPress={() => {
-                            void refetch();
-                        }}
-                        className="
+          <Pressable
+            onPress={() => {
+              void refetch();
+            }}
+            className="
               mt-5
               rounded-2xl
               bg-primary
               px-5
               py-3
             "
-                    >
-                        <Text
-                            className="
+          >
+            <Text
+              className="
                 font-bold
                 text-background
               "
-                        >
-                            Pokušaj ponovo
-                        </Text>
-                    </Pressable>
-                </View>
-            </Screen>
-        );
-    }
-
-    const isActive =
-        String(
-            hive.status,
-        ).toLowerCase() ===
-        'active';
-
-    const handleStaysPress =
-        () => {
-            router.push(
-                `/hives/${hiveId}/stays` as never,
-            );
-        };
-
-    const handleRelocationsPress =
-        () => {
-            router.push(
-                `/hives/${hiveId}/relocations` as never,
-            );
-        };
-
-    const handleHiveActionsPress =
-        () => {
-            setIsHiveActionsOpen(
-                true,
-            );
-        };
-
-    const handleHistoryPress =
-        () => {
-            router.push(
-                `/hives/${hiveId}/history` as never,
-            );
-        };
-
-    const handleEditPress =
-        () => {
-            setIsMoreOpen(
-                false,
-            );
-
-            router.push(
-                `/hives/${hiveId}/edit` as never,
-            );
-        };
-
-    const handleTransferColonyPress =
-        () => {
-            if (!currentColony) {
-                return;
-            }
-
-            setIsMoreOpen(
-                false,
-            );
-
-            router.push({
-                pathname:
-                    '/hives/[hiveId]/colonies/[colonyId]/transfer',
-
-                params: {
-                    hiveId,
-
-                    colonyId:
-                        currentColony.id,
-                },
-            } as never);
-        };
-
-    const handleDeactivatePress =
-        () => {
-            setIsMoreOpen(
-                false,
-            );
-
-            Alert.alert(
-                'Deaktiviraj košnicu',
-                'Deaktiviranje košnice biće povezano kada implementiramo odgovarajući backend workflow.',
-            );
-        };
-
-    const handleDeletePress =
-        () => {
-            Alert.alert(
-                'Obriši košnicu',
-                'Da li sigurno želite da obrišete ovu košnicu?',
-                [
-                    {
-                        text: 'Otkaži',
-                        style:
-                            'cancel',
-                    },
-
-                    {
-                        text: 'Obriši',
-                        style:
-                            'destructive',
-
-                        onPress:
-                            () => {
-                                setIsMoreOpen(
-                                    false,
-                                );
-
-                                Alert.alert(
-                                    'Brisanje',
-                                    'Backend brisanje košnice još nije implementirano.',
-                                );
-                            },
-                    },
-                ],
-            );
-        };
-
-    const moreActions:
-        ContextualAction[] = [
-            {
-                key: 'edit',
-
-                label: 'Izmeni',
-
-                icon:
-                    'create-outline',
-
-                accessibilityLabel:
-                    'Izmeni podatke o košnici',
-
-                onPress:
-                    handleEditPress,
-            },
-        ];
-
-    if (currentColony) {
-        moreActions.push({
-            key: 'transfer-colony',
-
-            label:
-                'Premesti društvo',
-
-            icon:
-                'swap-horizontal-outline',
-
-            accessibilityLabel:
-                'Premesti društvo u drugu košnicu',
-
-            onPress:
-                handleTransferColonyPress,
-        });
-    }
-
-    if (isActive) {
-        moreActions.push({
-            key: 'deactivate',
-
-            label:
-                'Deaktiviraj',
-
-            icon:
-                'power-outline',
-
-            accessibilityLabel:
-                'Deaktiviraj košnicu',
-
-            onPress:
-                handleDeactivatePress,
-        });
-    }
-
-    moreActions.push({
-        key: 'delete',
-
-        label: 'Obriši',
-
-        icon:
-            'trash-outline',
-
-        accessibilityLabel:
-            'Obriši košnicu',
-
-        variant:
-            'danger',
-
-        onPress:
-            handleDeletePress,
-    });
-    return (
-        <>
-            <Screen
-                header={header}
-                contextualActionBar={
-                    <ContextualActionBar
-                        leftActions={[
-                            {
-                                key:
-                                    'stays',
-
-                                label:
-                                    'Boravci',
-
-                                icon:
-                                    'time-outline',
-
-                                accessibilityLabel:
-                                    'Prikaži istoriju boravaka košnice',
-
-                                onPress:
-                                    handleStaysPress,
-                            },
-
-                            {
-                                key:
-                                    'relocations',
-
-                                label:
-                                    'Selidbe',
-
-                                icon:
-                                    'swap-horizontal-outline',
-
-                                accessibilityLabel:
-                                    'Prikaži selidbe košnice',
-
-                                onPress:
-                                    handleRelocationsPress,
-                            },
-                        ]}
-                        primaryAction={{
-                            key:
-                                'actions',
-
-                            label:
-                                'Akcije',
-
-                            icon:
-                                'construct-outline',
-
-                            accessibilityLabel:
-                                'Otvori akcije nad košnicom',
-
-                            onPress:
-                                handleHiveActionsPress,
-                        }}
-                        rightActions={[
-                            {
-                                key:
-                                    'history',
-
-                                label:
-                                    'Istorija',
-
-                                icon:
-                                    'reader-outline',
-
-                                accessibilityLabel:
-                                    'Prikaži istoriju aktivnosti košnice',
-
-                                onPress:
-                                    handleHistoryPress,
-                            },
-
-                            {
-                                key:
-                                    'more',
-
-                                label:
-                                    'Više',
-
-                                icon:
-                                    'ellipsis-horizontal',
-
-                                accessibilityLabel:
-                                    'Prikaži više opcija za košnicu',
-
-                                onPress:
-                                    () => {
-                                        setIsMoreOpen(
-                                            true,
-                                        );
-                                    },
-                            },
-                        ]}
-                    />
-                }
             >
-                <ScrollView
-                    showsVerticalScrollIndicator={
-                        false
-                    }
-                    contentContainerStyle={{
-                        paddingHorizontal:
-                            16,
+              Pokušaj ponovo
+            </Text>
+          </Pressable>
+        </View>
+      </Screen>
+    );
+  }
 
-                        paddingBottom:
-                            32,
-                    }}
-                >
-                    <Pressable
-                        onPress={() => {
-                            router.back();
-                        }}
-                        className="
+  const isActive = String(hive.status).toLowerCase() === 'active';
+
+  const handleStaysPress = () => {
+    router.push(`/hives/${hiveId}/stays` as never);
+  };
+
+  const handleRelocationsPress = () => {
+    router.push(`/hives/${hiveId}/relocations` as never);
+  };
+
+  const handleHiveActionsPress = () => {
+    setIsHiveActionsOpen(true);
+  };
+
+  const handleHistoryPress = () => {
+    router.push(`/hives/${hiveId}/history` as never);
+  };
+
+  const handleEditPress = () => {
+    setIsMoreOpen(false);
+
+    router.push(`/hives/${hiveId}/edit` as never);
+  };
+
+  const handleTransferColonyPress = () => {
+    if (!currentColony) {
+      return;
+    }
+
+    setIsMoreOpen(false);
+
+    router.push({
+      pathname: '/hives/[hiveId]/colonies/[colonyId]/transfer',
+
+      params: {
+        hiveId,
+
+        colonyId: currentColony.id,
+      },
+    } as never);
+  };
+
+  const handleDeactivatePress = () => {
+    setIsMoreOpen(false);
+
+    Alert.alert(
+      'Deaktiviraj košnicu',
+      'Deaktiviranje košnice biće povezano kada implementiramo odgovarajući backend workflow.',
+    );
+  };
+
+  const handleDeletePress = () => {
+    Alert.alert('Obriši košnicu', 'Da li sigurno želite da obrišete ovu košnicu?', [
+      {
+        text: 'Otkaži',
+        style: 'cancel',
+      },
+
+      {
+        text: 'Obriši',
+        style: 'destructive',
+
+        onPress: () => {
+          setIsMoreOpen(false);
+
+          Alert.alert('Brisanje', 'Backend brisanje košnice još nije implementirano.');
+        },
+      },
+    ]);
+  };
+
+  const moreActions: ContextualAction[] = [
+    {
+      key: 'edit',
+
+      label: 'Izmeni',
+
+      icon: 'create-outline',
+
+      accessibilityLabel: 'Izmeni podatke o košnici',
+
+      onPress: handleEditPress,
+    },
+  ];
+
+  if (currentColony) {
+    moreActions.push({
+      key: 'transfer-colony',
+
+      label: 'Premesti društvo',
+
+      icon: 'swap-horizontal-outline',
+
+      accessibilityLabel: 'Premesti društvo u drugu košnicu',
+
+      onPress: handleTransferColonyPress,
+    });
+  }
+
+  if (isActive) {
+    moreActions.push({
+      key: 'deactivate',
+
+      label: 'Deaktiviraj',
+
+      icon: 'power-outline',
+
+      accessibilityLabel: 'Deaktiviraj košnicu',
+
+      onPress: handleDeactivatePress,
+    });
+  }
+
+  moreActions.push({
+    key: 'delete',
+
+    label: 'Obriši',
+
+    icon: 'trash-outline',
+
+    accessibilityLabel: 'Obriši košnicu',
+
+    variant: 'danger',
+
+    onPress: handleDeletePress,
+  });
+  return (
+    <>
+      <Screen
+        header={header}
+        contextualActionBar={
+          <ContextualActionBar
+            leftActions={[
+              {
+                key: 'stays',
+
+                label: 'Boravci',
+
+                icon: 'time-outline',
+
+                accessibilityLabel: 'Prikaži istoriju boravaka košnice',
+
+                onPress: handleStaysPress,
+              },
+
+              {
+                key: 'relocations',
+
+                label: 'Selidbe',
+
+                icon: 'swap-horizontal-outline',
+
+                accessibilityLabel: 'Prikaži selidbe košnice',
+
+                onPress: handleRelocationsPress,
+              },
+            ]}
+            primaryAction={{
+              key: 'actions',
+
+              label: 'Akcije',
+
+              icon: 'construct-outline',
+
+              accessibilityLabel: 'Otvori akcije nad košnicom',
+
+              onPress: handleHiveActionsPress,
+            }}
+            rightActions={[
+              {
+                key: 'history',
+
+                label: 'Istorija',
+
+                icon: 'reader-outline',
+
+                accessibilityLabel: 'Prikaži istoriju aktivnosti košnice',
+
+                onPress: handleHistoryPress,
+              },
+
+              {
+                key: 'more',
+
+                label: 'Više',
+
+                icon: 'ellipsis-horizontal',
+
+                accessibilityLabel: 'Prikaži više opcija za košnicu',
+
+                onPress: () => {
+                  setIsMoreOpen(true);
+                },
+              },
+            ]}
+          />
+        }
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+
+            paddingBottom: 32,
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              router.back();
+            }}
+            className="
               mb-3
               mt-3
               self-start
               py-2
             "
-                    >
-                        <Text
-                            className="
+          >
+            <Text
+              className="
                 text-sm
                 font-semibold
                 text-primary
               "
-                        >
-                            ← Košnice
-                        </Text>
-                    </Pressable>
+            >
+              ← Košnice
+            </Text>
+          </Pressable>
 
-                    <Text
-                        className="
+          <Text
+            className="
               text-xs
               font-bold
               uppercase
               tracking-widest
               text-muted
             "
-                    >
-                        Košnica
-                    </Text>
+          >
+            Košnica
+          </Text>
 
-                    <View
-                        className="
+          <View
+            className="
               mt-2
               flex-row
               items-start
               justify-between
               gap-4
             "
-                    >
-                        <View
-                            className="
+          >
+            <View
+              className="
                 flex-1
               "
-                        >
-                            <Text
-                                className="
+            >
+              <Text
+                className="
                   text-4xl
                   font-bold
                   tracking-tight
                   text-foreground
                 "
-                            >
-                                {hive.label}
-                            </Text>
+              >
+                {hive.label}
+              </Text>
 
-                            <View
-                                className="
+              <View
+                className="
                   mt-3
                   flex-row
                   flex-wrap
                   gap-2
                 "
-                            >
-                                <View
-                                    className="
+              >
+                <View
+                  className="
                     rounded-full
                     bg-primary/10
                     px-3
                     py-1.5
                   "
-                                >
-                                    <Text
-                                        className="
+                >
+                  <Text
+                    className="
                       text-xs
                       font-bold
                       text-primary
                     "
-                                    >
-                                        {getHiveTypeLabel(
-                                            String(
-                                                hive.type,
-                                            ),
-                                        )}
-                                    </Text>
-                                </View>
+                  >
+                    {getHiveTypeLabel(String(hive.type))}
+                  </Text>
+                </View>
 
-                                <View
-                                    className="
+                <View
+                  className="
                     rounded-full
                     border
                     border-border
@@ -731,204 +498,127 @@ export function HiveDetailsScreen({
                     px-3
                     py-1.5
                   "
-                                >
-                                    <Text
-                                        className="
+                >
+                  <Text
+                    className="
                       text-xs
                       font-semibold
                       text-muted
                     "
-                                    >
-                                        {getHiveStatusLabel(
-                                            String(
-                                                hive.status,
-                                            ),
-                                        )}
-                                    </Text>
-                                </View>
-                            </View>
-                        </View>
+                  >
+                    {getHiveStatusLabel(String(hive.status))}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-                        <HiveHeaderIllustration
-                            colorHex={
-                                hive.colorHex
-                            }
-                        />
-                    </View>
+            <HiveHeaderIllustration colorHex={hive.colorHex} />
+          </View>
 
-                    <SectionTitle>
-                        Osnovni podaci
-                    </SectionTitle>
+          <SectionTitle>Osnovni podaci</SectionTitle>
 
-                    <DetailsCard>
-                        <InfoRow
-                            label="Identifikacioni broj"
-                            value={
-                                hive
-                                    .identificationNumber ??
-                                '—'
-                            }
-                        />
+          <DetailsCard>
+            <InfoRow label="Identifikacioni broj" value={hive.identificationNumber ?? '—'} />
 
-                        <InfoRow
-                            label="Tip"
-                            value={getHiveTypeLabel(
-                                String(
-                                    hive.type,
-                                ),
-                            )}
-                        />
+            <InfoRow label="Tip" value={getHiveTypeLabel(String(hive.type))} />
 
-                        <InfoRow
-                            label="Proizvođač"
-                            value={
-                                hive.manufacturer ??
-                                '—'
-                            }
-                        />
+            <InfoRow label="Proizvođač" value={hive.manufacturer ?? '—'} />
 
-                        <InfoRow
-                            label="Materijal"
-                            value={getHiveMaterialLabel(
-                                hive.material
-                                    ? String(
-                                        hive.material,
-                                    )
-                                    : null,
-                            )}
-                        />
+            <InfoRow
+              label="Materijal"
+              value={getHiveMaterialLabel(hive.material ? String(hive.material) : null)}
+            />
 
-                        <InfoRow
-                            label="Datum proizvodnje"
-                            value={formatDate(
-                                hive
-                                    .manufactureDate,
-                            )}
-                        />
+            <InfoRow label="Datum proizvodnje" value={formatDate(hive.manufactureDate)} />
 
-                        <InfoRow
-                            label="Datum nabavke"
-                            value={formatDate(
-                                hive.purchaseDate,
-                            )}
-                        />
+            <InfoRow label="Datum nabavke" value={formatDate(hive.purchaseDate)} />
 
-                        <InfoRow
-                            label="Trenutni broj nastavaka"
-                            value={
-                                hiveSupersQuery.isError
-                                    ? '—'
-                                    : hiveSupersQuery.isLoading
-                                    ? '…'
-                                    : String(
-                                        hiveSupersQuery
-                                            .data
-                                            ?.length ??
-                                        0,
-                                    )
-                            }
-                            last
-                        />
-                    </DetailsCard>
+            <InfoRow
+              label="Trenutni broj nastavaka"
+              value={
+                hiveSupersQuery.isError
+                  ? '—'
+                  : hiveSupersQuery.isLoading
+                    ? '…'
+                    : String(hiveSupersQuery.data?.length ?? 0)
+              }
+              last
+            />
+          </DetailsCard>
 
-                    <SectionTitle>
-                        Hranilica
-                    </SectionTitle>
+          <SectionTitle>Hranilica</SectionTitle>
 
-                    <View
-                        className="
+          <View
+            className="
               flex-row
               gap-3
             "
-                    >
-                        <MetricCard
-                            label="Hranilica"
-                            value={
-                                hive.hasFeeder
-                                    ? 'Ima'
-                                    : 'Nema'
-                            }
-                        />
+          >
+            <MetricCard label="Hranilica" value={hive.hasFeeder ? 'Ima' : 'Nema'} />
 
-                        <MetricCard
-                            label="Kapacitet"
-                            value={
-                                hive.hasFeeder
-                                    ? formatFeederVolume(
-                                        hive.feederVolumeMl,
-                                    )
-                                    : '—'
-                            }
-                        />
+            <MetricCard
+              label="Kapacitet"
+              value={hive.hasFeeder ? formatFeederVolume(hive.feederVolumeMl) : '—'}
+            />
+          </View>
 
-                    </View>
+          <SectionTitle>Društvo i matica</SectionTitle>
 
-                    <SectionTitle>
-                        Društvo i matica
-                    </SectionTitle>
-
-                    {currentColonyQuery.isLoading ? (
-                        <DetailsCard>
-                            <View
-                                className="
+          {currentColonyQuery.isLoading ? (
+            <DetailsCard>
+              <View
+                className="
         items-center
         py-4
       "
-                            >
-                                <ActivityIndicator
-                                    color={
-                                        colors.primary
-                                    }
-                                />
+              >
+                <ActivityIndicator color={colors.primary} />
 
-                                <Text
-                                    className="
+                <Text
+                  className="
           mt-2
           text-sm
           text-muted
         "
-                                >
-                                    Učitavanje društva...
-                                </Text>
-                            </View>
-                        </DetailsCard>
-                    ) : !currentColony ? (
-                        <DetailsCard>
-                            <Text
-                                className="
+                >
+                  Učitavanje društva...
+                </Text>
+              </View>
+            </DetailsCard>
+          ) : !currentColony ? (
+            <DetailsCard>
+              <Text
+                className="
         text-base
         font-bold
         text-foreground
       "
-                            >
-                                Košnica nema evidentirano
-                                društvo i maticu
-                            </Text>
+              >
+                Košnica nema evidentirano društvo i maticu
+              </Text>
 
-                            <Text
-                                className="
+              <Text
+                className="
         mt-2
         text-sm
         leading-5
         text-muted
       "
-                            >
-                                Dodajte trenutno pčelinje
-                                društvo i njegovu maticu.
-                            </Text>
+              >
+                Dodajte trenutno pčelinje društvo i njegovu maticu.
+              </Text>
 
-                            <Pressable
-                                onPress={() => {
-                                    router.push({
-                                        pathname:
-                                            '/hives/[hiveId]/colony-queen/create',
+              <Pressable
+                onPress={() => {
+                  router.push({
+                    pathname: '/hives/[hiveId]/colony-queen/create',
 
-                                        params: {
-                                            hiveId,
-                                        },
-                                    });
-                                }}
-                                className="
+                    params: {
+                      hiveId,
+                    },
+                  });
+                }}
+                className="
         mt-5
         min-h-12
         items-center
@@ -937,497 +627,342 @@ export function HiveDetailsScreen({
         bg-primary
         px-4
       "
-                            >
-                                <Text
-                                    className="
+              >
+                <Text
+                  className="
           font-bold
           text-background
         "
-                                >
-                                    Dodaj društvo i maticu
-                                </Text>
-                            </Pressable>
-                        </DetailsCard>
-                    ) : (
-                        <View
-                            className="
+                >
+                  Dodaj društvo i maticu
+                </Text>
+              </Pressable>
+            </DetailsCard>
+          ) : (
+            <View
+              className="
       gap-3
     "
-                        >
-                            <EntitySummaryCard
-                                title="Pčelinje društvo"
-                                onPress={() => {
-                                    router.push({
-                                        pathname:
-                                            '/hives/[hiveId]/colonies/[colonyId]',
+            >
+              <EntitySummaryCard
+                title="Pčelinje društvo"
+                onPress={() => {
+                  router.push({
+                    pathname: '/hives/[hiveId]/colonies/[colonyId]',
 
-                                        params: {
-                                            hiveId,
+                    params: {
+                      hiveId,
 
-                                            colonyId:
-                                                currentColony.id,
-                                        },
-                                    } as never);
-                                }}
-                            >
-                                <InfoRow
-                                    label="Status"
-                                    value={
-                                        getColonyStatusLabel(
-                                            currentColony.status,
-                                        )
-                                    }
-                                />
+                      colonyId: currentColony.id,
+                    },
+                  } as never);
+                }}
+              >
+                <InfoRow label="Status" value={getColonyStatusLabel(currentColony.status)} />
 
-                                <InfoRow
-                                    label="Poreklo"
-                                    value={
-                                        getColonyOriginLabel(
-                                            currentColony.origin,
-                                        )
-                                    }
-                                />
+                <InfoRow label="Poreklo" value={getColonyOriginLabel(currentColony.origin)} />
 
-                                <InfoRow
-                                    label="Formirano"
-                                    value={
-                                        formatDate(
-                                            currentColony
-                                                .formedOn,
-                                        )
-                                    }
-                                />
+                <InfoRow label="Formirano" value={formatDate(currentColony.formedOn)} />
 
-                                <InfoRow
-                                    label="U košnici od"
-                                    value={
-                                        formatDate(
-                                            currentColony
-                                                .startedOn,
-                                        )
-                                    }
-                                    last
-                                />
-                            </EntitySummaryCard>
+                <InfoRow label="U košnici od" value={formatDate(currentColony.startedOn)} last />
+              </EntitySummaryCard>
 
-                            {currentQueenQuery.isLoading ? (
-                                <DetailsCard>
-                                    <ActivityIndicator
-                                        color={
-                                            colors.primary
-                                        }
-                                    />
-                                </DetailsCard>
-                            ) : currentQueen ? (
-                                <EntitySummaryCard
-                                    title="Matica"
-                                    onPress={() => {
-                                        router.push({
-                                            pathname:
-                                                '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
+              {currentQueenQuery.isLoading ? (
+                <DetailsCard>
+                  <ActivityIndicator color={colors.primary} />
+                </DetailsCard>
+              ) : currentQueen ? (
+                <EntitySummaryCard
+                  title="Matica"
+                  onPress={() => {
+                    router.push({
+                      pathname: '/hives/[hiveId]/colonies/[colonyId]/queens/[queenId]',
 
-                                            params: {
-                                                hiveId,
+                      params: {
+                        hiveId,
 
-                                                colonyId:
-                                                    currentColony.id,
+                        colonyId: currentColony.id,
 
-                                                queenId:
-                                                    currentQueen.id,
-                                            },
-                                        } as never);
-                                    }}
-                                >
-                                    <InfoRow
-                                        label="Status"
-                                        value={
-                                            getQueenStatusLabel(
-                                                currentQueen.status,
-                                            )
-                                        }
-                                    />
+                        queenId: currentQueen.id,
+                      },
+                    } as never);
+                  }}
+                >
+                  <InfoRow label="Status" value={getQueenStatusLabel(currentQueen.status)} />
 
-                                    <InfoRow
-                                        label="Poreklo"
-                                        value={
-                                            getQueenOriginLabel(
-                                                currentQueen.origin,
-                                            )
-                                        }
-                                    />
+                  <InfoRow label="Poreklo" value={getQueenOriginLabel(currentQueen.origin)} />
 
-                                    <InfoRow
-                                        label="Boja"
-                                        value={
-                                            <QueenMarkingColorSwatch
-                                                colorHex={
-                                                    currentQueen
-                                                        .markingColorHex
-                                                }
-                                            />
-                                        }
-                                    />
+                  <InfoRow
+                    label="Boja"
+                    value={<QueenMarkingColorSwatch colorHex={currentQueen.markingColorHex} />}
+                  />
 
-                                    <InfoRow
-                                        label="Rasa"
-                                        value={
-                                            currentQueen.breed ??
-                                            '—'
-                                        }
-                                    />
+                  <InfoRow label="Rasa" value={currentQueen.breed ?? '—'} />
 
-                                    <InfoRow
-                                        label="Izlegla se"
-                                        value={
-                                            formatDate(
-                                                currentQueen
-                                                    .emergedOn,
-                                            )
-                                        }
-                                    />
+                  <InfoRow label="Izlegla se" value={formatDate(currentQueen.emergedOn)} />
 
-                                    <InfoRow
-                                        label="U društvu od"
-                                        value={
-                                            formatDate(
-                                                currentQueen
-                                                    .startedOn,
-                                            )
-                                        }
-                                        last
-                                    />
-                                </EntitySummaryCard>
-                            ) : (
-                                <DetailsCard>
-                                    <Text
-                                        className="
+                  <InfoRow label="U društvu od" value={formatDate(currentQueen.startedOn)} last />
+                </EntitySummaryCard>
+              ) : (
+                <DetailsCard>
+                  <Text
+                    className="
             font-semibold
             text-warning
           "
-                                    >
-                                        Društvo postoji, ali
-                                        trenutna matica nije
-                                        evidentirana.
-                                    </Text>
-                                    <Pressable
-                                        accessibilityRole="button"
-                                        accessibilityLabel="Dodaj maticu"
-                                        className="mt-4 min-h-12 items-center justify-center rounded-2xl bg-primary px-4"
-                                        onPress={() =>
-                                            router.push({
-                                                pathname:
-                                                    "/hives/[hiveId]/colonies/[colonyId]/queens/create",
-                                                params: {
-                                                    hiveId,
-                                                    colonyId: currentColony.id,
-                                                },
-                                            } as never)
-                                        }
-                                    >
-                                        <Text className="font-bold text-background">
-                                            Dodaj maticu
-                                        </Text>
-                                    </Pressable>
-                                </DetailsCard>
-                            )}
-                        </View>
-                    )}
+                  >
+                    Društvo postoji, ali trenutna matica nije evidentirana.
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Dodaj maticu"
+                    className="mt-4 min-h-12 items-center justify-center rounded-2xl bg-primary px-4"
+                    onPress={() =>
+                      router.push({
+                        pathname: '/hives/[hiveId]/colonies/[colonyId]/queens/create',
+                        params: {
+                          hiveId,
+                          colonyId: currentColony.id,
+                        },
+                      } as never)
+                    }
+                  >
+                    <Text className="font-bold text-background">Dodaj maticu</Text>
+                  </Pressable>
+                </DetailsCard>
+              )}
+            </View>
+          )}
 
-                    {hive.note && (
-                        <>
-                            <SectionTitle>
-                                Napomena
-                            </SectionTitle>
+          {hive.note && (
+            <>
+              <SectionTitle>Napomena</SectionTitle>
 
-                            <DetailsCard>
-                                <Text
-                                    className="
+              <DetailsCard>
+                <Text
+                  className="
                     text-base
                     leading-6
                     text-foreground
                   "
-                                >
-                                    {hive.note}
-                                </Text>
-                            </DetailsCard>
-                        </>
-                    )}
-                </ScrollView>
-            </Screen>
+                >
+                  {hive.note}
+                </Text>
+              </DetailsCard>
+            </>
+          )}
+        </ScrollView>
+      </Screen>
 
-            <ActionOverflowSheet
-                visible={
-                    isHiveActionsOpen
-                }
-                onClose={() => {
-                    setIsHiveActionsOpen(
-                        false,
-                    );
-                }}
-                title="Akcije nad košnicom"
-                actions={[
-                    {
-                        key:
-                            'maintenance',
+      <ActionOverflowSheet
+        visible={isHiveActionsOpen}
+        onClose={() => {
+          setIsHiveActionsOpen(false);
+        }}
+        title="Akcije nad košnicom"
+        actions={[
+          {
+            key: 'maintenance',
 
-                        label:
-                            'Održavanje',
+            label: 'Održavanje',
 
-                        icon:
-                            'build-outline',
+            icon: 'build-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj održavanje košnice',
+            accessibilityLabel: 'Evidentiraj održavanje košnice',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/maintenance/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/maintenance/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'super-management',
+          {
+            key: 'super-management',
 
-                        label:
-                            'Upravljanje nastavcima',
+            label: 'Upravljanje nastavcima',
 
-                        icon:
-                            'layers-outline',
+            icon: 'layers-outline',
 
-                        accessibilityLabel:
-                            'Upravljaj nastavcima košnice',
+            accessibilityLabel: 'Upravljaj nastavcima košnice',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/supers',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/supers',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'insulation',
+          {
+            key: 'insulation',
 
-                        label:
-                            'Izolacija košnice',
+            label: 'Izolacija košnice',
 
-                        icon:
-                            'layers-outline',
+            icon: 'layers-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj izolaciju za košnicu',
+            accessibilityLabel: 'Evidentiraj izolaciju za košnicu',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/insulation/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/insulation/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'honey-frame-feeding',
+          {
+            key: 'honey-frame-feeding',
 
-                        label:
-                            'Prihrana ramovima meda',
+            label: 'Prihrana ramovima meda',
 
-                        icon:
-                            'albums-outline',
+            icon: 'albums-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj prihranu ramovima meda za košnicu',
+            accessibilityLabel: 'Evidentiraj prihranu ramovima meda za košnicu',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/honey-frame-feedings/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/honey-frame-feedings/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'patty-feeding',
+          {
+            key: 'patty-feeding',
 
-                        label:
-                            'Prihrana pogačom',
+            label: 'Prihrana pogačom',
 
-                        icon:
-                            'nutrition-outline',
+            icon: 'nutrition-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj prihranu pogačom za košnicu',
+            accessibilityLabel: 'Evidentiraj prihranu pogačom za košnicu',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/patty-feedings/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/patty-feedings/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'syrup-feeding',
+          {
+            key: 'syrup-feeding',
 
-                        label:
-                            'Prihrana sirupom',
+            label: 'Prihrana sirupom',
 
-                        icon:
-                            'water-outline',
+            icon: 'water-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj prihranu sirupom za košnicu',
+            accessibilityLabel: 'Evidentiraj prihranu sirupom za košnicu',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/syrup-feedings/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/syrup-feedings/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'inspection',
+          {
+            key: 'inspection',
 
-                        label:
-                            'Pregled košnice',
+            label: 'Pregled košnice',
 
-                        icon:
-                            'search-outline',
+            icon: 'search-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj pregled košnice',
+            accessibilityLabel: 'Evidentiraj pregled košnice',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/inspections/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/inspections/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
 
-                    {
-                        key:
-                            'varroa-treatment',
+          {
+            key: 'varroa-treatment',
 
-                        label:
-                            'Tretman protiv varoe',
+            label: 'Tretman protiv varoe',
 
-                        icon:
-                            'bug-outline',
+            icon: 'bug-outline',
 
-                        accessibilityLabel:
-                            'Evidentiraj tretman protiv varoe za košnicu',
+            accessibilityLabel: 'Evidentiraj tretman protiv varoe za košnicu',
 
-                        onPress:
-                            () => {
-                                router.push({
-                                    pathname:
-                                        '/hives/[hiveId]/varroa-treatments/create',
+            onPress: () => {
+              router.push({
+                pathname: '/hives/[hiveId]/varroa-treatments/create',
 
-                                    params: {
-                                        hiveId,
-                                    },
-                                } as never);
-                            },
-                    },
-                ]}
-            />
+                params: {
+                  hiveId,
+                },
+              } as never);
+            },
+          },
+        ]}
+      />
 
-            <ActionOverflowSheet
-                visible={
-                    isMoreOpen
-                }
-                onClose={() => {
-                    setIsMoreOpen(
-                        false,
-                    );
-                }}
-                title={`Košnica ${hive.label}`}
-                actions={
-                    moreActions
-                }
-            />
-        </>
-    );
+      <ActionOverflowSheet
+        visible={isMoreOpen}
+        onClose={() => {
+          setIsMoreOpen(false);
+        }}
+        title={`Košnica ${hive.label}`}
+        actions={moreActions}
+      />
+    </>
+  );
 }
 
 type SectionTitleProps = {
-    children:
-    React.ReactNode;
+  children: React.ReactNode;
 };
 
-function SectionTitle({
-    children,
-}: SectionTitleProps) {
-    return (
-        <Text
-            className="
+function SectionTitle({ children }: SectionTitleProps) {
+  return (
+    <Text
+      className="
         mb-3
         mt-8
         text-lg
         font-bold
         text-foreground
       "
-        >
-            {children}
-        </Text>
-    );
+    >
+      {children}
+    </Text>
+  );
 }
 
 type DetailsCardProps = {
-    children:
-    React.ReactNode;
+  children: React.ReactNode;
 };
 
-function DetailsCard({
-    children,
-}: DetailsCardProps) {
-    return (
-        <View
-            className="
+function DetailsCard({ children }: DetailsCardProps) {
+  return (
+    <View
+      className="
         rounded-3xl
         border
         border-border
@@ -1435,87 +970,75 @@ function DetailsCard({
         px-5
         py-4
       "
-        >
-            {children}
-        </View>
-    );
+    >
+      {children}
+    </View>
+  );
 }
 
 type InfoRowProps = {
-    label: string;
-    value:
-    React.ReactNode;
-    last?: boolean;
+  label: string;
+  value: React.ReactNode;
+  last?: boolean;
 };
 
-function InfoRow({
-    label,
-    value,
-    last = false,
-}: InfoRowProps) {
-    return (
-        <View
-            className={`
+function InfoRow({ label, value, last = false }: InfoRowProps) {
+  return (
+    <View
+      className={`
         flex-row
         items-start
         justify-between
         gap-6
         py-3
-        ${last
-                    ? ''
-                    : 'border-b border-border'
-                }
+        ${last ? '' : 'border-b border-border'}
       `}
-        >
-            <Text
-                className="
+    >
+      <Text
+        className="
           flex-1
           text-sm
           text-muted
         "
-            >
-                {label}
-            </Text>
+      >
+        {label}
+      </Text>
 
-            {typeof value ===
-            'string' ? (
-                <Text
-                    className="
+      {typeof value === 'string' ? (
+        <Text
+          className="
           flex-1
           text-right
           text-sm
           font-semibold
           text-foreground
         "
-                >
-                    {value}
-                </Text>
-            ) : (
-                <View
-                    className="
+        >
+          {value}
+        </Text>
+      ) : (
+        <View
+          className="
           flex-1
           items-end
         "
-                >
-                    {value}
-                </View>
-            )}
+        >
+          {value}
         </View>
-    );
+      )}
+    </View>
+  );
 }
 
 type MetricCardProps = {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 };
 
-function MetricCard({
-    label,
-    value,
-}: MetricCardProps) {
-    return (
-        <View
-            className="
+function MetricCard({ label, value }: MetricCardProps) {
+  return (
+    <View
+      className="
         flex-1
         rounded-3xl
         border
@@ -1524,97 +1047,32 @@ function MetricCard({
         px-5
         py-5
       "
-        >
-            <Text
-                className="
+    >
+      <Text
+        className="
           text-xs
           font-semibold
           text-muted
         "
-            >
-                {label}
-            </Text>
+      >
+        {label}
+      </Text>
 
-            <Text
-                className="
+      <Text
+        className="
           mt-2
           text-xl
           font-bold
           text-foreground
         "
-            >
-                {value}
-            </Text>
-        </View>
-    );
+      >
+        {value}
+      </Text>
+    </View>
+  );
 }
 
-type PlaceholderEntityProps = {
-    title: string;
-    description: string;
-};
-
-function PlaceholderEntity({
-    title,
-    description,
-}: PlaceholderEntityProps) {
-    return (
-        <View>
-            <View
-                className="
-          flex-row
-          items-center
-          justify-between
-          gap-4
-        "
-            >
-                <Text
-                    className="
-            text-base
-            font-bold
-            text-foreground
-          "
-                >
-                    {title}
-                </Text>
-
-                <View
-                    className="
-            rounded-full
-            border
-            border-border
-            px-2.5
-            py-1
-          "
-                >
-                    <Text
-                        className="
-              text-xs
-              font-semibold
-              text-muted
-            "
-                    >
-                        Uskoro
-                    </Text>
-                </View>
-            </View>
-
-            <Text
-                className="
-          mt-2
-          text-sm
-          leading-5
-          text-muted
-        "
-            >
-                {description}
-            </Text>
-        </View>
-    );
-}
-function getColonyStatusLabel(
-  status: string,
-) {
+function getColonyStatusLabel(status: string) {
   switch (status) {
     case 'active':
       return 'Aktivno';
@@ -1639,11 +1097,7 @@ function getColonyStatusLabel(
   }
 }
 
-function getColonyOriginLabel(
-  origin:
-    | string
-    | null,
-) {
+function getColonyOriginLabel(origin: string | null) {
   switch (origin) {
     case 'swarm':
       return 'Roj';
@@ -1659,9 +1113,7 @@ function getColonyOriginLabel(
   }
 }
 
-function getQueenStatusLabel(
-  status: string,
-) {
+function getQueenStatusLabel(status: string) {
   switch (status) {
     case 'active':
       return 'Aktivna';
@@ -1680,11 +1132,7 @@ function getQueenStatusLabel(
   }
 }
 
-function getQueenOriginLabel(
-  origin:
-    | string
-    | null,
-) {
+function getQueenOriginLabel(origin: string | null) {
   switch (origin) {
     case 'purchased':
       return 'Kupljena';
@@ -1698,16 +1146,11 @@ function getQueenOriginLabel(
 }
 type EntitySummaryCardProps = {
   title: string;
-  children:
-    React.ReactNode;
+  children: React.ReactNode;
   onPress: () => void;
 };
 
-function EntitySummaryCard({
-  title,
-  children,
-  onPress,
-}: EntitySummaryCardProps) {
+function EntitySummaryCard({ title, children, onPress }: EntitySummaryCardProps) {
   return (
     <Pressable
       onPress={onPress}

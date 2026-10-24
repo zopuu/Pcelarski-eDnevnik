@@ -17,14 +17,18 @@ export function HarvestGroupCard({
   onSelect: () => void;
   onToggleExpanded: () => void;
 }) {
-  const locationNames = Array.from(new Set(
-    group.exposurePath.flatMap((segment) =>
-      segment.locations.map((location) => location.name?.trim() || 'Lokacija bez naziva'),
+  const locationNames = Array.from(
+    new Set(
+      group.exposurePath.flatMap((segment) =>
+        segment.locations.map((location) => location.name?.trim() || 'Lokacija bez naziva'),
+      ),
     ),
-  ));
+  );
 
   return (
-    <View className={`rounded-3xl border bg-surface ${selected ? 'border-primary' : 'border-border'}`}>
+    <View
+      className={`rounded-3xl border bg-surface ${selected ? 'border-primary' : 'border-border'}`}
+    >
       <Pressable
         accessibilityRole="radio"
         accessibilityState={{ selected }}
@@ -33,7 +37,9 @@ export function HarvestGroupCard({
         style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
       >
         <View className="flex-row items-start gap-3">
-          <View className={`mt-0.5 h-6 w-6 items-center justify-center rounded-full border-2 ${selected ? 'border-primary bg-primary' : 'border-border'}`}>
+          <View
+            className={`mt-0.5 h-6 w-6 items-center justify-center rounded-full border-2 ${selected ? 'border-primary bg-primary' : 'border-border'}`}
+          >
             {selected && <Ionicons name="checkmark" size={16} color={colors.onPrimary} />}
           </View>
           <View className="flex-1">
@@ -60,20 +66,29 @@ export function HarvestGroupCard({
         <Text className="text-sm font-semibold text-primary">
           {expanded ? 'Sakrij nastavke' : 'Prikaži nastavke'}
         </Text>
-        <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={17} color={colors.primary} />
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={17}
+          color={colors.primary}
+        />
       </Pressable>
 
       {expanded && (
         <View className="border-t border-border px-5 py-4">
           {group.supers.map((item, index) => (
-            <View key={item.hiveSuperStayId} className={`${index > 0 ? 'mt-3 border-t border-border pt-3' : ''} flex-row justify-between gap-3`}>
+            <View
+              key={item.hiveSuperStayId}
+              className={`${index > 0 ? 'mt-3 border-t border-border pt-3' : ''} flex-row justify-between gap-3`}
+            >
               <View className="flex-1">
                 <Text className="font-semibold text-foreground">{item.hiveLabel}</Text>
                 <Text className="mt-0.5 text-xs text-muted">
                   Boravak: {formatPeriod(item.startedOn, item.endedOn)}
                 </Text>
               </View>
-              <Text className="font-bold text-primary">{item.remainingHarvestableFrameCount} ram.</Text>
+              <Text className="font-bold text-primary">
+                {item.remainingHarvestableFrameCount} ram.
+              </Text>
             </View>
           ))}
         </View>

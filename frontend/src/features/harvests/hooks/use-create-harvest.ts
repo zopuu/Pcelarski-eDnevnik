@@ -15,7 +15,9 @@ export function useCreateHarvest() {
         queryClient.invalidateQueries({ queryKey: harvestQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: honeyBatchQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: harvestQueryKeys.detail(response.harvestId) }),
-        queryClient.invalidateQueries({ queryKey: honeyBatchQueryKeys.detail(response.honeyBatchId) }),
+        queryClient.invalidateQueries({
+          queryKey: honeyBatchQueryKeys.detail(response.honeyBatchId),
+        }),
         queryClient.invalidateQueries({ queryKey: hiveSuperQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: hiveQueryKeys.all }),
       ]);

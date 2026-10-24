@@ -1,11 +1,5 @@
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useHive } from '@/features/hives/hooks/use-hive';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
@@ -22,10 +16,7 @@ type PattyFeedingDetailsScreenProps = {
   feedingId: string;
 };
 
-export function PattyFeedingDetailsScreen({
-  hiveId,
-  feedingId,
-}: PattyFeedingDetailsScreenProps) {
+export function PattyFeedingDetailsScreen({ hiveId, feedingId }: PattyFeedingDetailsScreenProps) {
   const { openDrawer } = useAppDrawer();
   const hiveQuery = useHive(hiveId);
   const feedingQuery = usePattyFeeding(hiveId, feedingId);
@@ -34,12 +25,7 @@ export function PattyFeedingDetailsScreen({
     return <LoadingState />;
   }
 
-  if (
-    hiveQuery.isError ||
-    feedingQuery.isError ||
-    !hiveQuery.data ||
-    !feedingQuery.data
-  ) {
+  if (hiveQuery.isError || feedingQuery.isError || !hiveQuery.data || !feedingQuery.data) {
     return (
       <ErrorState
         onRetry={() => {
@@ -65,14 +51,10 @@ export function PattyFeedingDetailsScreen({
           onPress={() => router.back()}
           className="mb-3 min-h-11 self-start justify-center py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Istorija aktivnosti
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Istorija aktivnosti</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Prihrana pogačom
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Prihrana pogačom</Text>
         <Text className="mt-1 text-sm leading-5 text-muted">
           Evidentirani podaci o prihrani za košnicu {hiveQuery.data.label}.
         </Text>
@@ -109,9 +91,7 @@ function Details({ feeding }: { feeding: PattyFeedingDetails }) {
 
   return (
     <>
-      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-        Podaci o prihrani
-      </Text>
+      <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Podaci o prihrani</Text>
       <View className="rounded-3xl border border-border bg-surface px-5 py-1">
         {rows.map((row, index) => (
           <View
@@ -130,13 +110,9 @@ function Details({ feeding }: { feeding: PattyFeedingDetails }) {
 
       {feeding.notes?.trim() && (
         <>
-          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-            Napomena
-          </Text>
+          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Napomena</Text>
           <View className="rounded-3xl border border-border bg-surface px-5 py-4">
-            <Text className="text-base leading-6 text-foreground">
-              {feeding.notes.trim()}
-            </Text>
+            <Text className="text-base leading-6 text-foreground">{feeding.notes.trim()}</Text>
           </View>
         </>
       )}

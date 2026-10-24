@@ -11,10 +11,7 @@ export const harvestDataSchema = z.object({
     .regex(decimalText, 'Unesite ispravnu količinu meda.')
     .transform((value) => Number(value.replace(',', '.')))
     .refine((value) => value > 0, 'Količina meda mora biti veća od nule.'),
-  notes: z
-    .string()
-    .trim()
-    .max(1000, 'Napomena može imati najviše 1000 karaktera.'),
+  notes: z.string().trim().max(1000, 'Napomena može imati najviše 1000 karaktera.'),
 });
 
 export type HarvestDataFormInput = z.input<typeof harvestDataSchema>;

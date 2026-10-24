@@ -3,15 +3,8 @@ import { MaterialDesignIcons } from '@react-native-vector-icons/material-design-
 import { useState } from 'react';
 
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  Image,
-} from 'expo-image';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Image } from 'expo-image';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors } from '@/shared/theme/colors';
@@ -30,13 +23,8 @@ type HoneycombPatternProps = {
   hexSize?: number;
 };
 
-function getHexPath(
-  cx: number,
-  cy: number,
-  size: number,
-) {
-  const halfHeight =
-    (Math.sqrt(3) * size) / 2;
+function getHexPath(cx: number, cy: number, size: number) {
+  const halfHeight = (Math.sqrt(3) * size) / 2;
 
   const points = [
     [cx - size, cy],
@@ -58,38 +46,24 @@ function getHexPath(
   `;
 }
 
-function HoneycombPattern({
-  width,
-  height,
-  hexSize = 16,
-}: HoneycombPatternProps) {
-  const hexHeight =
-    Math.sqrt(3) * hexSize;
+function HoneycombPattern({ width, height, hexSize = 16 }: HoneycombPatternProps) {
+  const hexHeight = Math.sqrt(3) * hexSize;
 
-  const horizontalStep =
-    hexSize * 1.5;
+  const horizontalStep = hexSize * 1.5;
 
-  const verticalStep =
-    hexHeight;
+  const verticalStep = hexHeight;
 
-  const columns =
-    Math.ceil(width / horizontalStep) + 2;
+  const columns = Math.ceil(width / horizontalStep) + 2;
 
-  const rows =
-    Math.ceil(height / verticalStep) + 2;
+  const rows = Math.ceil(height / verticalStep) + 2;
 
   const hexagons = [];
 
   for (let col = 0; col < columns; col += 1) {
     for (let row = 0; row < rows; row += 1) {
-      const x =
-        col * horizontalStep;
+      const x = col * horizontalStep;
 
-      const y =
-        row * verticalStep +
-        (col % 2 === 0
-          ? 0
-          : verticalStep / 2);
+      const y = row * verticalStep + (col % 2 === 0 ? 0 : verticalStep / 2);
 
       hexagons.push(
         <Path
@@ -104,28 +78,15 @@ function HoneycombPattern({
   }
 
   return (
-    <View
-      pointerEvents="none"
-      style={StyleSheet.absoluteFill}
-    >
-      <Svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-      >
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
         {hexagons}
       </Svg>
     </View>
   );
 }
 
-export function ApiaryCard({
-  name,
-  imageUrl,
-  isInactive,
-  onPress,
-}: ApiaryCardProps) {
+export function ApiaryCard({ name, imageUrl, isInactive, onPress }: ApiaryCardProps) {
   const displayName = name;
   const [cardSize, setCardSize] = useState({
     width: 0,
@@ -138,14 +99,13 @@ export function ApiaryCard({
       disabled={isInactive}
       accessibilityRole="button"
       accessibilityState={{ disabled: isInactive }}
-      accessibilityLabel={isInactive
-        ? `${displayName}, trajno deaktiviran pčelinjak`
-        : `Otvori pčelinjak ${displayName}`}
+      accessibilityLabel={
+        isInactive
+          ? `${displayName}, trajno deaktiviran pčelinjak`
+          : `Otvori pčelinjak ${displayName}`
+      }
       onLayout={(event) => {
-        const {
-          width,
-          height,
-        } = event.nativeEvent.layout;
+        const { width, height } = event.nativeEvent.layout;
 
         setCardSize({
           width,
@@ -160,41 +120,24 @@ export function ApiaryCard({
     border-white/80
     active:opacity-90
   "
-      style={[
-        styles.cardShadow,
-        isInactive && styles.inactiveCard,
-      ]}
+      style={[styles.cardShadow, isInactive && styles.inactiveCard]}
     >
       {/* Main background: left lighter, right darker */}
       <LinearGradient
-        colors={[
-          '#F7EFD0',
-          '#EFCB73',
-          '#D9A42A',
-          '#9A650A',
-        ]}
+        colors={['#F7EFD0', '#EFCB73', '#D9A42A', '#9A650A']}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Full honeycomb texture */}
-      {cardSize.width > 0 &&
-        cardSize.height > 0 && (
-          <HoneycombPattern
-            width={cardSize.width}
-            height={cardSize.height}
-            hexSize={16}
-          />
-        )}
+      {cardSize.width > 0 && cardSize.height > 0 && (
+        <HoneycombPattern width={cardSize.width} height={cardSize.height} hexSize={16} />
+      )}
 
       {/* Very soft top light */}
       <LinearGradient
-        colors={[
-          'rgba(255,255,255,0.22)',
-          'rgba(255,255,255,0.08)',
-          'rgba(255,255,255,0)',
-        ]}
+        colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.08)', 'rgba(255,255,255,0)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.topLight}
@@ -202,11 +145,7 @@ export function ApiaryCard({
 
       {/* Soft central glow line */}
       <LinearGradient
-        colors={[
-          'rgba(255,255,255,0)',
-          'rgba(255,248,220,0.35)',
-          'rgba(255,255,255,0)',
-        ]}
+        colors={['rgba(255,255,255,0)', 'rgba(255,248,220,0.35)', 'rgba(255,255,255,0)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.middleGlow}
@@ -221,31 +160,17 @@ export function ApiaryCard({
         />
       ) : (
         <>
-          <View
-            pointerEvents="none"
-            style={styles.rightCircle}
-          />
+          <View pointerEvents="none" style={styles.rightCircle} />
 
-          <View
-            pointerEvents="none"
-            style={styles.iconBox}
-          >
-          <MaterialDesignIcons
-            name="beehive-outline"
-            size={36}
-            color="#B06D08"
-          />
+          <View pointerEvents="none" style={styles.iconBox}>
+            <MaterialDesignIcons name="beehive-outline" size={36} color="#B06D08" />
           </View>
         </>
       )}
 
       {/* Bottom fade for title */}
       <LinearGradient
-        colors={[
-          'transparent',
-          'rgba(60, 38, 8, 0.16)',
-          'rgba(60, 38, 8, 0.72)',
-        ]}
+        colors={['transparent', 'rgba(60, 38, 8, 0.16)', 'rgba(60, 38, 8, 0.72)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.bottomFade}
@@ -264,18 +189,12 @@ export function ApiaryCard({
           {displayName}
         </Text>
 
-        <Ionicons
-          name="chevron-forward"
-          size={24}
-          color={colors.white}
-        />
+        <Ionicons name="chevron-forward" size={24} color={colors.white} />
       </View>
 
       {isInactive && (
         <View style={styles.inactiveBadge}>
-          <Text style={styles.inactiveBadgeText}>
-            Deaktiviran
-          </Text>
+          <Text style={styles.inactiveBadgeText}>Deaktiviran</Text>
         </View>
       )}
     </Pressable>

@@ -1,6 +1,6 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from 'expo-router';
 
-import { HiveMaintenanceDetailsScreen } from "@/features/hive-maintenance/screens/hive-maintenance-details-screen";
+import { HiveMaintenanceDetailsScreen } from '@/features/hive-maintenance/screens/hive-maintenance-details-screen';
 
 export default function HiveMaintenanceDetailsRoute() {
   const { hiveId, actionId } = useLocalSearchParams<{

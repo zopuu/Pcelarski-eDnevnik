@@ -4,10 +4,5 @@ import { RelocationDetailsScreen } from '@/features/relocations/screens/relocati
 
 export default function HiveRelocationDetailsRoute() {
   const { relocationId } = useLocalSearchParams<{ relocationId: string }>();
-  return (
-    <RelocationDetailsScreen
-      relocationId={relocationId}
-      subject="hive"
-    />
-  );
+  return <RelocationDetailsScreen relocationId={relocationId} subject="hive" />;
 }

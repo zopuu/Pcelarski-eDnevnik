@@ -1,48 +1,42 @@
 export const hiveInspectionTypes = [
-  "FIRST_SPRING",
-  "SPRING_ROUTINE",
-  "SWARM_CONTROL",
-  "FIRST_SUMMER",
-  "SUMMER_ROUTINE",
-  "POST_HARVEST",
-  "AUTUMN_ROUTINE",
-  "PRE_WINTER",
-  "QUEEN_CHECK",
-  "HEALTH_CHECK",
-  "EMERGENCY",
-  "OTHER",
+  'FIRST_SPRING',
+  'SPRING_ROUTINE',
+  'SWARM_CONTROL',
+  'FIRST_SUMMER',
+  'SUMMER_ROUTINE',
+  'POST_HARVEST',
+  'AUTUMN_ROUTINE',
+  'PRE_WINTER',
+  'QUEEN_CHECK',
+  'HEALTH_CHECK',
+  'EMERGENCY',
+  'OTHER',
 ] as const;
 
-export const broodPatterns = ["COMPACT", "SPOTTY", "MOTTLED", "OTHER"] as const;
+export const broodPatterns = ['COMPACT', 'SPOTTY', 'MOTTLED', 'OTHER'] as const;
 
-export const broodStages = ["EGGS", "LARVAE", "CAPPED", "MIXED"] as const;
+export const broodStages = ['EGGS', 'LARVAE', 'CAPPED', 'MIXED'] as const;
 
 export const hiveDiseases = [
-  "AMERICAN_FOULBROOD",
-  "EUROPEAN_FOULBROOD",
-  "NOSEMA",
-  "CHALKBROOD",
-  "SACBROOD",
-  "DEFORMED_WING_VIRUS",
-  "OTHER",
+  'AMERICAN_FOULBROOD',
+  'EUROPEAN_FOULBROOD',
+  'NOSEMA',
+  'CHALKBROOD',
+  'SACBROOD',
+  'DEFORMED_WING_VIRUS',
+  'OTHER',
 ] as const;
 
 export const hivePests = [
-  "VARROA_MITE",
-  "WAX_MOTH",
-  "SMALL_HIVE_BEETLE",
-  "BEE_LOUSE",
-  "ANTS",
-  "OTHER",
+  'VARROA_MITE',
+  'WAX_MOTH',
+  'SMALL_HIVE_BEETLE',
+  'BEE_LOUSE',
+  'ANTS',
+  'OTHER',
 ] as const;
 
-export const hivePredators = [
-  "WASP",
-  "HORNET",
-  "MOUSE",
-  "BIRD",
-  "OTHER",
-] as const;
+export const hivePredators = ['WASP', 'HORNET', 'MOUSE', 'BIRD', 'OTHER'] as const;
 
 export type HiveInspectionType = (typeof hiveInspectionTypes)[number];
 export type BroodPattern = (typeof broodPatterns)[number];

@@ -9,7 +9,13 @@ import {
   hasDistinctBatchName,
 } from '../utils/harvest-format';
 
-export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; onPress: () => void }) {
+export function HoneyBatchCard({
+  batch,
+  onPress,
+}: {
+  batch: HoneyBatchListItem;
+  onPress: () => void;
+}) {
   const isOpen = batch.status.toLocaleLowerCase() === 'open';
 
   return (
@@ -29,7 +35,9 @@ export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; 
             <Text className="mt-1 text-sm font-semibold text-primary">{batch.batchCode}</Text>
           )}
         </View>
-        <View className={`rounded-full px-3 py-1.5 ${isOpen ? 'bg-success/10' : 'bg-surface-warm'}`}>
+        <View
+          className={`rounded-full px-3 py-1.5 ${isOpen ? 'bg-success/10' : 'bg-surface-warm'}`}
+        >
           <Text className={`text-xs font-bold ${isOpen ? 'text-success' : 'text-muted'}`}>
             {getBatchStatusLabel(batch.status)}
           </Text>
@@ -55,7 +63,13 @@ export function HoneyBatchCard({ batch, onPress }: { batch: HoneyBatchListItem; 
   );
 }
 
-function Metric({ icon, value }: { icon: React.ComponentProps<typeof Ionicons>['name']; value: string }) {
+function Metric({
+  icon,
+  value,
+}: {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  value: string;
+}) {
   return (
     <View className="flex-row items-center gap-1.5">
       <Ionicons name={icon} size={16} color={colors.muted} />

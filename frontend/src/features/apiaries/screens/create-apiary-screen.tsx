@@ -1,348 +1,215 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  useRef,
-  useState,
-} from 'react';
+import { useRef, useState } from 'react';
 
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useCreateApiary,
-} from '@/features/apiaries/hooks/use-create-apiary';
-import {
-  ApiaryImagePicker,
-} from '@/features/apiaries/components/apiary-image-picker';
+import { useCreateApiary } from '@/features/apiaries/hooks/use-create-apiary';
+import { ApiaryImagePicker } from '@/features/apiaries/components/apiary-image-picker';
 
-import {
-  createApiarySchema,
-} from '@/features/apiaries/schemas/create-apiary-schema';
+import { createApiarySchema } from '@/features/apiaries/schemas/create-apiary-schema';
 
-import type {
-  CreateApiaryFormValues,
-} from '@/features/apiaries/schemas/create-apiary-schema';
+import type { CreateApiaryFormValues } from '@/features/apiaries/schemas/create-apiary-schema';
 
-import type {
-  CreateApiaryRequest,
-} from '@/features/apiaries/types/create-apiary';
-import type {
-  ApiaryImageUpload,
-} from '@/features/apiaries/types/apiary-image';
-import type {
-  HiveEntranceOrientation,
-} from '@/features/apiaries/types/apiary-stay';
+import type { CreateApiaryRequest } from '@/features/apiaries/types/create-apiary';
+import type { ApiaryImageUpload } from '@/features/apiaries/types/apiary-image';
+import type { HiveEntranceOrientation } from '@/features/apiaries/types/apiary-stay';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
-import {
-  MapLocationPicker,
-} from '@/shared/components/map-location-picker/map-location-picker';
+import { MapLocationPicker } from '@/shared/components/map-location-picker/map-location-picker';
 
-import type {
-  GeographicCoordinates,
-} from '@/shared/api/open-topo-data';
+import type { GeographicCoordinates } from '@/shared/api/open-topo-data';
 
-function optionalText(
-  value: string,
-): string | null {
-  const trimmed =
-    value.trim();
+function optionalText(value: string): string | null {
+  const trimmed = value.trim();
 
-  return trimmed.length > 0
-    ? trimmed
-    : null;
+  return trimmed.length > 0 ? trimmed : null;
 }
 
-function parseCoordinate(
-  value: string,
-): number {
-  return Number(
-    value
-      .trim()
-      .replace(',', '.'),
-  );
+function parseCoordinate(value: string): number {
+  return Number(value.trim().replace(',', '.'));
 }
 
-function parseSelectedCoordinate(
-  value: string,
-): number | null {
+function parseSelectedCoordinate(value: string): number | null {
   if (!value.trim()) {
     return null;
   }
 
-  const coordinate =
-    parseCoordinate(value);
+  const coordinate = parseCoordinate(value);
 
-  return Number.isFinite(coordinate)
-    ? coordinate
-    : null;
+  return Number.isFinite(coordinate) ? coordinate : null;
 }
 
-function parseOptionalInteger(
-  value: string,
-): number | null {
-  const trimmed =
-    value.trim();
+function parseOptionalInteger(value: string): number | null {
+  const trimmed = value.trim();
 
-  return trimmed.length > 0
-    ? Number(trimmed)
-    : null;
+  return trimmed.length > 0 ? Number(trimmed) : null;
 }
 
 const orientationOptions: {
   value: HiveEntranceOrientation;
   label: string;
 }[] = [
-    {
-      value: 'north',
-      label: 'Sever',
-    },
-    {
-      value: 'northEast',
-      label: 'Severoistok',
-    },
-    {
-      value: 'east',
-      label: 'Istok',
-    },
-    {
-      value: 'southEast',
-      label: 'Jugoistok',
-    },
-    {
-      value: 'south',
-      label: 'Jug',
-    },
-    {
-      value: 'southWest',
-      label: 'Jugozapad',
-    },
-    {
-      value: 'west',
-      label: 'Zapad',
-    },
-    {
-      value: 'northWest',
-      label: 'Severozapad',
-    },
-  ];
+  {
+    value: 'north',
+    label: 'Sever',
+  },
+  {
+    value: 'northEast',
+    label: 'Severoistok',
+  },
+  {
+    value: 'east',
+    label: 'Istok',
+  },
+  {
+    value: 'southEast',
+    label: 'Jugoistok',
+  },
+  {
+    value: 'south',
+    label: 'Jug',
+  },
+  {
+    value: 'southWest',
+    label: 'Jugozapad',
+  },
+  {
+    value: 'west',
+    label: 'Zapad',
+  },
+  {
+    value: 'northWest',
+    label: 'Severozapad',
+  },
+];
 
 export function CreateApiaryScreen() {
-  const createMutation =
-    useCreateApiary();
-  const [image, setImage] =
-    useState<ApiaryImageUpload | null>(null);
+  const createMutation = useCreateApiary();
+  const [image, setImage] = useState<ApiaryImageUpload | null>(null);
 
   const {
     control,
     handleSubmit,
     setValue,
-    formState: {
-      errors,
+    formState: { errors },
+  } = useForm<CreateApiaryFormValues>({
+    resolver: zodResolver(createApiarySchema),
+
+    defaultValues: {
+      name: '',
+      identificationNumber: '',
+      type: undefined,
+
+      locationName: '',
+      latitude: '',
+      longitude: '',
+      altitudeMeters: '',
+      cadastralParcelNumber: '',
+      description: '',
+
+      orientation: null,
+      stayNote: '',
     },
-  } =
-    useForm<CreateApiaryFormValues>({
-      resolver:
-        zodResolver(
-          createApiarySchema,
-        ),
+  });
 
-      defaultValues: {
-        name: '',
-        identificationNumber: '',
-        type: undefined,
+  const latitude = useWatch({
+    control,
+    name: 'latitude',
+  });
 
-        locationName: '',
-        latitude: '',
-        longitude: '',
-        altitudeMeters: '',
-        cadastralParcelNumber: '',
-        description: '',
+  const longitude = useWatch({
+    control,
+    name: 'longitude',
+  });
 
-        orientation: null,
-        stayNote: '',
-      },
-    });
+  const [isElevationLoading, setIsElevationLoading] = useState(false);
 
-  const latitude =
-    useWatch({
-      control,
-      name: 'latitude',
-    });
+  const hasManualAltitudeOverride = useRef(false);
 
-  const longitude =
-    useWatch({
-      control,
-      name: 'longitude',
-    });
+  const latitudeNumber = parseSelectedCoordinate(latitude);
 
-  const [
-    isElevationLoading,
-    setIsElevationLoading,
-  ] = useState(false);
-
-  const hasManualAltitudeOverride =
-    useRef(false);
-
-  const latitudeNumber =
-    parseSelectedCoordinate(latitude);
-
-  const longitudeNumber =
-    parseSelectedCoordinate(longitude);
+  const longitudeNumber = parseSelectedCoordinate(longitude);
 
   const selectedLocation =
-    latitudeNumber !== null &&
-    longitudeNumber !== null
+    latitudeNumber !== null && longitudeNumber !== null
       ? {
-        latitude: latitudeNumber,
-        longitude: longitudeNumber,
-      }
+          latitude: latitudeNumber,
+          longitude: longitudeNumber,
+        }
       : null;
 
-  const handleLocationChange = (
-    coordinates: GeographicCoordinates,
-  ) => {
-    hasManualAltitudeOverride.current =
-      false;
+  const handleLocationChange = (coordinates: GeographicCoordinates) => {
+    hasManualAltitudeOverride.current = false;
 
-    setValue(
-      'latitude',
-      coordinates.latitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('latitude', coordinates.latitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
 
-    setValue(
-      'longitude',
-      coordinates.longitude.toFixed(6),
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('longitude', coordinates.longitude.toFixed(6), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
-  const handleAltitudeChange = (
-    altitudeMeters: number | null,
-  ) => {
+  const handleAltitudeChange = (altitudeMeters: number | null) => {
     if (hasManualAltitudeOverride.current) {
       return;
     }
 
-    setValue(
-      'altitudeMeters',
-      altitudeMeters?.toString() ?? '',
-      {
-        shouldDirty: true,
-        shouldValidate: true,
-      },
-    );
+    setValue('altitudeMeters', altitudeMeters?.toString() ?? '', {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
-  const onSubmit =
-    async (
-      values:
-        CreateApiaryFormValues,
-    ) => {
-      const request:
-        CreateApiaryRequest = {
-        image,
-        name:
-          values.name,
+  const onSubmit = async (values: CreateApiaryFormValues) => {
+    const request: CreateApiaryRequest = {
+      image,
+      name: values.name,
 
-        identificationNumber:
-          optionalText(
-            values
-              .identificationNumber,
-          ),
+      identificationNumber: optionalText(values.identificationNumber),
 
-        type:
-          values.type,
+      type: values.type,
 
-        initialStay: {
-          orientation:
-            values.orientation,
+      initialStay: {
+        orientation: values.orientation,
 
-          note:
-            optionalText(
-              values.stayNote,
-            ),
+        note: optionalText(values.stayNote),
 
-          location: {
-            name:
-              optionalText(
-                values
-                  .locationName,
-              ),
+        location: {
+          name: optionalText(values.locationName),
 
-            latitude:
-              parseCoordinate(
-                values.latitude,
-              ),
+          latitude: parseCoordinate(values.latitude),
 
-            longitude:
-              parseCoordinate(
-                values.longitude,
-              ),
+          longitude: parseCoordinate(values.longitude),
 
-            altitudeMeters:
-              parseOptionalInteger(
-                values
-                  .altitudeMeters,
-              ),
+          altitudeMeters: parseOptionalInteger(values.altitudeMeters),
 
-            cadastralParcelNumber:
-              optionalText(
-                values
-                  .cadastralParcelNumber,
-              ),
+          cadastralParcelNumber: optionalText(values.cadastralParcelNumber),
 
-            description:
-              optionalText(
-                values
-                  .description,
-              ),
-          },
+          description: optionalText(values.description),
         },
-      };
-
-      try {
-        await createMutation
-          .mutateAsync(
-            request,
-          );
-
-        router.replace('/');
-      } catch {
-        /*
-         * Error is displayed below.
-         */
-      }
+      },
     };
+
+    try {
+      await createMutation.mutateAsync(request);
+
+      router.replace('/');
+    } catch {
+      /*
+       * Error is displayed below.
+       */
+    }
+  };
 
   return (
     <View
@@ -354,9 +221,7 @@ export function CreateApiaryScreen() {
       <KeyboardAwareScrollView
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 48,
@@ -400,9 +265,7 @@ export function CreateApiaryScreen() {
             text-muted
           "
         >
-          Unesite osnovne podatke
-          i trenutnu lokaciju
-          pčelinjaka.
+          Unesite osnovne podatke i trenutnu lokaciju pčelinjaka.
         </Text>
 
         <Text
@@ -420,22 +283,13 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="name"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Naziv *"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="npr. Glavni pčelinjak"
-              error={
-                errors.name
-                  ?.message
-              }
+              error={errors.name?.message}
             />
           )}
         />
@@ -443,24 +297,14 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="identificationNumber"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Identifikacioni broj"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="RS123456789012"
               autoCapitalize="characters"
-              error={
-                errors
-                  .identificationNumber
-                  ?.message
-              }
+              error={errors.identificationNumber?.message}
             />
           )}
         />
@@ -468,9 +312,7 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="type"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <View className="mb-4">
               <Text
                 className="
@@ -491,27 +333,17 @@ export function CreateApiaryScreen() {
               >
                 <Choice
                   label="Stacionarni"
-                  selected={
-                    field.value ===
-                    'stationary'
-                  }
+                  selected={field.value === 'stationary'}
                   onPress={() => {
-                    field.onChange(
-                      'stationary',
-                    );
+                    field.onChange('stationary');
                   }}
                 />
 
                 <Choice
                   label="Seleći"
-                  selected={
-                    field.value ===
-                    'migratory'
-                  }
+                  selected={field.value === 'migratory'}
                   onPress={() => {
-                    field.onChange(
-                      'migratory',
-                    );
+                    field.onChange('migratory');
                   }}
                 />
               </View>
@@ -531,10 +363,7 @@ export function CreateApiaryScreen() {
           )}
         />
 
-        <ApiaryImagePicker
-          value={image}
-          onChange={setImage}
-        />
+        <ApiaryImagePicker value={image} onChange={setImage} />
 
         <Text
           className="
@@ -555,76 +384,46 @@ export function CreateApiaryScreen() {
             text-muted
           "
         >
-          Izaberite tačnu poziciju na
-          satelitskom snimku. Koordinate
-          i nadmorska visina se popunjavaju
-          automatski.
+          Izaberite tačnu poziciju na satelitskom snimku. Koordinate i nadmorska visina se
+          popunjavaju automatski.
         </Text>
 
         <Controller
           control={control}
           name="locationName"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Naziv lokacije"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="npr. Futog"
-              error={
-                errors
-                  .locationName
-                  ?.message
-              }
+              error={errors.locationName?.message}
             />
           )}
         />
 
         <MapLocationPicker
           value={selectedLocation}
-          onLocationChange={
-            handleLocationChange
-          }
-          onAltitudeChange={
-            handleAltitudeChange
-          }
-          onElevationLoadingChange={
-            setIsElevationLoading
-          }
-          error={
-            errors.latitude?.message ??
-            errors.longitude?.message
-          }
+          onLocationChange={handleLocationChange}
+          onAltitudeChange={handleAltitudeChange}
+          onElevationLoadingChange={setIsElevationLoading}
+          error={errors.latitude?.message ?? errors.longitude?.message}
         />
 
         <Controller
           control={control}
           name="altitudeMeters"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Nadmorska visina (m)"
-              value={
-                field.value
-              }
+              value={field.value}
               onChangeText={(value) => {
-                hasManualAltitudeOverride.current =
-                  true;
+                hasManualAltitudeOverride.current = true;
                 field.onChange(value);
               }}
               placeholder="npr. 85"
               keyboardType="numbers-and-punctuation"
-              error={
-                errors
-                  .altitudeMeters
-                  ?.message
-              }
+              error={errors.altitudeMeters?.message}
             />
           )}
         />
@@ -632,23 +431,13 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="cadastralParcelNumber"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Broj katastarske parcele"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="npr. 1234/2"
-              error={
-                errors
-                  .cadastralParcelNumber
-                  ?.message
-              }
+              error={errors.cadastralParcelNumber?.message}
             />
           )}
         />
@@ -656,24 +445,14 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="description"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Opis lokacije"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="Dodatne informacije o lokaciji..."
               multiline
-              error={
-                errors
-                  .description
-                  ?.message
-              }
+              error={errors.description?.message}
             />
           )}
         />
@@ -697,16 +476,13 @@ export function CreateApiaryScreen() {
             text-muted
           "
         >
-          Odaberite smer prema kome
-          su okrenuta leta košnica.
+          Odaberite smer prema kome su okrenuta leta košnica.
         </Text>
 
         <Controller
           control={control}
           name="orientation"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <View className="mb-4">
               <View
                 className="
@@ -715,44 +491,29 @@ export function CreateApiaryScreen() {
                   gap-2
                 "
               >
-                {orientationOptions.map(
-                  (option) => (
-                    <OrientationChoice
-                      key={
-                        option.value
-                      }
-                      label={
-                        option.label
-                      }
-                      selected={
-                        field.value ===
-                        option.value
-                      }
-                      onPress={() => {
-                        field.onChange(
-                          option.value,
-                        );
-                      }}
-                    />
-                  ),
-                )}
+                {orientationOptions.map((option) => (
+                  <OrientationChoice
+                    key={option.value}
+                    label={option.label}
+                    selected={field.value === option.value}
+                    onPress={() => {
+                      field.onChange(option.value);
+                    }}
+                  />
+                ))}
               </View>
 
-              {errors.orientation
-                ?.message && (
-                  <Text
-                    className="
+              {errors.orientation?.message && (
+                <Text
+                  className="
                     mt-2
                     text-sm
                     text-error
                   "
-                  >
-                    {
-                      errors.orientation
-                        .message
-                    }
-                  </Text>
-                )}
+                >
+                  {errors.orientation.message}
+                </Text>
+              )}
             </View>
           )}
         />
@@ -760,23 +521,14 @@ export function CreateApiaryScreen() {
         <Controller
           control={control}
           name="stayNote"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormTextInput
               label="Napomena o boravku"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
               placeholder="Dodatna napomena..."
               multiline
-              error={
-                errors.stayNote
-                  ?.message
-              }
+              error={errors.stayNote?.message}
             />
           )}
         />
@@ -797,27 +549,16 @@ export function CreateApiaryScreen() {
                 text-error
               "
             >
-              {createMutation
-                .error instanceof
-                Error
-                ? createMutation
-                  .error.message
+              {createMutation.error instanceof Error
+                ? createMutation.error.message
                 : 'Pčelinjak nije moguće sačuvati.'}
             </Text>
           </View>
         )}
 
         <Pressable
-          disabled={
-            createMutation
-              .isPending ||
-            isElevationLoading
-          }
-          onPress={
-            handleSubmit(
-              onSubmit,
-            )
-          }
+          disabled={createMutation.isPending || isElevationLoading}
+          onPress={handleSubmit(onSubmit)}
           className={`
             min-h-14
             items-center
@@ -825,12 +566,7 @@ export function CreateApiaryScreen() {
             rounded-2xl
             bg-primary
             px-5
-            ${createMutation
-              .isPending ||
-              isElevationLoading
-              ? 'opacity-60'
-              : ''
-            }
+            ${createMutation.isPending || isElevationLoading ? 'opacity-60' : ''}
           `}
         >
           <Text
@@ -840,11 +576,7 @@ export function CreateApiaryScreen() {
               text-background
             "
           >
-            {createMutation
-              .isPending ||
-              isElevationLoading
-              ? 'Čuvanje...'
-              : 'Kreiraj pčelinjak'}
+            {createMutation.isPending || isElevationLoading ? 'Čuvanje...' : 'Kreiraj pčelinjak'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -856,23 +588,15 @@ type FormTextInputProps = {
   label: string;
   value: string;
 
-  onChangeText:
-  (value: string) => void;
+  onChangeText: (value: string) => void;
 
   placeholder?: string;
   error?: string;
   multiline?: boolean;
 
-  keyboardType?:
-  | 'default'
-  | 'decimal-pad'
-  | 'numbers-and-punctuation';
+  keyboardType?: 'default' | 'decimal-pad' | 'numbers-and-punctuation';
 
-  autoCapitalize?:
-  | 'none'
-  | 'sentences'
-  | 'words'
-  | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 };
 
 function FormTextInput({
@@ -900,43 +624,21 @@ function FormTextInput({
 
       <TextInput
         value={value}
-        onChangeText={
-          onChangeText
-        }
-        placeholder={
-          placeholder
-        }
-        placeholderTextColor={
-          colors.muted
-        }
-        keyboardType={
-          keyboardType
-        }
-        autoCapitalize={
-          autoCapitalize
-        }
-        multiline={
-          multiline
-        }
-        textAlignVertical={
-          multiline
-            ? 'top'
-            : 'center'
-        }
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.muted}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
         className={`
           rounded-2xl
           border
           px-4
           text-base
           text-foreground
-          ${multiline
-            ? 'min-h-28 py-3'
-            : 'h-14'
-          }
-          ${error
-            ? 'border-error'
-            : 'border-border'
-          }
+          ${multiline ? 'min-h-28 py-3' : 'h-14'}
+          ${error ? 'border-error' : 'border-border'}
           bg-surface
         `}
       />
@@ -962,11 +664,7 @@ type ChoiceProps = {
   onPress: () => void;
 };
 
-function Choice({
-  label,
-  selected,
-  onPress,
-}: ChoiceProps) {
+function Choice({ label, selected, onPress }: ChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -977,19 +675,13 @@ function Choice({
         border
         px-4
         py-3
-        ${selected
-          ? 'border-primary bg-primary'
-          : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
         className={`
           font-semibold
-          ${selected
-            ? 'text-background'
-            : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}
@@ -1004,11 +696,7 @@ type OrientationChoiceProps = {
   onPress: () => void;
 };
 
-function OrientationChoice({
-  label,
-  selected,
-  onPress,
-}: OrientationChoiceProps) {
+function OrientationChoice({ label, selected, onPress }: OrientationChoiceProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -1020,20 +708,14 @@ function OrientationChoice({
         border
         px-3
         py-3
-        ${selected
-          ? 'border-primary bg-primary'
-          : 'border-border bg-surface'
-        }
+        ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
       `}
     >
       <Text
         className={`
           text-sm
           font-semibold
-          ${selected
-            ? 'text-background'
-            : 'text-foreground'
-          }
+          ${selected ? 'text-background' : 'text-foreground'}
         `}
       >
         {label}

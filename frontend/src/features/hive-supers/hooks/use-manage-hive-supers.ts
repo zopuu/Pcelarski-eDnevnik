@@ -6,10 +6,7 @@ import { hiveQueryKeys } from '@/features/hives/hive-query-keys';
 import { addHiveSupers } from '../api/add-hive-supers';
 import { removeHiveSupers } from '../api/remove-hive-supers';
 import { hiveSuperQueryKeys } from '../hive-super-query-keys';
-import type {
-  AddHiveSupersRequest,
-  RemoveHiveSupersRequest,
-} from '../types/hive-super';
+import type { AddHiveSupersRequest, RemoveHiveSupersRequest } from '../types/hive-super';
 
 async function invalidateHiveSuperState(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -41,8 +38,7 @@ export function useRemoveHiveSupers(hiveId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: RemoveHiveSupersRequest) =>
-      removeHiveSupers(hiveId, request),
+    mutationFn: (request: RemoveHiveSupersRequest) => removeHiveSupers(hiveId, request),
     onSuccess: () => invalidateHiveSuperState(queryClient, hiveId),
   });
 }

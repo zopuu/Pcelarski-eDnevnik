@@ -1,24 +1,12 @@
-import {
-  useLocalSearchParams,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import {
-  ColonyDetailsScreen,
-} from '@/features/colonies/screens/colony-details-screen';
+import { ColonyDetailsScreen } from '@/features/colonies/screens/colony-details-screen';
 
 export default function ColonyDetailsRoute() {
-  const {
-    hiveId,
-    colonyId,
-  } = useLocalSearchParams<{
+  const { hiveId, colonyId } = useLocalSearchParams<{
     hiveId: string;
     colonyId: string;
   }>();
 
-  return (
-    <ColonyDetailsScreen
-      hiveId={hiveId}
-      colonyId={colonyId}
-    />
-  );
+  return <ColonyDetailsScreen hiveId={hiveId} colonyId={colonyId} />;
 }

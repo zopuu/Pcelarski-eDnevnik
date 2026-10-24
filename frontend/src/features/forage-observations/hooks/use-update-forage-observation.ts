@@ -1,41 +1,21 @@
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import {
-  updateForageObservation,
-} from '../api/update-forage-observation';
-import {
-  forageObservationQueryKeys,
-} from '../forage-observation-query-keys';
-import type {
-  CreateForageObservationRequest,
-} from '../types/forage-observation';
+import { updateForageObservation } from '../api/update-forage-observation';
+import { forageObservationQueryKeys } from '../forage-observation-query-keys';
+import type { CreateForageObservationRequest } from '../types/forage-observation';
 
-export function useUpdateForageObservation(
-  observationId: string,
-) {
+export function useUpdateForageObservation(observationId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (
-      request: CreateForageObservationRequest,
-    ) =>
-      updateForageObservation(
-        observationId,
-        request,
-      ),
+    mutationFn: (request: CreateForageObservationRequest) =>
+      updateForageObservation(observationId, request),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey:
-          forageObservationQueryKeys.all,
+        queryKey: forageObservationQueryKeys.all,
       });
       await queryClient.invalidateQueries({
-        queryKey:
-          forageObservationQueryKeys.detail(
-            observationId,
-          ),
+        queryKey: forageObservationQueryKeys.detail(observationId),
       });
     },
   });

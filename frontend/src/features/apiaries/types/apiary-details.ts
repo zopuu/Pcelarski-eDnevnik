@@ -1,13 +1,9 @@
-import type {
-  ApiaryStatus,
-  ApiaryType
-} from './apiary';
+import type { ApiaryStatus, ApiaryType } from './apiary';
 
 export type ApiaryDetails = {
   id: string;
 
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
   name: string;
 
@@ -19,6 +15,5 @@ export type ApiaryDetails = {
 
   createdAtUtc: string;
 
-  updatedAtUtc:
-    string | null;
+  updatedAtUtc: string | null;
 };

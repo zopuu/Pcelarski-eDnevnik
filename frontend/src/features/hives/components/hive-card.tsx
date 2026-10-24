@@ -1,27 +1,15 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 
-import {
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import type {
-  HiveStatus,
-  HiveType,
-} from '../types/hive';
-import {
-  HiveHeaderIllustration,
-} from './hive-header-illustration';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import type { HiveStatus, HiveType } from '../types/hive';
+import { HiveHeaderIllustration } from './hive-header-illustration';
+import { colors } from '@/shared/theme/colors';
 
 type HiveCardProps = {
   label: string;
 
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
   type: HiveType;
 
@@ -36,23 +24,21 @@ type HiveCardProps = {
   selected?: boolean;
 };
 
-const typeLabels:
-  Record<HiveType, string> = {
-    dadantBlatt: 'DB',
-    langstrothRoot: 'LR',
-    albertiZnidersic: 'AŽ',
-    farrar: 'Farar',
-    nucleus: 'Nukleus',
-    other: 'Ostalo',
-  };
+const typeLabels: Record<HiveType, string> = {
+  dadantBlatt: 'DB',
+  langstrothRoot: 'LR',
+  albertiZnidersic: 'AŽ',
+  farrar: 'Farar',
+  nucleus: 'Nukleus',
+  other: 'Ostalo',
+};
 
-const statusLabels:
-  Record<HiveStatus, string> = {
-    active: 'Aktivna',
-    inactive: 'Neaktivna',
-    writtenOff: 'Rashodovana',
-    underRepair: 'Na popravci',
-  };
+const statusLabels: Record<HiveStatus, string> = {
+  active: 'Aktivna',
+  inactive: 'Neaktivna',
+  writtenOff: 'Rashodovana',
+  underRepair: 'Na popravci',
+};
 
 export function HiveCard({
   label,
@@ -85,8 +71,7 @@ export function HiveCard({
           w-2
         "
         style={{
-          backgroundColor:
-            colors.primary,
+          backgroundColor: colors.primary,
         }}
       />
 
@@ -99,11 +84,7 @@ export function HiveCard({
           justify-center
         "
       >
-        <HiveHeaderIllustration
-          colorHex={colorHex}
-          size={56}
-          accessible={false}
-        />
+        <HiveHeaderIllustration colorHex={colorHex} size={56} accessible={false} />
       </View>
 
       <View
@@ -147,11 +128,7 @@ export function HiveCard({
                 text-primary
               "
             >
-              {
-                typeLabels[
-                  type
-                ]
-              }
+              {typeLabels[type]}
             </Text>
           </View>
         </View>
@@ -164,8 +141,7 @@ export function HiveCard({
             text-muted
           "
         >
-          {identificationNumber ??
-            'Bez identifikacionog broja'}
+          {identificationNumber ?? 'Bez identifikacionog broja'}
         </Text>
 
         <Text
@@ -176,11 +152,7 @@ export function HiveCard({
             text-muted
           "
         >
-          {
-            statusLabels[
-              status
-            ]
-          }
+          {statusLabels[status]}
         </Text>
       </View>
 
@@ -195,19 +167,10 @@ export function HiveCard({
             justify-center
             rounded-full
             border
-            ${selected
-              ? 'border-primary bg-primary'
-              : 'border-border bg-surface'
-            }
+            ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
           `}
         >
-          {selected && (
-            <Ionicons
-              name="checkmark"
-              size={18}
-              color={colors.onPrimary}
-            />
-          )}
+          {selected && <Ionicons name="checkmark" size={18} color={colors.onPrimary} />}
         </View>
       ) : (
         <Ionicons

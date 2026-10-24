@@ -14,7 +14,11 @@ export function HarvestErrorState({ message, onRetry }: { message: string; onRet
   return (
     <View className="flex-1 items-center justify-center px-8">
       <Text className="text-center text-base font-semibold text-error">{message}</Text>
-      <Pressable accessibilityRole="button" onPress={onRetry} className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5">
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
+      >
         <Text className="font-bold text-background">Pokušaj ponovo</Text>
       </Pressable>
     </View>

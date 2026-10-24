@@ -1,7 +1,4 @@
-import type {
-  ApiaryStatus,
-  ApiaryType,
-} from './apiary';
+import type { ApiaryStatus, ApiaryType } from './apiary';
 
 export type ApiaryListItem = {
   id: string;

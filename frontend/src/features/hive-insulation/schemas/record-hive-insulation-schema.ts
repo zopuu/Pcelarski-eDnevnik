@@ -28,6 +28,4 @@ export const recordHiveInsulationSchema = z.object({
   hives: z.array(hiveSelectionSchema).min(1, 'Izaberite najmanje jednu košnicu.'),
 });
 
-export type RecordHiveInsulationFormValues = z.infer<
-  typeof recordHiveInsulationSchema
->;
+export type RecordHiveInsulationFormValues = z.infer<typeof recordHiveInsulationSchema>;

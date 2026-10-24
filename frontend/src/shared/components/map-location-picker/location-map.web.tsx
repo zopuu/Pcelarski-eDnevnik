@@ -1,31 +1,17 @@
-import {
-  APIProvider,
-  Map,
-  Marker,
-} from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
-import {
-  Text,
-  View,
-} from 'react-native';
+import { Text, View } from 'react-native';
 
-import type {
-  LocationMapProps,
-} from './location-map.types';
+import type { LocationMapProps } from './location-map.types';
 
 const serbiaCenter = {
   lat: 44.0165,
   lng: 21.0059,
 };
 
-const webApiKey =
-  process.env
-    .EXPO_PUBLIC_GOOGLE_MAPS_WEB_API_KEY;
+const webApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_WEB_API_KEY;
 
-export function LocationMap({
-  value,
-  onLocationPress,
-}: LocationMapProps) {
+export function LocationMap({ value, onLocationPress }: LocationMapProps) {
   if (!webApiKey) {
     return (
       <View
@@ -47,8 +33,7 @@ export function LocationMap({
             text-muted
           "
         >
-          Dodajte Google Maps ključ za web
-          da biste izabrali lokaciju.
+          Dodajte Google Maps ključ za web da biste izabrali lokaciju.
         </Text>
       </View>
     );
@@ -56,9 +41,9 @@ export function LocationMap({
 
   const initialCenter = value
     ? {
-      lat: value.latitude,
-      lng: value.longitude,
-    }
+        lat: value.latitude,
+        lng: value.longitude,
+      }
     : serbiaCenter;
 
   return (
@@ -69,13 +54,9 @@ export function LocationMap({
         rounded-2xl
       "
     >
-      <APIProvider
-        apiKey={webApiKey}
-      >
+      <APIProvider apiKey={webApiKey}>
         <Map
-          defaultCenter={
-            initialCenter
-          }
+          defaultCenter={initialCenter}
           defaultZoom={7}
           mapTypeId="hybrid"
           mapTypeControl={false}
@@ -87,21 +68,16 @@ export function LocationMap({
             width: '100%',
             height: '100%',
           }}
-          onClick={(
-            event,
-          ) => {
-            const coordinates =
-              event.detail.latLng;
+          onClick={(event) => {
+            const coordinates = event.detail.latLng;
 
             if (!coordinates) {
               return;
             }
 
             onLocationPress({
-              latitude:
-                coordinates.lat,
-              longitude:
-                coordinates.lng,
+              latitude: coordinates.lat,
+              longitude: coordinates.lng,
             });
           }}
         >

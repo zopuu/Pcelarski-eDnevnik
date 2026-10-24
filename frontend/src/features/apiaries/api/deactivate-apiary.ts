@@ -1,6 +1,4 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
 type DeactivateApiaryResponse = {
   id: string;
@@ -8,13 +6,8 @@ type DeactivateApiaryResponse = {
   deactivatedAtUtc: string;
 };
 
-export function deactivateApiary(
-  apiaryId: string,
-): Promise<DeactivateApiaryResponse> {
-  return apiClient.post<
-    DeactivateApiaryResponse,
-    undefined
-  >(
+export function deactivateApiary(apiaryId: string): Promise<DeactivateApiaryResponse> {
+  return apiClient.post<DeactivateApiaryResponse, undefined>(
     `/api/apiaries/${apiaryId}/deactivate`,
     undefined,
     {

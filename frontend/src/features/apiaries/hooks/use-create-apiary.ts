@@ -1,27 +1,17 @@
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import {
-  createApiary,
-} from '@/features/apiaries/api/create-apiary';
+import { createApiary } from '@/features/apiaries/api/create-apiary';
 
 export function useCreateApiary() {
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn:
-      createApiary,
+    mutationFn: createApiary,
 
     onSuccess: async () => {
-      await queryClient
-        .invalidateQueries({
-          queryKey: [
-            'apiaries',
-          ],
-        });
+      await queryClient.invalidateQueries({
+        queryKey: ['apiaries'],
+      });
     },
   });
 }

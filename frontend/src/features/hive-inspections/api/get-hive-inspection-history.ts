@@ -1,6 +1,6 @@
-import { apiClient } from "@/shared/api/api-client";
+import { apiClient } from '@/shared/api/api-client';
 
-import type { HiveInspectionHistoryPage } from "../types/hive-inspection";
+import type { HiveInspectionHistoryPage } from '../types/hive-inspection';
 
 export function getHiveInspectionHistory(
   hiveId: string,

@@ -1,56 +1,24 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  DateTimePicker,
-} from '@expo/ui/community/datetime-picker';
+import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  useEffect,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 
-import {
-  Controller,
-  useForm,
-} from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useCurrentColony,
-} from '../hooks/use-current-colony';
-import {
-  useUpdateColony,
-} from '../hooks/use-update-colony';
-import {
-  updateColonySchema,
-} from '../schemas/update-colony-schema';
-import type {
-  UpdateColonyFormValues,
-} from '../schemas/update-colony-schema';
-import type {
-  ColonyOrigin,
-} from '../types/colony';
+import { useCurrentColony } from '../hooks/use-current-colony';
+import { useUpdateColony } from '../hooks/use-update-colony';
+import { updateColonySchema } from '../schemas/update-colony-schema';
+import type { UpdateColonyFormValues } from '../schemas/update-colony-schema';
+import type { ColonyOrigin } from '../types/colony';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type EditColonyScreenProps = {
   hiveId: string;
@@ -96,9 +64,7 @@ function formatDateOnly(value: Date) {
 function formatDate(value: string) {
   const [year, month, day] = value.split('-');
 
-  return year && month && day
-    ? `${day}.${month}.${year}.`
-    : 'Izaberite datum';
+  return year && month && day ? `${day}.${month}.${year}.` : 'Izaberite datum';
 }
 
 function optionalText(value: string): string | null {
@@ -107,24 +73,16 @@ function optionalText(value: string): string | null {
   return normalized || null;
 }
 
-export function EditColonyScreen({
-  hiveId,
-  colonyId,
-}: EditColonyScreenProps) {
+export function EditColonyScreen({ hiveId, colonyId }: EditColonyScreenProps) {
   const colonyQuery = useCurrentColony(hiveId);
-  const colony = colonyQuery.data?.id === colonyId
-    ? colonyQuery.data
-    : null;
+  const colony = colonyQuery.data?.id === colonyId ? colonyQuery.data : null;
   const updateMutation = useUpdateColony();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: {
-      errors,
-      isDirty,
-    },
+    formState: { errors, isDirty },
   } = useForm<UpdateColonyFormValues>({
     resolver: zodResolver(updateColonySchema),
     defaultValues: {
@@ -189,14 +147,10 @@ export function EditColonyScreen({
           }}
           className="mb-5 self-start py-2"
         >
-          <Text className="text-base font-semibold text-primary">
-            ← Nazad
-          </Text>
+          <Text className="text-base font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Izmeni društvo
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Izmeni društvo</Text>
 
         <Text className="mt-1 text-sm text-muted">
           Izmenite osnovne podatke o pčelinjem društvu.
@@ -208,11 +162,7 @@ export function EditColonyScreen({
           control={control}
           name="origin"
           render={({ field }) => (
-            <ChoiceGroup
-              label="Poreklo"
-              value={field.value}
-              onChange={field.onChange}
-            />
+            <ChoiceGroup label="Poreklo" value={field.value} onChange={field.onChange} />
           )}
         />
 
@@ -290,9 +240,7 @@ function DatePickerField({
 
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       <View className="flex-row gap-2">
         <Pressable
@@ -348,9 +296,7 @@ function DatePickerField({
         />
       )}
 
-      {error && (
-        <Text className="mt-1 text-sm text-error">{error}</Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
@@ -366,9 +312,7 @@ function ChoiceGroup({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
 
       <View className="flex-row flex-wrap gap-2">
         {originOptions.map((option) => {
@@ -393,7 +337,9 @@ function ChoiceGroup({
                 ${isSelected ? 'border-primary bg-primary' : 'border-border bg-surface'}
               `}
             >
-              <Text className={`font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}>
+              <Text
+                className={`font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}
+              >
                 {option.label}
               </Text>
             </Pressable>
@@ -415,9 +361,7 @@ function NotesInput({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Napomena o društvu
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Napomena o društvu</Text>
 
       <TextInput
         value={value}
@@ -439,9 +383,7 @@ function NotesInput({
         `}
       />
 
-      {error && (
-        <Text className="mt-1 text-sm text-error">{error}</Text>
-      )}
+      {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
   );
 }
@@ -475,9 +417,5 @@ function LoadError() {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-8 text-lg font-bold text-foreground">{children}</Text>;
 }

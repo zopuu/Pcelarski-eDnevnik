@@ -4,7 +4,9 @@ import { CompositionMethodBadge } from './composition-method-badge';
 import { HoneyBatchCompositionItems } from './honey-batch-composition-items';
 
 export function HoneyBatchCompositionCard({ composition }: { composition: HoneyBatchComposition }) {
-  const determinedAt = new Intl.DateTimeFormat('sr-Latn-RS', { dateStyle: 'medium' }).format(new Date(composition.determinedAt));
+  const determinedAt = new Intl.DateTimeFormat('sr-Latn-RS', { dateStyle: 'medium' }).format(
+    new Date(composition.determinedAt),
+  );
 
   return (
     <View className="rounded-3xl border border-border bg-surface px-4 py-4">
@@ -20,7 +22,9 @@ export function HoneyBatchCompositionCard({ composition }: { composition: HoneyB
 
       <HoneyBatchCompositionItems items={composition.items} />
 
-      <Text className="mt-4 border-t border-border pt-4 text-sm font-semibold text-foreground">Ukupno: 100%</Text>
+      <Text className="mt-4 border-t border-border pt-4 text-sm font-semibold text-foreground">
+        Ukupno: 100%
+      </Text>
       <Text className="mt-1 text-xs text-muted">Određeno: {determinedAt}</Text>
       {composition.determinationMethod === 'Calculated' && composition.algorithmVersion && (
         <Text className="mt-1 text-xs text-muted">Algoritam: {composition.algorithmVersion}</Text>

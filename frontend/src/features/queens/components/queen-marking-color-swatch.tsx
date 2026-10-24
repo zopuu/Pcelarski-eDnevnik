@@ -1,27 +1,14 @@
-import {
-  Text,
-  View,
-} from 'react-native';
+import { Text, View } from 'react-native';
 
-import {
-  ColorHexagon,
-} from '@/shared/components/color-hexagon/color-hexagon';
+import { ColorHexagon } from '@/shared/components/color-hexagon/color-hexagon';
 
 type QueenMarkingColorSwatchProps = {
-  colorHex:
-    | string
-    | null;
+  colorHex: string | null;
 };
 
-export function QueenMarkingColorSwatch({
-  colorHex,
-}: QueenMarkingColorSwatchProps) {
+export function QueenMarkingColorSwatch({ colorHex }: QueenMarkingColorSwatchProps) {
   if (!colorHex) {
-    return (
-      <Text className="text-sm font-semibold text-foreground">
-        —
-      </Text>
-    );
+    return <Text className="text-sm font-semibold text-foreground">—</Text>;
   }
 
   return (
@@ -33,10 +20,7 @@ export function QueenMarkingColorSwatch({
         justify-center
       "
     >
-      <ColorHexagon
-        colorHex={colorHex}
-        accessibilityLabel={`Boja oznake matice ${colorHex}`}
-      />
+      <ColorHexagon colorHex={colorHex} accessibilityLabel={`Boja oznake matice ${colorHex}`} />
     </View>
   );
 }

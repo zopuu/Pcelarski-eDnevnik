@@ -1,30 +1,17 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  Text,
-  View,
-} from 'react-native';
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  IconButton,
-} from '@/shared/components/ui/icon-button';
+import { IconButton } from '@/shared/components/ui/icon-button';
 
-import {
-  colors,
-  gradients,
-} from '@/shared/theme/colors';
+import { colors, gradients } from '@/shared/theme/colors';
 
 type AppHeaderProps = {
   onMenuPress: () => void;
   onQrPress?: () => void;
 };
 
-export function AppHeader({
-  onMenuPress,
-  onQrPress,
-}: AppHeaderProps) {
+export function AppHeader({ onMenuPress, onQrPress }: AppHeaderProps) {
   return (
     <LinearGradient
       colors={gradients.header}
@@ -37,9 +24,7 @@ export function AppHeader({
         y: 1,
       }}
     >
-      <SafeAreaView
-        edges={['top']}
-      >
+      <SafeAreaView edges={['top']}>
         <View
           className="
             relative
@@ -65,12 +50,8 @@ export function AppHeader({
           <IconButton
             icon="menu"
             accessibilityLabel="Otvori meni"
-            iconColor={
-              colors.foreground
-            }
-            onPress={
-              onMenuPress
-            }
+            iconColor={colors.foreground}
+            onPress={onMenuPress}
           />
 
           <Text

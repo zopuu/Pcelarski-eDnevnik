@@ -1,13 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
 import {
   Controller,
   useFieldArray,
@@ -29,18 +23,12 @@ import { Screen } from '@/shared/components/screen/screen';
 import { colors } from '@/shared/theme/colors';
 
 import { useHiveSupers } from '../hooks/use-hive-supers';
-import {
-  useAddHiveSupers,
-  useRemoveHiveSupers,
-} from '../hooks/use-manage-hive-supers';
+import { useAddHiveSupers, useRemoveHiveSupers } from '../hooks/use-manage-hive-supers';
 import {
   addHiveSupersSchema,
   type AddHiveSupersFormValues,
 } from '../schemas/add-hive-supers-schema';
-import type {
-  HiveSuper,
-  HiveSuperOperation,
-} from '../types/hive-super';
+import type { HiveSuper, HiveSuperOperation } from '../types/hive-super';
 
 type ManagementMode = 'add' | 'remove' | null;
 
@@ -221,7 +209,8 @@ export function HiveSuperManagementScreen({ hiveId }: { hiveId: string }) {
         {mode === null && (
           <View className="mt-5 rounded-3xl border border-border bg-surface px-5 py-4">
             <Text className="text-sm leading-5 text-muted">
-              Izaberite jednu radnju. Dodavanje i uklanjanje se vode kao odvojene akcije radi tačnog praćenja stanja nastavaka.
+              Izaberite jednu radnju. Dodavanje i uklanjanje se vode kao odvojene akcije radi tačnog
+              praćenja stanja nastavaka.
             </Text>
           </View>
         )}
@@ -246,9 +235,13 @@ function ModePicker({
   disabled: boolean;
   onSelect: (mode: Exclude<ManagementMode, null>) => void;
 }) {
-  const choices: Array<{ mode: Exclude<ManagementMode, null>; title: string; description: string }> = [
+  const choices: { mode: Exclude<ManagementMode, null>; title: string; description: string }[] = [
     { mode: 'add', title: 'Dodaj nastavke', description: 'Dodajte nove nastavke na košnicu.' },
-    { mode: 'remove', title: 'Ukloni nastavke', description: 'Pripremite nastavke za vrcanje ili arhivu.' },
+    {
+      mode: 'remove',
+      title: 'Ukloni nastavke',
+      description: 'Pripremite nastavke za vrcanje ili arhivu.',
+    },
   ];
 
   return (
@@ -298,11 +291,13 @@ function AddSupersForm({
     const count = Math.max(1, Math.min(10, superCount || 1));
     if (fields.length === count) return;
 
-    replace(Array.from({ length: count }, (_, index) =>
-      fields[index]
-        ? { frameCount: fields[index].frameCount, colorHex: fields[index].colorHex }
-        : { frameCount: 10, colorHex: '#FACC15' },
-    ));
+    replace(
+      Array.from({ length: count }, (_, index) =>
+        fields[index]
+          ? { frameCount: fields[index].frameCount, colorHex: fields[index].colorHex }
+          : { frameCount: 10, colorHex: '#FACC15' },
+      ),
+    );
   }, [fields, replace, superCount]);
 
   return (
@@ -327,10 +322,11 @@ function AddSupersForm({
         </Text>
         <View className="gap-4">
           {fields.map((field, index) => (
-            <View key={field.id} className="rounded-2xl border border-border bg-background px-4 pt-4">
-              <Text className="mb-2 text-base font-bold text-foreground">
-                Nastavak {index + 1}
-              </Text>
+            <View
+              key={field.id}
+              className="rounded-2xl border border-border bg-background px-4 pt-4"
+            >
+              <Text className="mb-2 text-base font-bold text-foreground">Nastavak {index + 1}</Text>
               <Controller
                 control={control}
                 name={`supers.${index}.frameCount`}
@@ -357,7 +353,9 @@ function AddSupersForm({
             </View>
           ))}
         </View>
-        {errors.root?.message && <Text className="-mt-2 mb-5 text-sm text-error">{errors.root.message}</Text>}
+        {errors.root?.message && (
+          <Text className="-mt-2 mb-5 text-sm text-error">{errors.root.message}</Text>
+        )}
       </View>
       <FormActions
         primaryLabel="Dodaj nastavke"
@@ -395,13 +393,18 @@ function RemoveSupersPanel({
     <View className="mt-6">
       <Text className="text-lg font-bold text-foreground">Uklanjanje nastavaka</Text>
       <Text className="mt-1 text-sm leading-5 text-muted">
-        Dodirnite nastavak i odredite da li ide za vrcanje ili u arhivu. Za svaki nastavak možete izabrati drugu radnju.
+        Dodirnite nastavak i odredite da li ide za vrcanje ili u arhivu. Za svaki nastavak možete
+        izabrati drugu radnju.
       </Text>
 
       {supers.length === 0 ? (
         <View className="mt-4 rounded-3xl border border-border bg-surface px-5 py-6">
-          <Text className="text-center text-base font-semibold text-foreground">Nema nastavaka na košnici.</Text>
-          <Text className="mt-1 text-center text-sm leading-5 text-muted">Prvo dodajte nastavke da biste mogli da ih uklonite.</Text>
+          <Text className="text-center text-base font-semibold text-foreground">
+            Nema nastavaka na košnici.
+          </Text>
+          <Text className="mt-1 text-center text-sm leading-5 text-muted">
+            Prvo dodajte nastavke da biste mogli da ih uklonite.
+          </Text>
         </View>
       ) : (
         <View className="mt-4 gap-3">
@@ -413,7 +416,7 @@ function RemoveSupersPanel({
                 accessibilityRole="button"
                 accessibilityState={{ selected: Boolean(configuration), disabled: isPending }}
                 disabled={isPending}
-                onPress={() => configuration ? onUnselect(superItem.id) : onSelect(superItem)}
+                onPress={() => (configuration ? onUnselect(superItem.id) : onSelect(superItem))}
                 className={`rounded-3xl border px-4 py-4 ${configuration ? 'border-primary bg-primary/10' : 'border-border bg-surface'} ${isPending ? 'opacity-60' : ''}`}
               >
                 <View className="flex-row items-start gap-3">
@@ -424,10 +427,18 @@ function RemoveSupersPanel({
                   />
                   <View className="flex-1">
                     <View className="flex-row items-start justify-between gap-2">
-                      <Text className="text-base font-bold text-foreground">{hiveTypeLabels[superItem.type] ?? superItem.type} nastavak</Text>
-                      {configuration && <Text className="text-xs font-bold text-primary">✓ Izabran</Text>}
+                      <Text className="text-base font-bold text-foreground">
+                        {hiveTypeLabels[superItem.type] ?? superItem.type} nastavak
+                      </Text>
+                      {configuration && (
+                        <Text className="text-xs font-bold text-primary">✓ Izabran</Text>
+                      )}
                     </View>
-                    <Text className="mt-1 text-sm text-muted">Na košnici · {superItem.frameCount} {superItem.frameCount === 1 ? 'ram' : 'ramova'} · Od {formatDate(superItem.startedOn)}</Text>
+                    <Text className="mt-1 text-sm text-muted">
+                      Na košnici · {superItem.frameCount}{' '}
+                      {superItem.frameCount === 1 ? 'ram' : 'ramova'} · Od{' '}
+                      {formatDate(superItem.startedOn)}
+                    </Text>
                     {configuration && (
                       <Text className="mt-2 text-sm font-semibold text-primary">
                         {configuration.operation === 'removeForHarvest'
@@ -444,9 +455,13 @@ function RemoveSupersPanel({
       )}
 
       {error && <Text className="mt-3 text-sm text-error">{error}</Text>}
-      {selectedCount > 0 && <Text className="mt-3 text-sm font-semibold text-muted">Izabrano: {selectedCount}</Text>}
+      {selectedCount > 0 && (
+        <Text className="mt-3 text-sm font-semibold text-muted">Izabrano: {selectedCount}</Text>
+      )}
       <FormActions
-        primaryLabel={selectedCount === 1 ? 'Ukloni nastavak' : `Ukloni nastavke (${selectedCount})`}
+        primaryLabel={
+          selectedCount === 1 ? 'Ukloni nastavak' : `Ukloni nastavke (${selectedCount})`
+        }
         pendingLabel="Uklanjanje..."
         disabled={selectedCount === 0}
         isPending={isPending}
@@ -510,17 +525,41 @@ function RemoveSuperModal({
           <View className="flex-row items-start justify-between gap-4">
             <View className="flex-1">
               <Text className="text-xl font-bold text-foreground">Ukloni nastavak</Text>
-              {superItem && <Text className="mt-1 text-sm text-muted">{hiveTypeLabels[superItem.type] ?? superItem.type} · {superItem.frameCount} ramova</Text>}
+              {superItem && (
+                <Text className="mt-1 text-sm text-muted">
+                  {hiveTypeLabels[superItem.type] ?? superItem.type} · {superItem.frameCount} ramova
+                </Text>
+              )}
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Zatvori" onPress={close} className="min-h-11 justify-center px-2">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Zatvori"
+              onPress={close}
+              className="min-h-11 justify-center px-2"
+            >
               <Text className="font-semibold text-primary">Zatvori</Text>
             </Pressable>
           </View>
 
           <Text className="mb-2 mt-5 text-sm font-semibold text-foreground">Način uklanjanja</Text>
           <View className="flex-row gap-2">
-            <ChoiceButton active={operation === 'removeForHarvest'} onPress={() => { setOperation('removeForHarvest'); setError(null); }} label="Za vrcanje" />
-            <ChoiceButton active={operation === 'removeAndArchive'} onPress={() => { setOperation('removeAndArchive'); setHarvestableFrameCount(null); setError(null); }} label="Arhiviraj" />
+            <ChoiceButton
+              active={operation === 'removeForHarvest'}
+              onPress={() => {
+                setOperation('removeForHarvest');
+                setError(null);
+              }}
+              label="Za vrcanje"
+            />
+            <ChoiceButton
+              active={operation === 'removeAndArchive'}
+              onPress={() => {
+                setOperation('removeAndArchive');
+                setHarvestableFrameCount(null);
+                setError(null);
+              }}
+              label="Arhiviraj"
+            />
           </View>
 
           {operation === 'removeForHarvest' && (
@@ -528,15 +567,26 @@ function RemoveSuperModal({
               <CountField
                 label="Ramovi za vrcanje"
                 value={harvestableFrameCount}
-                onChange={(value) => { setHarvestableFrameCount(value); setError(null); }}
+                onChange={(value) => {
+                  setHarvestableFrameCount(value);
+                  setError(null);
+                }}
                 maximum={superItem?.frameCount ?? 32767}
               />
             </View>
           )}
-          {operation === 'removeAndArchive' && <Text className="mt-4 text-sm leading-5 text-muted">Nastavak će biti arhiviran bez unosa broja ramova za vrcanje.</Text>}
+          {operation === 'removeAndArchive' && (
+            <Text className="mt-4 text-sm leading-5 text-muted">
+              Nastavak će biti arhiviran bez unosa broja ramova za vrcanje.
+            </Text>
+          )}
           {error && <Text className="mt-3 text-sm text-error">{error}</Text>}
 
-          <Pressable accessibilityRole="button" onPress={confirm} className="mt-6 min-h-14 items-center justify-center rounded-2xl bg-primary px-5">
+          <Pressable
+            accessibilityRole="button"
+            onPress={confirm}
+            className="mt-6 min-h-14 items-center justify-center rounded-2xl bg-primary px-5"
+          >
             <Text className="text-base font-bold text-background">Potvrdi izbor</Text>
           </Pressable>
         </View>
@@ -545,9 +595,22 @@ function RemoveSuperModal({
   );
 }
 
-function ChoiceButton({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
+function ChoiceButton({
+  active,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <Pressable accessibilityRole="button" accessibilityState={{ selected: active }} onPress={onPress} className={`min-h-12 flex-1 items-center justify-center rounded-2xl border px-3 ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      className={`min-h-12 flex-1 items-center justify-center rounded-2xl border px-3 ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
+    >
       <Text className={`font-bold ${active ? 'text-primary' : 'text-foreground'}`}>{label}</Text>
     </Pressable>
   );
@@ -570,23 +633,43 @@ function FormActions({
 }) {
   return (
     <View className="mt-6 gap-3">
-      <Pressable accessibilityRole="button" disabled={disabled || isPending} onPress={onPrimary} className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${(disabled || isPending) ? 'opacity-50' : ''}`}>
-        {isPending ? <View className="flex-row items-center gap-2"><ActivityIndicator size="small" color={colors.onPrimary} /><Text className="text-base font-bold text-background">{pendingLabel}</Text></View> : <Text className="text-base font-bold text-background">{primaryLabel}</Text>}
+      <Pressable
+        accessibilityRole="button"
+        disabled={disabled || isPending}
+        onPress={onPrimary}
+        className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${disabled || isPending ? 'opacity-50' : ''}`}
+      >
+        {isPending ? (
+          <View className="flex-row items-center gap-2">
+            <ActivityIndicator size="small" color={colors.onPrimary} />
+            <Text className="text-base font-bold text-background">{pendingLabel}</Text>
+          </View>
+        ) : (
+          <Text className="text-base font-bold text-background">{primaryLabel}</Text>
+        )}
       </Pressable>
-      <Pressable accessibilityRole="button" disabled={isPending} onPress={onCancel} className={`min-h-12 items-center justify-center rounded-2xl border border-border bg-surface px-5 ${isPending ? 'opacity-50' : ''}`}>
+      <Pressable
+        accessibilityRole="button"
+        disabled={isPending}
+        onPress={onCancel}
+        className={`min-h-12 items-center justify-center rounded-2xl border border-border bg-surface px-5 ${isPending ? 'opacity-50' : ''}`}
+      >
         <Text className="font-semibold text-foreground">Otkaži i poništi radnju</Text>
       </Pressable>
     </View>
   );
 }
 
-function applyAddServerValidationErrors(error: unknown, setError: UseFormSetError<AddHiveSupersFormValues>) {
+function applyAddServerValidationErrors(
+  error: unknown,
+  setError: UseFormSetError<AddHiveSupersFormValues>,
+) {
   if (!(error instanceof ApiError) || !error.problem?.errors) return false;
   let applied = false;
   Object.entries(error.problem.errors).forEach(([name, messages]) => {
     const match = /^supers\[(\d+)]\.(frameCount|colorHex)$/i.exec(name);
     const field: FieldPath<AddHiveSupersFormValues> | null = match
-      ? `supers.${match[1]}.${match[2]}` as FieldPath<AddHiveSupersFormValues>
+      ? (`supers.${match[1]}.${match[2]}` as FieldPath<AddHiveSupersFormValues>)
       : name.toLowerCase() === 'supers'
         ? 'superCount'
         : null;
@@ -599,9 +682,12 @@ function applyAddServerValidationErrors(error: unknown, setError: UseFormSetErro
 }
 
 function getMutationErrorMessage(error: unknown) {
-  if (error instanceof ApiError && error.status === 404) return 'Košnica ili izabrani nastavak nisu pronađeni, ili im više nemate pristup.';
-  if (error instanceof ApiError && error.status === 409) return 'Stanje nastavaka se promenilo. Osvežite podatke i pokušajte ponovo.';
-  if (error instanceof ApiError && error.status === 400) return 'Proverite podatke i pokušajte ponovo.';
+  if (error instanceof ApiError && error.status === 404)
+    return 'Košnica ili izabrani nastavak nisu pronađeni, ili im više nemate pristup.';
+  if (error instanceof ApiError && error.status === 409)
+    return 'Stanje nastavaka se promenilo. Osvežite podatke i pokušajte ponovo.';
+  if (error instanceof ApiError && error.status === 400)
+    return 'Proverite podatke i pokušajte ponovo.';
   return 'Radnju nije moguće sačuvati. Pokušajte ponovo.';
 }
 
@@ -615,7 +701,15 @@ function StateScreen({ label, retry }: { label: string; retry?: () => void }) {
     <Screen>
       <View className="flex-1 items-center justify-center px-8">
         <Text className="text-center text-base font-semibold text-muted">{label}</Text>
-        {retry && <Pressable accessibilityRole="button" onPress={retry} className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"><Text className="font-bold text-background">Pokušaj ponovo</Text></Pressable>}
+        {retry && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={retry}
+            className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
+          >
+            <Text className="font-bold text-background">Pokušaj ponovo</Text>
+          </Pressable>
+        )}
       </View>
     </Screen>
   );

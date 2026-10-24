@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateForageProfile } from "../api/update-forage-profile";
-import { apiaryQueryKeys } from "../apiary-query-keys";
-import type { UpdateForageProfileRequest } from "../types/forage-profile";
+import { updateForageProfile } from '../api/update-forage-profile';
+import type { UpdateForageProfileRequest } from '../types/forage-profile';
 
 type UpdateForageProfileVariables = {
   forageProfileId: string;
@@ -19,7 +18,7 @@ export function useUpdateForageProfile(apiaryId: string) {
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["forage-profiles", apiaryId],
+        queryKey: ['forage-profiles', apiaryId],
       });
     },
   });

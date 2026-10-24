@@ -1,22 +1,14 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 
-import {
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { colors } from '@/shared/theme/colors';
 
 type AddHiveCardProps = {
   onPress: () => void;
 };
 
-export function AddHiveCard({
-  onPress,
-}: AddHiveCardProps) {
+export function AddHiveCard({ onPress }: AddHiveCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -45,13 +37,7 @@ export function AddHiveCard({
           bg-primary
         "
       >
-        <Ionicons
-          name="add"
-          size={24}
-          color={
-            colors.background
-          }
-        />
+        <Ionicons name="add" size={24} color={colors.background} />
       </View>
 
       <Text

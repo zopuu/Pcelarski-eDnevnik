@@ -1,98 +1,43 @@
-import {
-  router,
-} from 'expo-router';
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
+import { router } from 'expo-router';
+import Ionicons from '@react-native-vector-icons/ionicons';
 
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Alert,
-  Text,
-  View,
-} from 'react-native';
-import {
-  useMemo,
-  useState,
-} from 'react';
-import {
-  useApiary,
-} from '@/features/apiaries/hooks/use-apiary';
-import {
-  useCurrentApiaryStay,
-} from '@/features/apiaries/hooks/use-current-apiary-stay';
-import {
-  useDeactivateApiary,
-} from '@/features/apiaries/hooks/use-deactivate-apiary';
-import {
-  useLocation,
-} from '@/features/apiaries/hooks/use-location';
+import { ActivityIndicator, FlatList, Pressable, Alert, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { useApiary } from '@/features/apiaries/hooks/use-apiary';
+import { useCurrentApiaryStay } from '@/features/apiaries/hooks/use-current-apiary-stay';
+import { useDeactivateApiary } from '@/features/apiaries/hooks/use-deactivate-apiary';
+import { useLocation } from '@/features/apiaries/hooks/use-location';
 import type {
   CurrentApiaryStay,
   HiveEntranceOrientation,
 } from '@/features/apiaries/types/apiary-stay';
-import type {
-  ApiaryLocation,
-} from '@/features/apiaries/types/location';
-import {
-  ApiaryHeaderImage,
-} from '@/features/apiaries/components/apiary-header-image';
+import type { ApiaryLocation } from '@/features/apiaries/types/location';
+import { ApiaryHeaderImage } from '@/features/apiaries/components/apiary-header-image';
 
-import {
-  HiveCard,
-} from '@/features/hives/components/hive-card';
-import {
-  HiveListFilters,
-} from '@/features/hives/components/hive-list-filters';
+import { HiveCard } from '@/features/hives/components/hive-card';
+import { HiveListFilters } from '@/features/hives/components/hive-list-filters';
 
-import {
-  useHives,
-} from '@/features/hives/hooks/use-hives';
-import type {
-  HiveStatus,
-  HiveType,
-} from '@/features/hives/types/hive';
+import { useHives } from '@/features/hives/hooks/use-hives';
+import type { HiveStatus, HiveType } from '@/features/hives/types/hive';
 
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  useAuth,
-} from '@/features/auth/hooks/use-auth';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  LocationMap,
-} from '@/shared/components/map-location-picker/location-map';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { LocationMap } from '@/shared/components/map-location-picker/location-map';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  ActionOverflowSheet,
-} from '@/shared/components/contextual-action-bar/action-overflow-sheet';
+import { colors } from '@/shared/theme/colors';
+import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
 
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
 
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
+import { Screen } from '@/shared/components/screen/screen';
 
 type ApiaryHivesScreenProps = {
   apiaryId: string;
 };
 
-function getApiaryTypeLabel(
-  type:
-    | 'stationary'
-    | 'migratory'
-    | null,
-) {
+function getApiaryTypeLabel(type: 'stationary' | 'migratory' | null) {
   switch (type) {
     case 'stationary':
       return 'Stacionarni';
@@ -105,196 +50,54 @@ function getApiaryTypeLabel(
   }
 }
 
-export function ApiaryHivesScreen({
-  apiaryId,
-}: ApiaryHivesScreenProps) {
-  const {
-    openDrawer,
-  } = useAppDrawer();
-  const {
-    isRefreshingSession,
-  } = useAuth();
+export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
+  const { openDrawer } = useAppDrawer();
+  const { isRefreshingSession } = useAuth();
 
-  const [
-    isMoreOpen,
-    setIsMoreOpen,
-  ] = useState(false);
-  const [
-    isApiaryActionsOpen,
-    setIsApiaryActionsOpen,
-  ] = useState(false);
-  const deactivateApiaryMutation =
-    useDeactivateApiary();
-  const currentStayQuery =
-    useCurrentApiaryStay(apiaryId);
-  const locationQuery =
-    useLocation(
-      currentStayQuery.data?.locationId ?? '',
-    );
-  const [
-    labelSearch,
-    setLabelSearch,
-  ] = useState('');
-  const [
-    selectedStatus,
-    setSelectedStatus,
-  ] = useState<HiveStatus | null>(null);
-  const [
-    selectedType,
-    setSelectedType,
-  ] = useState<HiveType | null>(null);
-  const [
-    selectedColor,
-    setSelectedColor,
-  ] = useState<string | null | undefined>(undefined);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isApiaryActionsOpen, setIsApiaryActionsOpen] = useState(false);
+  const deactivateApiaryMutation = useDeactivateApiary();
+  const currentStayQuery = useCurrentApiaryStay(apiaryId);
+  const locationQuery = useLocation(currentStayQuery.data?.locationId ?? '');
+  const [labelSearch, setLabelSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<HiveStatus | null>(null);
+  const [selectedType, setSelectedType] = useState<HiveType | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null | undefined>(undefined);
 
   const {
     data: apiary,
-    isLoading:
-    isApiaryLoading,
-    isError:
-    isApiaryError,
-    fetchStatus:
-    apiaryFetchStatus,
-    refetch:
-    refetchApiary,
-  } =
-    useApiary(
-      apiaryId,
-    );
+    isLoading: isApiaryLoading,
+    isError: isApiaryError,
+    fetchStatus: apiaryFetchStatus,
+    refetch: refetchApiary,
+  } = useApiary(apiaryId);
 
   const {
     data: hives,
-    isLoading:
-    areHivesLoading,
-    isError:
-    areHivesError,
-    fetchStatus:
-    hivesFetchStatus,
-    refetch:
-    refetchHives,
-  } =
-    useHives(
-      apiaryId,
-    );
-
-  const isQueryPaused =
-    apiaryFetchStatus === 'paused' ||
-    hivesFetchStatus === 'paused';
-
-  const retryLoading = () => {
-    void Promise.all([
-      refetchApiary(),
-      refetchHives(),
-    ]);
-  };
-
-  const header = (
-    <AppHeader
-      onMenuPress={
-        openDrawer
-      }
-    />
-  );
-
-  if (
-    isApiaryLoading ||
-    areHivesLoading
-  ) {
-    return (
-      <Screen
-        header={header}
-      >
-        <View
-          className="
-            flex-1
-            items-center
-            justify-center
-          "
-        >
-          <ActivityIndicator
-            size="large"
-            color={
-              colors.primary
-            }
-          />
-
-          <Text
-            className="
-              mt-3
-              text-muted
-            "
-          >
-            {isRefreshingSession
-              ? 'Obnavljanje sesije...'
-              : 'Učitavanje košnica...'}
-          </Text>
-        </View>
-      </Screen>
-    );
-  }
-
-  if (
-    isQueryPaused &&
-    (!apiary || !hives)
-  ) {
-    return (
-      <Screen
-        header={header}
-      >
-        <LoadError
-          message="Nema mrežne veze. Proverite vezu i pokušajte ponovo."
-          onRetry={retryLoading}
-        />
-      </Screen>
-    );
-  }
-
-  if (
-    isApiaryError ||
-    areHivesError ||
-    !apiary ||
-    !hives
-  ) {
-    return (
-      <Screen
-        header={header}
-      >
-        <LoadError
-          message="Nije moguće učitati podatke o pčelinjaku."
-          onRetry={retryLoading}
-        />
-      </Screen>
-    );
-  }
-
-  const displayName = apiary.name;
-
-  const typeLabel =
-    getApiaryTypeLabel(
-      apiary.type,
-    );
+    isLoading: areHivesLoading,
+    isError: areHivesError,
+    fetchStatus: hivesFetchStatus,
+    refetch: refetchHives,
+  } = useHives(apiaryId);
 
   const availableColors = useMemo(
-    () => Array.from(
-      new Set(
-        hives
-          .map((hive) => hive.colorHex)
-          .filter((color): color is string => color !== null),
-      ),
-    ).sort(),
+    () =>
+      Array.from(
+        new Set(
+          (hives ?? [])
+            .map((hive) => hive.colorHex)
+            .filter((color): color is string => color !== null),
+        ),
+      ).sort(),
     [hives],
   );
 
   const filteredHives = useMemo(() => {
-    const normalizedSearch = labelSearch
-      .trim()
-      .toLocaleLowerCase('sr-Latn-RS');
+    const normalizedSearch = labelSearch.trim().toLocaleLowerCase('sr-Latn-RS');
 
-    return hives.filter((hive) => {
-      const matchesLabel = !normalizedSearch || hive.label
-        .toLocaleLowerCase('sr-Latn-RS')
-        .includes(normalizedSearch);
+    return (hives ?? []).filter((hive) => {
+      const matchesLabel =
+        !normalizedSearch || hive.label.toLocaleLowerCase('sr-Latn-RS').includes(normalizedSearch);
       const matchesStatus = !selectedStatus || hive.status === selectedStatus;
       const matchesType = !selectedType || hive.type === selectedType;
       const matchesColor = selectedColor === undefined || hive.colorHex === selectedColor;
@@ -303,10 +106,65 @@ export function ApiaryHivesScreen({
     });
   }, [hives, labelSearch, selectedColor, selectedStatus, selectedType]);
 
+  const isQueryPaused = apiaryFetchStatus === 'paused' || hivesFetchStatus === 'paused';
+
+  const retryLoading = () => {
+    void Promise.all([refetchApiary(), refetchHives()]);
+  };
+
+  const header = <AppHeader onMenuPress={openDrawer} />;
+
+  if (isApiaryLoading || areHivesLoading) {
+    return (
+      <Screen header={header}>
+        <View
+          className="
+            flex-1
+            items-center
+            justify-center
+          "
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+
+          <Text
+            className="
+              mt-3
+              text-muted
+            "
+          >
+            {isRefreshingSession ? 'Obnavljanje sesije...' : 'Učitavanje košnica...'}
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
+
+  if (isQueryPaused && (!apiary || !hives)) {
+    return (
+      <Screen header={header}>
+        <LoadError
+          message="Nema mrežne veze. Proverite vezu i pokušajte ponovo."
+          onRetry={retryLoading}
+        />
+      </Screen>
+    );
+  }
+
+  if (isApiaryError || areHivesError || !apiary || !hives) {
+    return (
+      <Screen header={header}>
+        <LoadError message="Nije moguće učitati podatke o pčelinjaku." onRetry={retryLoading} />
+      </Screen>
+    );
+  }
+
+  const displayName = apiary.name;
+
+  const typeLabel = getApiaryTypeLabel(apiary.type);
+
   const handleAddHive = () => {
     router.push({
-      pathname:
-        '/apiaries/[apiaryId]/hives/create',
+      pathname: '/apiaries/[apiaryId]/hives/create',
 
       params: {
         apiaryId,
@@ -316,8 +174,7 @@ export function ApiaryHivesScreen({
 
   const handleForagePress = () => {
     router.push({
-      pathname:
-        '/apiaries/[apiaryId]/forage-profiles',
+      pathname: '/apiaries/[apiaryId]/forage-profiles',
 
       params: {
         apiaryId,
@@ -350,20 +207,14 @@ export function ApiaryHivesScreen({
   };
 
   const handleScanPress = () => {
-    Alert.alert(
-      'Skeniranje',
-      'Skeniranje QR ili bar koda biće dodato kasnije.',
-    );
+    Alert.alert('Skeniranje', 'Skeniranje QR ili bar koda biće dodato kasnije.');
   };
 
   const handleEditPress = () => {
-    setIsMoreOpen(
-      false,
-    );
+    setIsMoreOpen(false);
 
     router.push({
-      pathname:
-        '/apiaries/[apiaryId]/edit',
+      pathname: '/apiaries/[apiaryId]/edit',
 
       params: {
         apiaryId,
@@ -384,8 +235,7 @@ export function ApiaryHivesScreen({
         },
         {
           text: 'Deaktiviraj',
-          style:
-            'destructive',
+          style: 'destructive',
 
           onPress: () => {
             void deactivateApiaryMutation
@@ -394,10 +244,7 @@ export function ApiaryHivesScreen({
                 router.replace('/');
               })
               .catch(() => {
-                Alert.alert(
-                  'Deaktivacija nije uspela',
-                  'Pokušajte ponovo.',
-                );
+                Alert.alert('Deaktivacija nije uspela', 'Pokušajte ponovo.');
               });
           },
         },
@@ -415,81 +262,60 @@ export function ApiaryHivesScreen({
               {
                 key: 'forage',
                 label: 'Paša',
-                icon:
-                  'leaf-outline',
+                icon: 'leaf-outline',
 
-                accessibilityLabel:
-                  'Otvori profil paše',
+                accessibilityLabel: 'Otvori profil paše',
 
-                onPress:
-                  handleForagePress,
+                onPress: handleForagePress,
               },
 
               {
-                key:
-                  'relocations',
+                key: 'relocations',
 
-                label:
-                  'Selidbe',
+                label: 'Selidbe',
 
-                icon:
-                  'swap-horizontal-outline',
+                icon: 'swap-horizontal-outline',
 
-                accessibilityLabel:
-                  'Prikaži istoriju selidbi pčelinjaka',
+                accessibilityLabel: 'Prikaži istoriju selidbi pčelinjaka',
 
-                onPress:
-                  handleRelocationsPress,
+                onPress: handleRelocationsPress,
               },
             ]}
             primaryAction={{
-              key:
-                'actions',
+              key: 'actions',
 
-              label:
-                'Akcije',
+              label: 'Akcije',
 
               icon: 'construct-outline',
 
-              accessibilityLabel:
-                'Otvori akcije nad pčelinjakom',
+              accessibilityLabel: 'Otvori akcije nad pčelinjakom',
 
-              onPress:
-                handleApiaryActionsPress,
+              onPress: handleApiaryActionsPress,
             }}
             rightActions={[
               {
                 key: 'scan',
 
-                label:
-                  'Skeniraj',
+                label: 'Skeniraj',
 
-                icon:
-                  'scan-outline',
+                icon: 'scan-outline',
 
-                accessibilityLabel:
-                  'Skeniraj QR ili bar kod',
+                accessibilityLabel: 'Skeniraj QR ili bar kod',
 
-                onPress:
-                  handleScanPress,
+                onPress: handleScanPress,
               },
 
               {
                 key: 'more',
 
-                label:
-                  'Više',
+                label: 'Više',
 
-                icon:
-                  'ellipsis-horizontal',
+                icon: 'ellipsis-horizontal',
 
-                accessibilityLabel:
-                  'Prikaži više opcija za pčelinjak',
+                accessibilityLabel: 'Prikaži više opcija za pčelinjak',
 
                 onPress: () => {
-                  setIsMoreOpen(
-                    true,
-                  );
+                  setIsMoreOpen(true);
                 },
               },
             ]}
@@ -498,24 +324,14 @@ export function ApiaryHivesScreen({
       >
         <FlatList
           data={filteredHives}
-          keyExtractor={(
-            hive,
-          ) => hive.id}
-          showsVerticalScrollIndicator={
-            false
-          }
+          keyExtractor={(hive) => hive.id}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal:
-              16,
+            paddingHorizontal: 16,
 
-            paddingBottom:
-              24,
+            paddingBottom: 24,
           }}
-          ItemSeparatorComponent={() => (
-            <View
-              className="h-3"
-            />
-          )}
+          ItemSeparatorComponent={() => <View className="h-3" />}
           ListHeaderComponent={
             <View>
               <Pressable
@@ -568,9 +384,7 @@ export function ApiaryHivesScreen({
                   </Text>
                 </View>
 
-                <ApiaryHeaderImage
-                  imageUrl={apiary.imageUrl}
-                />
+                <ApiaryHeaderImage imageUrl={apiary.imageUrl} />
               </View>
 
               <View
@@ -602,10 +416,9 @@ export function ApiaryHivesScreen({
                   </View>
                 )}
 
-                {apiary
-                  .identificationNumber && (
-                    <View
-                      className="
+                {apiary.identificationNumber && (
+                  <View
+                    className="
                       rounded-full
                       border
                       border-border
@@ -613,21 +426,18 @@ export function ApiaryHivesScreen({
                       px-3
                       py-1.5
                     "
-                    >
-                      <Text
-                        className="
+                  >
+                    <Text
+                      className="
                         text-xs
                         font-semibold
                         text-muted
                       "
-                      >
-                        {
-                          apiary
-                            .identificationNumber
-                        }
-                      </Text>
-                    </View>
-                  )}
+                    >
+                      {apiary.identificationNumber}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               <View
@@ -659,8 +469,7 @@ export function ApiaryHivesScreen({
                   >
                     {hives.length === 0
                       ? 'Nema košnica'
-                      : filteredHives.length === hives.length &&
-                          hives.length === 1
+                      : filteredHives.length === hives.length && hives.length === 1
                         ? '1 košnica'
                         : filteredHives.length === hives.length
                           ? `${hives.length} košnica`
@@ -679,9 +488,7 @@ export function ApiaryHivesScreen({
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
                 availableColors={availableColors}
-                hasColorlessHives={hives.some(
-                  (hive) => hive.colorHex === null,
-                )}
+                hasColorlessHives={hives.some((hive) => hive.colorHex === null)}
               />
             </View>
           }
@@ -723,34 +530,19 @@ export function ApiaryHivesScreen({
               </Text>
             </View>
           }
-          renderItem={({
-            item,
-          }) => (
+          renderItem={({ item }) => (
             <HiveCard
-              label={
-                item.label
-              }
-              identificationNumber={
-                item
-                  .identificationNumber
-              }
-              type={
-                item.type
-              }
-              colorHex={
-                item.colorHex
-              }
-              status={
-                item.status
-              }
+              label={item.label}
+              identificationNumber={item.identificationNumber}
+              type={item.type}
+              colorHex={item.colorHex}
+              status={item.status}
               onPress={() => {
                 router.push({
-                  pathname:
-                    '/hives/[hiveId]',
+                  pathname: '/hives/[hiveId]',
 
                   params: {
-                    hiveId:
-                      item.id,
+                    hiveId: item.id,
                   },
                 });
               }}
@@ -759,14 +551,8 @@ export function ApiaryHivesScreen({
           ListFooterComponent={
             <CurrentStaySection
               currentStay={currentStayQuery.data}
-              isLoading={
-                currentStayQuery.isLoading ||
-                locationQuery.isLoading
-              }
-              hasError={
-                currentStayQuery.isError ||
-                locationQuery.isError
-              }
+              isLoading={currentStayQuery.isLoading || locationQuery.isLoading}
+              hasError={currentStayQuery.isError || locationQuery.isError}
               location={locationQuery.data}
             />
           }
@@ -844,13 +630,9 @@ export function ApiaryHivesScreen({
       />
 
       <ActionOverflowSheet
-        visible={
-          isMoreOpen
-        }
+        visible={isMoreOpen}
         onClose={() => {
-          setIsMoreOpen(
-            false,
-          );
+          setIsMoreOpen(false);
         }}
         title="Pčelinjak"
         actions={[
@@ -871,14 +653,11 @@ export function ApiaryHivesScreen({
 
             label: 'Boravci',
 
-            icon:
-              'time-outline',
+            icon: 'time-outline',
 
-            accessibilityLabel:
-              'Prikaži istoriju boravaka pčelinjaka',
+            accessibilityLabel: 'Prikaži istoriju boravaka pčelinjaka',
 
-            onPress:
-              handleStayHistoryPress,
+            onPress: handleStayHistoryPress,
           },
 
           {
@@ -886,14 +665,11 @@ export function ApiaryHivesScreen({
 
             label: 'Izmeni',
 
-            icon:
-              'create-outline',
+            icon: 'create-outline',
 
-            accessibilityLabel:
-              'Izmeni podatke o pčelinjaku',
+            accessibilityLabel: 'Izmeni podatke o pčelinjaku',
 
-            onPress:
-              handleEditPress,
+            onPress: handleEditPress,
           },
 
           {
@@ -901,23 +677,17 @@ export function ApiaryHivesScreen({
 
             label: 'Deaktiviraj',
 
-            icon:
-              'power-outline',
+            icon: 'power-outline',
 
-            accessibilityLabel:
-              'Trajno deaktiviraj pčelinjak',
+            accessibilityLabel: 'Trajno deaktiviraj pčelinjak',
 
-            variant:
-              'danger',
+            variant: 'danger',
 
-            onPress:
-              handleDeactivatePress,
+            onPress: handleDeactivatePress,
 
-            disabled:
-              deactivateApiaryMutation.isPending,
+            disabled: deactivateApiaryMutation.isPending,
 
-            loading:
-              deactivateApiaryMutation.isPending,
+            loading: deactivateApiaryMutation.isPending,
           },
         ]}
       />
@@ -930,10 +700,7 @@ type LoadErrorProps = {
   onRetry: () => void;
 };
 
-const orientationLabels: Record<
-  HiveEntranceOrientation,
-  string
-> = {
+const orientationLabels: Record<HiveEntranceOrientation, string> = {
   north: 'Sever',
   northEast: 'Severoistok',
   east: 'Istok',
@@ -969,9 +736,7 @@ function CurrentStaySection({
     return (
       <View className="mt-8 items-center rounded-3xl border border-border bg-surface px-5 py-6">
         <ActivityIndicator color={colors.primary} />
-        <Text className="mt-3 text-sm text-muted">
-          Učitavanje trenutnog boravka...
-        </Text>
+        <Text className="mt-3 text-sm text-muted">Učitavanje trenutnog boravka...</Text>
       </View>
     );
   }
@@ -979,9 +744,7 @@ function CurrentStaySection({
   if (hasError || !currentStay || !location) {
     return (
       <View className="mt-8 rounded-3xl border border-border bg-surface px-5 py-5">
-        <Text className="text-xl font-bold text-foreground">
-          Trenutni boravak
-        </Text>
+        <Text className="text-xl font-bold text-foreground">Trenutni boravak</Text>
         <Text className="mt-2 text-sm text-muted">
           Trenutni boravak ili njegova lokacija nisu evidentirani.
         </Text>
@@ -989,36 +752,22 @@ function CurrentStaySection({
     );
   }
 
-  const locationName =
-    location.name?.trim() ||
-    'Lokacija bez naziva';
+  const locationName = location.name?.trim() || 'Lokacija bez naziva';
 
   return (
     <View className="mt-8 overflow-hidden rounded-3xl border border-border bg-surface">
       <View className="px-5 pb-5 pt-5">
-        <Text className="text-xl font-bold text-foreground">
-          Trenutni boravak
-        </Text>
-        <Text className="mt-1 text-sm text-muted">
-          Trenutna lokacija pčelinjaka
-        </Text>
+        <Text className="text-xl font-bold text-foreground">Trenutni boravak</Text>
+        <Text className="mt-1 text-sm text-muted">Trenutna lokacija pčelinjaka</Text>
 
         <View className="mt-4 flex-row items-center gap-3">
           <View className="h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
-            <Ionicons
-              name="location-outline"
-              size={22}
-              color={colors.primary}
-            />
+            <Ionicons name="location-outline" size={22} color={colors.primary} />
           </View>
           <View className="flex-1">
-            <Text className="text-base font-bold text-foreground">
-              {locationName}
-            </Text>
+            <Text className="text-base font-bold text-foreground">{locationName}</Text>
             {location.altitudeMeters !== null && (
-              <Text className="mt-0.5 text-sm text-muted">
-                {location.altitudeMeters} m n/v
-              </Text>
+              <Text className="mt-0.5 text-sm text-muted">{location.altitudeMeters} m n/v</Text>
             )}
           </View>
         </View>
@@ -1032,9 +781,11 @@ function CurrentStaySection({
           <StayDetail
             icon="compass-outline"
             label="Orijentacija ulaza"
-            value={currentStay.orientation
-              ? orientationLabels[currentStay.orientation]
-              : 'Nije evidentirana'}
+            value={
+              currentStay.orientation
+                ? orientationLabels[currentStay.orientation]
+                : 'Nije evidentirana'
+            }
           />
           {location.cadastralParcelNumber && (
             <StayDetail
@@ -1044,18 +795,12 @@ function CurrentStaySection({
             />
           )}
           {currentStay.note && (
-            <StayDetail
-              icon="chatbox-outline"
-              label="Beleška"
-              value={currentStay.note}
-            />
+            <StayDetail icon="chatbox-outline" label="Beleška" value={currentStay.note} />
           )}
         </View>
 
         {location.description && (
-          <Text className="mt-4 text-sm leading-5 text-muted">
-            {location.description}
-          </Text>
+          <Text className="mt-4 text-sm leading-5 text-muted">{location.description}</Text>
         )}
       </View>
 
@@ -1084,20 +829,13 @@ function StayDetail({
   return (
     <View className="flex-row items-start gap-3">
       <Ionicons name={icon} size={17} color={colors.muted} />
-      <Text className="w-28 text-sm text-muted">
-        {label}
-      </Text>
-      <Text className="flex-1 text-sm font-semibold text-foreground">
-        {value}
-      </Text>
+      <Text className="w-28 text-sm text-muted">{label}</Text>
+      <Text className="flex-1 text-sm font-semibold text-foreground">{value}</Text>
     </View>
   );
 }
 
-function LoadError({
-  message,
-  onRetry,
-}: LoadErrorProps) {
+function LoadError({ message, onRetry }: LoadErrorProps) {
   return (
     <View
       className="

@@ -1,11 +1,6 @@
-import type {
-  HiveEntranceOrientation,
-} from '@/features/apiaries/types/apiary-stay';
+import type { HiveEntranceOrientation } from '@/features/apiaries/types/apiary-stay';
 
-import type {
-  RelocationKind,
-  RelocationTransportMethod,
-} from './create-relocation';
+import type { RelocationKind, RelocationTransportMethod } from './create-relocation';
 
 type RelocationPlace = {
   apiary: {

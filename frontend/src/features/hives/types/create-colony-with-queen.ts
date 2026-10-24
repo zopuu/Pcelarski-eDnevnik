@@ -1,6 +1,4 @@
-import type {
-  ColonyOrigin,
-} from '@/features/colonies/types/colony';
+import type { ColonyOrigin } from '@/features/colonies/types/colony';
 
 import type {
   QueenIntroductionMethod,
@@ -9,67 +7,37 @@ import type {
 } from '@/features/queens/types/queen';
 
 export type CreateColonyWithQueenRequest = {
-  colonyOrigin:
-    | ColonyOrigin
-    | null;
+  colonyOrigin: ColonyOrigin | null;
 
-  colonyFormedOn:
-    | string
-    | null;
+  colonyFormedOn: string | null;
 
-  colonyStartedOn:
-    string;
+  colonyStartedOn: string;
 
-  colonyNotes:
-    | string
-    | null;
+  colonyNotes: string | null;
 
-  colonyStayNotes:
-    | string
-    | null;
+  colonyStayNotes: string | null;
 
-  queenMarkingColorHex:
-    | string
-    | null;
+  queenMarkingColorHex: string | null;
 
-  queenOrigin:
-    | QueenOrigin
-    | null;
+  queenOrigin: QueenOrigin | null;
 
-  queenBreeder:
-    | string
-    | null;
+  queenBreeder: string | null;
 
-  queenBreed:
-    | string
-    | null;
+  queenBreed: string | null;
 
-  queenEmergedOn:
-    | string
-    | null;
+  queenEmergedOn: string | null;
 
-  queenAcquiredOn:
-    | string
-    | null;
+  queenAcquiredOn: string | null;
 
-  queenNotes:
-    | string
-    | null;
+  queenNotes: string | null;
 
-  queenStartedOn:
-    string;
+  queenStartedOn: string;
 
-  queenIntroductionMethod:
-    | QueenIntroductionMethod
-    | null;
+  queenIntroductionMethod: QueenIntroductionMethod | null;
 
-  queenIntroductionOutcome:
-    | QueenIntroductionOutcome
-    | null;
+  queenIntroductionOutcome: QueenIntroductionOutcome | null;
 
-  queenStayNotes:
-    | string
-    | null;
+  queenStayNotes: string | null;
 };
 
 export type CreateColonyWithQueenResponse = {

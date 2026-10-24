@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 
-import { getHiveInspection } from "../api/get-hive-inspection";
-import { hiveInspectionQueryKeys } from "../hive-inspection-query-keys";
+import { getHiveInspection } from '../api/get-hive-inspection';
+import { hiveInspectionQueryKeys } from '../hive-inspection-query-keys';
 
 export function useHiveInspection(hiveId: string, inspectionId: string) {
   return useQuery({

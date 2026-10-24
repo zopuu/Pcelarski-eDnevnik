@@ -1,6 +1,4 @@
-import {
-  ChangePasswordScreen,
-} from '@/features/beekeeper-profile/screens/change-password-screen';
+import { ChangePasswordScreen } from '@/features/beekeeper-profile/screens/change-password-screen';
 
 export default function ChangePasswordRoute() {
   return <ChangePasswordScreen />;

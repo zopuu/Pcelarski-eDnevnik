@@ -1,15 +1,15 @@
 export type ForageType =
-  | "meadow"
-  | "forest"
-  | "sunflower"
-  | "acacia"
-  | "linden"
-  | "oilseedRape"
-  | "clover"
-  | "fruitTrees"
-  | "chestnut"
-  | "buckwheat"
-  | "other";
+  | 'meadow'
+  | 'forest'
+  | 'sunflower'
+  | 'acacia'
+  | 'linden'
+  | 'oilseedRape'
+  | 'clover'
+  | 'fruitTrees'
+  | 'chestnut'
+  | 'buckwheat'
+  | 'other';
 
 export type ForageProfileItem = {
   id: string;
@@ -44,7 +44,7 @@ export type ForageProfile = {
 };
 
 export type CreateForageProfileItemRequest = {
-  forageType: Exclude<ForageType, "other">;
+  forageType: Exclude<ForageType, 'other'>;
 
   percentage: number;
 

@@ -1,22 +1,11 @@
-import {
-  useLocalSearchParams,
-} from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
-import {
-  CreateColonyWithQueenScreen,
-} from '@/features/hives/screens/create-colony-with-queen-screen';
+import { CreateColonyWithQueenScreen } from '@/features/hives/screens/create-colony-with-queen-screen';
 
 export default function CreateColonyWithQueenRoute() {
-  const {
-    hiveId,
-  } =
-    useLocalSearchParams<{
-      hiveId: string;
-    }>();
+  const { hiveId } = useLocalSearchParams<{
+    hiveId: string;
+  }>();
 
-  return (
-    <CreateColonyWithQueenScreen
-      hiveId={hiveId}
-    />
-  );
+  return <CreateColonyWithQueenScreen hiveId={hiveId} />;
 }

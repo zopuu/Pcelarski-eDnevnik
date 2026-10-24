@@ -1,26 +1,14 @@
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import {
-  createQueen,
-} from '../api/create-queen';
-import {
-  queenQueryKeys,
-} from '../queen-query-keys';
-import type {
-  CreateQueenRequest,
-} from '../types/create-queen';
+import { createQueen } from '../api/create-queen';
+import { queenQueryKeys } from '../queen-query-keys';
+import type { CreateQueenRequest } from '../types/create-queen';
 
-export function useCreateQueen(
-  colonyId: string,
-) {
+export function useCreateQueen(colonyId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: CreateQueenRequest) =>
-      createQueen(colonyId, request),
+    mutationFn: (request: CreateQueenRequest) => createQueen(colonyId, request),
 
     onSuccess: async () => {
       await queryClient.invalidateQueries({

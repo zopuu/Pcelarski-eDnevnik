@@ -70,9 +70,7 @@ const insulationTypes: readonly {
   { key: 'xps', label: 'Stirodur' },
 ];
 
-export function RecordHiveInsulationScreen(
-  props: RecordHiveInsulationScreenProps,
-) {
+export function RecordHiveInsulationScreen(props: RecordHiveInsulationScreenProps) {
   const { openDrawer } = useAppDrawer();
   const isSingleHive = 'hiveId' in props;
   const hiveId = props.hiveId ?? '';
@@ -88,11 +86,15 @@ export function RecordHiveInsulationScreen(
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkNotice, setBulkNotice] = useState<string | null>(null);
 
-  const selectableHives: HiveListItem[] = isSingleHive
-    ? hiveQuery.data
-      ? [hiveQuery.data]
-      : []
-    : (apiaryHivesQuery.data ?? []).filter((hive) => hive.status === 'active');
+  const selectableHives: HiveListItem[] = useMemo(
+    () =>
+      isSingleHive
+        ? hiveQuery.data
+          ? [hiveQuery.data]
+          : []
+        : (apiaryHivesQuery.data ?? []).filter((hive) => hive.status === 'active'),
+    [isSingleHive, hiveQuery.data, apiaryHivesQuery.data],
+  );
 
   const currentStateQueries = useQueries({
     queries: selectableHives.map((hive) => ({
@@ -125,16 +127,15 @@ export function RecordHiveInsulationScreen(
       performedOn: today,
       operation: 'add',
       notes: '',
-      hives: isSingleHive
-        ? [createHiveSelection(hiveId)]
-        : [],
+      hives: isSingleHive ? [createHiveSelection(hiveId)] : [],
     },
   });
   const { fields, append, remove, replace, update } = useFieldArray({
     control,
     name: 'hives',
   });
-  const selectedHives = useWatch({ control, name: 'hives' }) ?? [];
+  const watchedHives = useWatch({ control, name: 'hives' });
+  const selectedHives = useMemo(() => watchedHives ?? [], [watchedHives]);
   const operation = useWatch({ control, name: 'operation' });
 
   useEffect(() => {
@@ -145,9 +146,7 @@ export function RecordHiveInsulationScreen(
     replace([createHiveSelection(hiveId)]);
   }, [hiveId, hiveQuery.data, isSingleHive, replace, selectedHives]);
 
-  const isLoadingHives = isSingleHive
-    ? hiveQuery.isLoading
-    : apiaryHivesQuery.isLoading;
+  const isLoadingHives = isSingleHive ? hiveQuery.isLoading : apiaryHivesQuery.isLoading;
   const hasHiveError = isSingleHive
     ? hiveQuery.isError || !hiveQuery.data
     : apiaryHivesQuery.isError || !apiaryHivesQuery.data;
@@ -231,8 +230,7 @@ export function RecordHiveInsulationScreen(
       }
 
       const validTypes = {
-        paper:
-          selectedTypes.paper && isMaterialAvailable(state, operation, 'paper'),
+        paper: selectedTypes.paper && isMaterialAvailable(state, operation, 'paper'),
         eps: selectedTypes.eps && isMaterialAvailable(state, operation, 'eps'),
         xps: selectedTypes.xps && isMaterialAvailable(state, operation, 'xps'),
       };
@@ -307,8 +305,7 @@ export function RecordHiveInsulationScreen(
     );
   }
 
-  const hivesError =
-    typeof errors.hives?.message === 'string' ? errors.hives.message : undefined;
+  const hivesError = typeof errors.hives?.message === 'string' ? errors.hives.message : undefined;
 
   return (
     <>
@@ -558,7 +555,9 @@ function HiveInsulationCard({
   const selected = hasSelectedMaterial(selection);
 
   return (
-    <View className={`rounded-3xl border bg-surface px-4 py-4 ${selected ? 'border-primary' : 'border-border'}`}>
+    <View
+      className={`rounded-3xl border bg-surface px-4 py-4 ${selected ? 'border-primary' : 'border-border'}`}
+    >
       <View className="flex-row items-center">
         <View className="flex-1 pr-3">
           <Text className="text-base font-bold text-foreground">{hive.label}</Text>
@@ -567,7 +566,9 @@ function HiveInsulationCard({
           )}
         </View>
         <View
-          accessibilityLabel={selected ? 'Košnica ima izabrane materijale' : 'Košnica nema izabrane materijale'}
+          accessibilityLabel={
+            selected ? 'Košnica ima izabrane materijale' : 'Košnica nema izabrane materijale'
+          }
           className={`h-8 w-8 items-center justify-center rounded-full border ${
             selected ? 'border-primary bg-primary' : 'border-border bg-background'
           }`}
@@ -729,7 +730,9 @@ function BulkFillModal({
                     >
                       {selected && <Ionicons name="checkmark" size={16} color={colors.onPrimary} />}
                     </View>
-                    <Text className="flex-1 text-base font-semibold text-foreground">{hive.label}</Text>
+                    <Text className="flex-1 text-base font-semibold text-foreground">
+                      {hive.label}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -776,7 +779,9 @@ function BulkMaterialToggle({
         size={18}
         color={checked ? colors.primary : colors.muted}
       />
-      <Text className={`ml-2 text-sm font-semibold ${checked ? 'text-primary' : 'text-foreground'}`}>
+      <Text
+        className={`ml-2 text-sm font-semibold ${checked ? 'text-primary' : 'text-foreground'}`}
+      >
         {label}
       </Text>
     </Pressable>
@@ -799,9 +804,7 @@ function isMaterialAvailable(
   return operation === 'add' ? !state[type] : state[type];
 }
 
-function toRequest(
-  values: RecordHiveInsulationFormValues,
-): RecordHiveInsulationRequest {
+function toRequest(values: RecordHiveInsulationFormValues): RecordHiveInsulationRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     operation: values.operation,

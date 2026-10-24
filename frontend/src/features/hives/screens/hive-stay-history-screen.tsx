@@ -1,46 +1,19 @@
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { TimelineDate } from '@/shared/components/timeline/timeline-date';
 import { TimelineItem } from '@/shared/components/timeline/timeline-item';
-import {
-  Image,
-} from 'expo-image';
-import {
-  router,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
-import {
-  useHive,
-} from '../hooks/use-hive';
-import {
-  useHiveStayHistory,
-} from '../hooks/use-hive-stay-history';
-import type {
-  HiveStayHistoryItem,
-} from '../types/hive-stay';
+import { useHive } from '../hooks/use-hive';
+import { useHiveStayHistory } from '../hooks/use-hive-stay-history';
+import type { HiveStayHistoryItem } from '../types/hive-stay';
 
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  environment,
-} from '@/shared/config/environment';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { environment } from '@/shared/config/environment';
+import { colors } from '@/shared/theme/colors';
 
 type HiveStayHistoryScreenProps = {
   hiveId: string;
@@ -55,20 +28,14 @@ function formatDate(value: string) {
 }
 
 function formatDays(daysSpent: number) {
-  return daysSpent === 1
-    ? '1 dan'
-    : `${daysSpent} dana`;
+  return daysSpent === 1 ? '1 dan' : `${daysSpent} dana`;
 }
 
-export function HiveStayHistoryScreen({
-  hiveId,
-}: HiveStayHistoryScreenProps) {
+export function HiveStayHistoryScreen({ hiveId }: HiveStayHistoryScreenProps) {
   const { openDrawer } = useAppDrawer();
   const hiveQuery = useHive(hiveId);
   const staysQuery = useHiveStayHistory(hiveId);
-  const stays = staysQuery.data?.pages.flatMap(
-    (page) => page.items,
-  ) ?? [];
+  const stays = staysQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const isLoading = hiveQuery.isLoading || staysQuery.isLoading;
   const isError = hiveQuery.isError || staysQuery.isError;
 
@@ -85,10 +52,7 @@ export function HiveStayHistoryScreen({
       <Screen header={<AppHeader onMenuPress={openDrawer} />}>
         <LoadError
           onRetry={() => {
-            void Promise.all([
-              hiveQuery.refetch(),
-              staysQuery.refetch(),
-            ]);
+            void Promise.all([hiveQuery.refetch(), staysQuery.refetch()]);
           }}
         />
       </Screen>
@@ -117,9 +81,7 @@ export function HiveStayHistoryScreen({
               }}
               className="self-start py-2"
             >
-              <Text className="text-sm font-semibold text-primary">
-                ← Košnica
-              </Text>
+              <Text className="text-sm font-semibold text-primary">← Košnica</Text>
             </Pressable>
             <Text className="mt-3 text-xs font-bold uppercase tracking-widest text-muted">
               Košnica
@@ -127,9 +89,7 @@ export function HiveStayHistoryScreen({
             <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
               {hiveQuery.data.label}
             </Text>
-            <Text className="mt-8 text-xl font-bold text-foreground">
-              Istorija boravaka
-            </Text>
+            <Text className="mt-8 text-xl font-bold text-foreground">Istorija boravaka</Text>
             <Text className="mt-1 text-sm text-muted">
               Pčelinjaci kojima je košnica pripadala, od najnovijeg.
             </Text>
@@ -144,20 +104,14 @@ export function HiveStayHistoryScreen({
           />
         )}
         onEndReached={() => {
-          if (
-            staysQuery.hasNextPage &&
-            !staysQuery.isFetchingNextPage
-          ) {
+          if (staysQuery.hasNextPage && !staysQuery.isFetchingNextPage) {
             void staysQuery.fetchNextPage();
           }
         }}
         onEndReachedThreshold={0.35}
         ListFooterComponent={
           staysQuery.isFetchingNextPage ? (
-            <ActivityIndicator
-              className="my-5"
-              color={colors.primary}
-            />
+            <ActivityIndicator className="my-5" color={colors.primary} />
           ) : null
         }
       />
@@ -176,7 +130,14 @@ function HiveStayTimelineItem({
 }) {
   return (
     <TimelineItem
-      date={<TimelineDate variant="range" start={stay.startedAtUtc} end={stay.endedAtUtc} showTime={false} />}
+      date={
+        <TimelineDate
+          variant="range"
+          start={stay.startedAtUtc}
+          end={stay.endedAtUtc}
+          showTime={false}
+        />
+      }
       isFirst={isFirst}
       isLast={isLast}
       muted={!stay.isActive}
@@ -184,22 +145,15 @@ function HiveStayTimelineItem({
       <View className="mb-5 flex-1 rounded-3xl border border-border bg-surface px-4 py-4">
         <View className="flex-row items-start">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
-            <Ionicons
-              name="business-outline"
-              size={21}
-              color={colors.primary}
-            />
+            <Ionicons name="business-outline" size={21} color={colors.primary} />
           </View>
           <View className="ml-3 flex-1 pr-3">
             <Text className="text-base font-bold text-foreground">
-              {stay.apiaryName?.trim() ||
-                'Pčelinjak bez naziva'}
+              {stay.apiaryName?.trim() || 'Pčelinjak bez naziva'}
             </Text>
             {stay.isActive && (
               <View className="mt-1 self-start rounded-full bg-success/10 px-2 py-1">
-                <Text className="text-xs font-bold text-success">
-                  Trenutno aktivan
-                </Text>
+                <Text className="text-xs font-bold text-success">Trenutno aktivan</Text>
               </View>
             )}
           </View>
@@ -219,22 +173,14 @@ function HiveStayTimelineItem({
 
         <View className="mt-4 gap-3 border-t border-border pt-4">
           <Detail label="Početak" value={formatDate(stay.startedAtUtc)} />
-          <Detail
-            label="Kraj"
-            value={stay.endedAtUtc
-              ? formatDate(stay.endedAtUtc)
-              : 'U toku'}
-          />
+          <Detail label="Kraj" value={stay.endedAtUtc ? formatDate(stay.endedAtUtc) : 'U toku'} />
           <Detail label="Boravak" value={formatDays(stay.daysSpent)} />
         </View>
 
         <View className="mt-4 border-t border-border pt-4">
-          <Text className="text-sm text-muted">
-            Beleška o boravku
-          </Text>
+          <Text className="text-sm text-muted">Beleška o boravku</Text>
           <Text className="mt-1 text-sm leading-5 text-foreground">
-            {stay.note?.trim() ||
-              'Nema beleške za ovaj boravak.'}
+            {stay.note?.trim() || 'Nema beleške za ovaj boravak.'}
           </Text>
         </View>
       </View>
@@ -242,20 +188,11 @@ function HiveStayTimelineItem({
   );
 }
 
-
-function Detail({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function Detail({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between gap-4">
       <Text className="text-sm text-muted">{label}</Text>
-      <Text className="flex-1 text-right text-sm font-semibold text-foreground">
-        {value}
-      </Text>
+      <Text className="flex-1 text-right text-sm font-semibold text-foreground">{value}</Text>
     </View>
   );
 }
@@ -263,11 +200,7 @@ function Detail({
 function EmptyState() {
   return (
     <View className="flex-1 items-center justify-center rounded-3xl border border-border bg-surface px-6 py-10">
-      <Ionicons
-        name="time-outline"
-        size={30}
-        color={colors.primary}
-      />
+      <Ionicons name="time-outline" size={30} color={colors.primary} />
       <Text className="mt-3 text-center text-base font-semibold text-foreground">
         Još nema evidentiranih boravaka.
       </Text>
@@ -279,18 +212,12 @@ function LoadingState() {
   return (
     <View className="flex-1 items-center justify-center">
       <ActivityIndicator size="large" color={colors.primary} />
-      <Text className="mt-3 text-muted">
-        Učitavanje boravaka...
-      </Text>
+      <Text className="mt-3 text-muted">Učitavanje boravaka...</Text>
     </View>
   );
 }
 
-function LoadError({
-  onRetry,
-}: {
-  onRetry: () => void;
-}) {
+function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <View className="flex-1 items-center justify-center px-8">
       <Text className="text-center text-base font-semibold text-error">
@@ -301,9 +228,7 @@ function LoadError({
         onPress={onRetry}
         className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
       >
-        <Text className="font-bold text-background">
-          Pokušaj ponovo
-        </Text>
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
       </Pressable>
     </View>
   );

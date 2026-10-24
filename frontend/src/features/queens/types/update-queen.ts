@@ -1,8 +1,4 @@
-import type {
-  QueenIntroductionOutcome,
-  QueenOrigin,
-  QueenStatus,
-} from './queen';
+import type { QueenIntroductionOutcome, QueenOrigin, QueenStatus } from './queen';
 
 export type UpdateQueenRequest = {
   markingColorHex: string | null;

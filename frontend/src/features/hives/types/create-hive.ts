@@ -1,38 +1,27 @@
-import type {
-  HiveMaterial,
-  HiveStatus,
-  HiveType,
-} from './hive';
+import type { HiveMaterial, HiveStatus, HiveType } from './hive';
 
 export type CreateHiveRequest = {
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
   label: string;
 
   type: HiveType;
 
-  colorHex:
-    string | null;
+  colorHex: string | null;
 
-  manufactureDate:
-    string | null;
+  manufactureDate: string | null;
 
-  manufacturer:
-    string | null;
+  manufacturer: string | null;
 
-  material:
-    HiveMaterial | null;
+  material: HiveMaterial | null;
 
-  purchaseDate:
-    string | null;
+  purchaseDate: string | null;
 };
 
 export type CreateHiveResponse = {
   id: string;
 
-  identificationNumber:
-    string | null;
+  identificationNumber: string | null;
 
   label: string;
 

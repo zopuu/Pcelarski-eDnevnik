@@ -1,9 +1,5 @@
-import type {
-  QueenStatus,
-} from './queen';
-import type {
-  QueenStayEndReason,
-} from './change-queen';
+import type { QueenStatus } from './queen';
+import type { QueenStayEndReason } from './change-queen';
 
 export type EndQueenStayRequest = {
   endedOn: string;

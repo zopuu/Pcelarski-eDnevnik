@@ -9,15 +9,7 @@ import {
   useWatch,
   type UseFormSetError,
 } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { FormTextInput } from '@/features/hive-inspections/components/inspection-form-controls';
@@ -61,9 +53,7 @@ type EligibleHive = SyrupFeedingHiveOption & {
 
 const today = formatDateOnly(new Date());
 
-export function RecordSyrupFeedingScreen(
-  props: RecordSyrupFeedingScreenProps,
-) {
+export function RecordSyrupFeedingScreen(props: RecordSyrupFeedingScreenProps) {
   const { openDrawer } = useAppDrawer();
   const isSingleHive = 'hiveId' in props;
   const hiveId = props.hiveId ?? '';
@@ -123,9 +113,7 @@ export function RecordSyrupFeedingScreen(
       ];
     }
 
-    const hivesById = new Map(
-      (apiaryHivesQuery.data ?? []).map((hive) => [hive.id, hive]),
-    );
+    const hivesById = new Map((apiaryHivesQuery.data ?? []).map((hive) => [hive.id, hive]));
 
     return options.map((option) => ({
       ...option,
@@ -166,9 +154,7 @@ export function RecordSyrupFeedingScreen(
     (!isSingleHive && apiaryHivesQuery.isError);
   const isHiveOutsideAnApiary = isSingleHive && !hiveStaysQuery.isLoading && !activeHiveStay;
   const hivesError = getHivesError(errors);
-  const labelsByHiveId = Object.fromEntries(
-    eligibleHives.map((hive) => [hive.hiveId, hive.label]),
-  );
+  const labelsByHiveId = Object.fromEntries(eligibleHives.map((hive) => [hive.hiveId, hive.label]));
 
   const toggleHive = (selectedHiveId: string) => {
     if (isSingleHive) {
@@ -206,9 +192,7 @@ export function RecordSyrupFeedingScreen(
 
   const handleResultDone = () => {
     setResult(null);
-    router.replace(
-      isSingleHive ? `/hives/${hiveId}` : `/apiaries/${apiaryId}`,
-    );
+    router.replace(isSingleHive ? `/hives/${hiveId}` : `/apiaries/${apiaryId}`);
   };
 
   if (isLoading) {
@@ -237,9 +221,7 @@ export function RecordSyrupFeedingScreen(
 
   return (
     <>
-      <Screen
-        header={<AppHeader onMenuPress={openDrawer} />}
-      >
+      <Screen header={<AppHeader onMenuPress={openDrawer} />}>
         <KeyboardAwareScrollView
           bottomOffset={24}
           keyboardShouldPersistTaps="handled"
@@ -263,9 +245,7 @@ export function RecordSyrupFeedingScreen(
             Unesite odnos sastojaka, a zatim količinu za svaku izabranu košnicu.
           </Text>
 
-          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">
-            Opšti podaci
-          </Text>
+          <Text className="mb-3 mt-7 text-lg font-bold text-foreground">Opšti podaci</Text>
           <View className="rounded-3xl border border-border bg-surface px-5 pb-1 pt-5">
             <Controller
               control={control}
@@ -357,9 +337,7 @@ export function RecordSyrupFeedingScreen(
           ) : (
             <View className="gap-3">
               {eligibleHives.map((hive) => {
-                const selectedIndex = fields.findIndex(
-                  (field) => field.hiveId === hive.hiveId,
-                );
+                const selectedIndex = fields.findIndex((field) => field.hiveId === hive.hiveId);
                 const isSelected = selectedIndex >= 0;
                 const selectedHive = selectedHives?.[selectedIndex];
 
@@ -494,7 +472,9 @@ function FeedingHiveCard({
   onFillPercentageChange: (value: string) => void;
 }) {
   return (
-    <View className={`overflow-hidden rounded-3xl border bg-surface ${selected ? 'border-primary' : 'border-border'}`}>
+    <View
+      className={`overflow-hidden rounded-3xl border bg-surface ${selected ? 'border-primary' : 'border-border'}`}
+    >
       <Pressable
         accessibilityRole="checkbox"
         accessibilityState={{ checked: selected, disabled: isSingleHive }}
@@ -503,7 +483,9 @@ function FeedingHiveCard({
         onPress={onToggle}
         className="min-h-20 flex-row items-center px-4 py-3"
       >
-        <View className={`h-7 w-7 items-center justify-center rounded-full border ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}`}>
+        <View
+          className={`h-7 w-7 items-center justify-center rounded-full border ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}`}
+        >
           {selected && <Ionicons name="checkmark" size={18} color={colors.onPrimary} />}
         </View>
         <View className="ml-3 flex-1">
@@ -517,7 +499,9 @@ function FeedingHiveCard({
 
       {selected && (
         <View className="border-t border-border bg-surface-warm px-4 pb-4 pt-3">
-          <Text className="mb-2 text-sm font-semibold text-foreground">Punjenje hranilice (%) *</Text>
+          <Text className="mb-2 text-sm font-semibold text-foreground">
+            Punjenje hranilice (%) *
+          </Text>
           <TextInput
             accessibilityLabel={`Procenat punjenja za košnicu ${hive.label}`}
             value={fillPercentage}
@@ -535,7 +519,8 @@ function FeedingHiveCard({
             <Text className="mt-1 text-xs text-error">{error}</Text>
           ) : (
             <Text className="mt-2 text-xs text-muted">
-              Izračunato: {formatMilliliters(calculatePreview(hive.feederCapacityMl, fillPercentage))}
+              Izračunato:{' '}
+              {formatMilliliters(calculatePreview(hive.feederCapacityMl, fillPercentage))}
             </Text>
           )}
         </View>
@@ -564,9 +549,7 @@ function SingleHiveFeedingInput({
         </Text>
       </View>
       <View className="border-t border-border bg-surface-warm px-4 pb-4 pt-3">
-        <Text className="mb-2 text-sm font-semibold text-foreground">
-          Punjenje hranilice (%) *
-        </Text>
+        <Text className="mb-2 text-sm font-semibold text-foreground">Punjenje hranilice (%) *</Text>
         <TextInput
           accessibilityLabel={`Procenat punjenja za košnicu ${hive.label}`}
           value={fillPercentage}
@@ -592,9 +575,7 @@ function SingleHiveFeedingInput({
   );
 }
 
-function toRequest(
-  values: RecordSyrupFeedingFormValues,
-): RecordSyrupFeedingRequest {
+function toRequest(values: RecordSyrupFeedingFormValues): RecordSyrupFeedingRequest {
   return {
     performedAt: toPerformedAt(values.performedOn),
     sugarParts: parseDecimal(values.sugarParts),

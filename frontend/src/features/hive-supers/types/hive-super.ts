@@ -2,9 +2,7 @@ import type { HiveType } from '@/features/hives/types/hive';
 
 export type HiveSuperStatus = 'onHive' | 'readyForHarvest' | 'archived';
 
-export type HiveSuperOperation =
-  | 'removeForHarvest'
-  | 'removeAndArchive';
+export type HiveSuperOperation = 'removeForHarvest' | 'removeAndArchive';
 
 export type HiveSuper = {
   id: string;
@@ -17,42 +15,42 @@ export type HiveSuper = {
 };
 
 export type AddHiveSupersRequest = {
-  supers: Array<{
+  supers: {
     frameCount: number;
     colorHex: string;
-  }>;
+  }[];
 };
 
 export type AddHiveSupersResponse = {
   superManagementId: string;
   hiveId: string;
   addedSupersCount: number;
-  supers: Array<{
+  supers: {
     hiveSuperId: string;
     hiveSuperStayId: string;
     type: HiveType;
     status: HiveSuperStatus;
     frameCount: number;
     colorHex: string;
-  }>;
+  }[];
 };
 
 export type RemoveHiveSupersRequest = {
-  items: Array<{
+  items: {
     hiveSuperId: string;
     operation: HiveSuperOperation;
     harvestableFrameCount: number | null;
-  }>;
+  }[];
 };
 
 export type RemoveHiveSupersResponse = {
   superManagementId: string;
   hiveId: string;
-  supers: Array<{
+  supers: {
     hiveSuperId: string;
     hiveSuperStayId: string;
     operation: HiveSuperOperation;
     status: HiveSuperStatus;
     harvestableFrameCount: number | null;
-  }>;
+  }[];
 };

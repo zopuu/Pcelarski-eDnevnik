@@ -1,6 +1,4 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
 export type GeographicCoordinates = {
   latitude: number;
@@ -15,34 +13,22 @@ export async function getElevationMeters(
   coordinates: GeographicCoordinates,
   signal?: AbortSignal,
 ): Promise<number> {
-  const query =
-    new URLSearchParams({
-      latitude:
-        coordinates.latitude.toString(),
-      longitude:
-        coordinates.longitude.toString(),
-    });
+  const query = new URLSearchParams({
+    latitude: coordinates.latitude.toString(),
+    longitude: coordinates.longitude.toString(),
+  });
 
-  const response =
-    await apiClient.get<ElevationResponse>(
-      `/api/apiaries/elevation?${query.toString()}`,
+  const response = await apiClient.get<ElevationResponse>(
+    `/api/apiaries/elevation?${query.toString()}`,
     {
       authenticated: true,
       signal,
     },
   );
 
-  if (
-    !Number.isFinite(
-      response.elevationMeters,
-    )
-  ) {
-    throw new Error(
-      'Elevation is not available for this location.',
-    );
+  if (!Number.isFinite(response.elevationMeters)) {
+    throw new Error('Elevation is not available for this location.');
   }
 
-  return Math.round(
-    response.elevationMeters,
-  );
+  return Math.round(response.elevationMeters);
 }

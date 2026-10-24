@@ -1,20 +1,13 @@
-import Ionicons from "@react-native-vector-icons/ionicons";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { useCurrentForageProfile } from "../hooks/use-current-forage-profile";
-import { useUpdateForageProfile } from "../hooks/use-update-forage-profile";
+import { useCurrentForageProfile } from '../hooks/use-current-forage-profile';
+import { useUpdateForageProfile } from '../hooks/use-update-forage-profile';
 import {
   createForageProfileItemSchema,
   createForageProfileSchema,
@@ -23,11 +16,11 @@ import {
   type CreateForageProfileItemFormInput,
   type CreateForageProfileItemFormValues,
   type SelectableForageType,
-} from "../schemas/create-forage-profile-schema";
-import type { UpdateForageProfileRequest } from "../types/forage-profile";
+} from '../schemas/create-forage-profile-schema';
+import type { UpdateForageProfileRequest } from '../types/forage-profile';
 
-import { ApiError } from "@/shared/api/api-error";
-import { colors } from "@/shared/theme/colors";
+import { ApiError } from '@/shared/api/api-error';
+import { colors } from '@/shared/theme/colors';
 
 type EditForageProfileScreenProps = {
   apiaryId: string;
@@ -40,20 +33,19 @@ type ForageTypeOption = {
   label: string;
 };
 
-type ActiveItemEditor =
-  { mode: "add" } | { mode: "edit"; index: number } | null;
+type ActiveItemEditor = { mode: 'add' } | { mode: 'edit'; index: number } | null;
 
 const forageTypeOptions: ForageTypeOption[] = [
-  { value: "meadow", label: "Livada" },
-  { value: "forest", label: "Šuma" },
-  { value: "sunflower", label: "Suncokret" },
-  { value: "acacia", label: "Bagrem" },
-  { value: "linden", label: "Lipa" },
-  { value: "oilseedRape", label: "Uljana repica" },
-  { value: "clover", label: "Detelina" },
-  { value: "fruitTrees", label: "Voćke" },
-  { value: "chestnut", label: "Kesten" },
-  { value: "buckwheat", label: "Heljda" },
+  { value: 'meadow', label: 'Livada' },
+  { value: 'forest', label: 'Šuma' },
+  { value: 'sunflower', label: 'Suncokret' },
+  { value: 'acacia', label: 'Bagrem' },
+  { value: 'linden', label: 'Lipa' },
+  { value: 'oilseedRape', label: 'Uljana repica' },
+  { value: 'clover', label: 'Detelina' },
+  { value: 'fruitTrees', label: 'Voćke' },
+  { value: 'chestnut', label: 'Kesten' },
+  { value: 'buckwheat', label: 'Heljda' },
 ];
 
 const forageTypeLabels = Object.fromEntries(
@@ -62,18 +54,18 @@ const forageTypeLabels = Object.fromEntries(
 
 const emptyItem: CreateForageProfileItemFormInput = {
   forageType: null,
-  percentage: "",
+  percentage: '',
   intensity: 3,
-  notes: "",
+  notes: '',
 };
 
 function optionalText(value: string): string | null {
   return value.trim() || null;
 }
 
-function getTotalPercentage(items: CreateForageProfileFormInput["items"]) {
+function getTotalPercentage(items: CreateForageProfileFormInput['items']) {
   const total = items.reduce((sum, item) => {
-    const percentage = Number(item.percentage.replace(",", "."));
+    const percentage = Number(item.percentage.replace(',', '.'));
     return Number.isFinite(percentage) ? sum + percentage : sum;
   }, 0);
 
@@ -83,13 +75,12 @@ function getTotalPercentage(items: CreateForageProfileFormInput["items"]) {
 function getUpdateErrorMessage(error: unknown) {
   if (
     error instanceof ApiError &&
-    error.problem?.code ===
-      "forage_profiles.current_stay_year_already_has_profile"
+    error.problem?.code === 'forage_profiles.current_stay_year_already_has_profile'
   ) {
-    return "Profil paše za izabranu godinu već postoji.";
+    return 'Profil paše za izabranu godinu već postoji.';
   }
 
-  return "Profil paše nije moguće sačuvati. Pokušajte ponovo.";
+  return 'Profil paše nije moguće sačuvati. Pokušajte ponovo.';
 }
 
 export function EditForageProfileScreen({
@@ -99,32 +90,27 @@ export function EditForageProfileScreen({
 }: EditForageProfileScreenProps) {
   const profileQuery = useCurrentForageProfile(apiaryId, year);
   const updateMutation = useUpdateForageProfile(apiaryId);
-  const [activeItemEditor, setActiveItemEditor] =
-    useState<ActiveItemEditor>(null);
+  const [activeItemEditor, setActiveItemEditor] = useState<ActiveItemEditor>(null);
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isDirty },
-  } = useForm<
-    CreateForageProfileFormInput,
-    unknown,
-    CreateForageProfileFormValues
-  >({
+  } = useForm<CreateForageProfileFormInput, unknown, CreateForageProfileFormValues>({
     resolver: zodResolver(createForageProfileSchema),
     defaultValues: {
       year: String(year),
-      radiusKm: "",
-      name: "",
-      notes: "",
+      radiusKm: '',
+      name: '',
+      notes: '',
       items: [],
     },
   });
   const { fields, append, remove, update } = useFieldArray({
     control,
-    name: "items",
+    name: 'items',
   });
-  const items = useWatch({ control, name: "items" });
+  const items = useWatch({ control, name: 'items' });
 
   useEffect(() => {
     const profile = profileQuery.data;
@@ -134,24 +120,21 @@ export function EditForageProfileScreen({
 
     reset({
       year: String(profile.year),
-      radiusKm: profile.radiusKm === null ? "" : String(profile.radiusKm),
+      radiusKm: profile.radiusKm === null ? '' : String(profile.radiusKm),
       name: profile.name,
-      notes: profile.notes ?? "",
+      notes: profile.notes ?? '',
       items: profile.items
-        .filter((item) => item.forageType !== "other")
+        .filter((item) => item.forageType !== 'other')
         .map((item) => ({
-          forageType:
-            item.forageType as
-              SelectableForageType,
+          forageType: item.forageType as SelectableForageType,
           percentage: String(item.percentage),
           intensity: item.intensity,
-          notes: item.notes ?? "",
+          notes: item.notes ?? '',
         })),
     });
   }, [forageProfileId, profileQuery.data, reset]);
 
-  const editingIndex =
-    activeItemEditor?.mode === "edit" ? activeItemEditor.index : null;
+  const editingIndex = activeItemEditor?.mode === 'edit' ? activeItemEditor.index : null;
   const selectedForageTypes = new Set(
     items
       .filter((_, index) => index !== editingIndex)
@@ -164,8 +147,8 @@ export function EditForageProfileScreen({
   const sortedItems = items
     .map((item, index) => ({ item, index }))
     .sort((first, second) => {
-      const firstPercentage = Number(first.item.percentage.replace(",", "."));
-      const secondPercentage = Number(second.item.percentage.replace(",", "."));
+      const firstPercentage = Number(first.item.percentage.replace(',', '.'));
+      const secondPercentage = Number(second.item.percentage.replace(',', '.'));
       return secondPercentage - firstPercentage;
     });
   const canAddItem = items.length < forageTypeOptions.length;
@@ -187,7 +170,7 @@ export function EditForageProfileScreen({
     try {
       await updateMutation.mutateAsync({ forageProfileId, request });
       router.replace({
-        pathname: "/apiaries/[apiaryId]/forage-profiles",
+        pathname: '/apiaries/[apiaryId]/forage-profiles',
         params: { apiaryId },
       } as never);
     } catch {
@@ -213,16 +196,11 @@ export function EditForageProfileScreen({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          className="mb-5 self-start py-2"
-        >
+        <Pressable onPress={() => router.back()} className="mb-5 self-start py-2">
           <Text className="text-base font-semibold text-primary">← Nazad</Text>
         </Pressable>
 
-        <Text className="text-2xl font-bold text-foreground">
-          Izmeni profil paše
-        </Text>
+        <Text className="text-2xl font-bold text-foreground">Izmeni profil paše</Text>
         <Text className="mt-1 text-sm text-muted">
           Izmenite podatke i zastupljenost vrsta paše.
         </Text>
@@ -286,18 +264,16 @@ export function EditForageProfileScreen({
 
         <View className="mb-3 mt-5 flex-row items-start justify-between gap-4">
           <View className="flex-1">
-            <Text className="text-lg font-bold text-foreground">
-              Vrste paše
-            </Text>
+            <Text className="text-lg font-bold text-foreground">Vrste paše</Text>
             <Text className="mt-1 text-sm text-muted">
               Izmenite postojeće stavke ili dodajte novu vrstu.
             </Text>
           </View>
           <View
-            className={`rounded-full px-3 py-1.5 ${isTotalOverLimit ? "bg-error/10" : "bg-primary/10"}`}
+            className={`rounded-full px-3 py-1.5 ${isTotalOverLimit ? 'bg-error/10' : 'bg-primary/10'}`}
           >
             <Text
-              className={`text-xs font-bold ${isTotalOverLimit ? "text-error" : "text-primary"}`}
+              className={`text-xs font-bold ${isTotalOverLimit ? 'text-error' : 'text-primary'}`}
             >
               {totalPercentage.toFixed(2)}%
             </Text>
@@ -310,8 +286,8 @@ export function EditForageProfileScreen({
               Ukupno je {totalPercentage.toFixed(2)}%.
             </Text>
             <Text className="mt-1 text-sm text-error">
-              Zbir procenata mora biti najviše 100%. Sačuvavanje je onemogućeno
-              dok ne ispravite stavke.
+              Zbir procenata mora biti najviše 100%. Sačuvavanje je onemogućeno dok ne ispravite
+              stavke.
             </Text>
           </View>
         )}
@@ -345,17 +321,15 @@ export function EditForageProfileScreen({
                 intensity={item.intensity}
                 notes={item.notes}
                 isLast={sortedIndex === sortedItems.length - 1}
-                onEdit={() => setActiveItemEditor({ mode: "edit", index })}
+                onEdit={() => setActiveItemEditor({ mode: 'edit', index })}
                 onDelete={() => remove(index)}
               />
             );
           })}
-          {missingPercentage > 0 && (
-            <AutomaticOtherItem percentage={missingPercentage} />
-          )}
+          {missingPercentage > 0 && <AutomaticOtherItem percentage={missingPercentage} />}
         </View>
 
-        {activeItemEditor?.mode === "add" ? (
+        {activeItemEditor?.mode === 'add' ? (
           <ForageItemEditor
             key="add"
             initialItem={activeItem}
@@ -371,19 +345,15 @@ export function EditForageProfileScreen({
         ) : (
           <Pressable
             disabled={!canAddItem || activeItemEditor !== null}
-            onPress={() => setActiveItemEditor({ mode: "add" })}
-            className={`mb-4 min-h-14 items-center justify-center rounded-2xl border border-primary bg-surface px-5 ${!canAddItem ? "opacity-50" : ""}`}
+            onPress={() => setActiveItemEditor({ mode: 'add' })}
+            className={`mb-4 min-h-14 items-center justify-center rounded-2xl border border-primary bg-surface px-5 ${!canAddItem ? 'opacity-50' : ''}`}
           >
-            <Text className="text-base font-bold text-primary">
-              + Dodaj vrstu paše
-            </Text>
+            <Text className="text-base font-bold text-primary">+ Dodaj vrstu paše</Text>
           </Pressable>
         )}
 
         {errors.items?.message && !isTotalOverLimit && (
-          <Text className="mb-3 text-sm text-error">
-            {errors.items.message}
-          </Text>
+          <Text className="mb-3 text-sm text-error">{errors.items.message}</Text>
         )}
         {updateMutation.isError && (
           <View className="mb-4 rounded-2xl border border-error/30 bg-surface px-4 py-3">
@@ -394,16 +364,13 @@ export function EditForageProfileScreen({
         )}
         <Pressable
           disabled={
-            updateMutation.isPending ||
-            isTotalOverLimit ||
-            !isDirty ||
-            activeItemEditor !== null
+            updateMutation.isPending || isTotalOverLimit || !isDirty || activeItemEditor !== null
           }
           onPress={handleSubmit(onSubmit)}
-          className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${updateMutation.isPending || isTotalOverLimit || !isDirty || activeItemEditor !== null ? "opacity-50" : ""}`}
+          className={`min-h-14 items-center justify-center rounded-2xl bg-primary px-5 ${updateMutation.isPending || isTotalOverLimit || !isDirty || activeItemEditor !== null ? 'opacity-50' : ''}`}
         >
           <Text className="text-base font-bold text-background">
-            {updateMutation.isPending ? "Čuvanje..." : "Sačuvaj izmene"}
+            {updateMutation.isPending ? 'Čuvanje...' : 'Sačuvaj izmene'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -430,11 +397,7 @@ function ForageItemEditor({
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<
-    CreateForageProfileItemFormInput,
-    unknown,
-    CreateForageProfileItemFormValues
-  >({
+  } = useForm<CreateForageProfileItemFormInput, unknown, CreateForageProfileItemFormValues>({
     resolver: zodResolver(createForageProfileItemSchema),
     defaultValues: initialItem,
   });
@@ -469,9 +432,7 @@ function ForageItemEditor({
       <Controller
         control={control}
         name="intensity"
-        render={({ field }) => (
-          <IntensityPicker value={field.value} onChange={field.onChange} />
-        )}
+        render={({ field }) => <IntensityPicker value={field.value} onChange={field.onChange} />}
       />
       <Controller
         control={control}
@@ -530,7 +491,7 @@ function ReadOnlyForageItem({
   onDelete: () => void;
 }) {
   return (
-    <View className={`px-4 py-4 ${isLast ? "" : "border-b border-border"}`}>
+    <View className={`px-4 py-4 ${isLast ? '' : 'border-b border-border'}`}>
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1">
           <Text className="text-base font-bold text-foreground">
@@ -569,9 +530,7 @@ function AutomaticOtherItem({ percentage }: { percentage: number }) {
           <Text className="text-base font-bold text-foreground">Ostalo</Text>
           <Text className="mt-1 text-sm text-muted">Automatski izračunato</Text>
         </View>
-        <Text className="text-base font-bold text-primary">
-          {percentage.toFixed(2)}%
-        </Text>
+        <Text className="text-base font-bold text-primary">{percentage.toFixed(2)}%</Text>
       </View>
     </View>
   );
@@ -590,9 +549,7 @@ function ForageTypePicker({
 }) {
   return (
     <View className="mb-4 mt-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Vrsta *
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Vrsta *</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -606,10 +563,10 @@ function ForageTypePicker({
               key={option.value}
               disabled={isAlreadyAdded}
               onPress={() => onChange(option.value)}
-              className={`min-h-11 items-center justify-center rounded-xl border px-3 ${isSelected ? "border-primary bg-primary" : "border-border bg-background"} ${isAlreadyAdded ? "opacity-40" : ""}`}
+              className={`min-h-11 items-center justify-center rounded-xl border px-3 ${isSelected ? 'border-primary bg-primary' : 'border-border bg-background'} ${isAlreadyAdded ? 'opacity-40' : ''}`}
             >
               <Text
-                className={`text-sm font-semibold ${isSelected ? "text-background" : "text-foreground"}`}
+                className={`text-sm font-semibold ${isSelected ? 'text-background' : 'text-foreground'}`}
               >
                 {option.label}
               </Text>
@@ -631,9 +588,7 @@ function IntensityPicker({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        Jačina paše *
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">Jačina paše *</Text>
       <View className="flex-row gap-2">
         {[1, 2, 3, 4, 5].map((intensity) => {
           const isSelected = value === intensity;
@@ -641,11 +596,9 @@ function IntensityPicker({
             <Pressable
               key={intensity}
               onPress={() => onChange(intensity)}
-              className={`min-h-12 flex-1 items-center justify-center rounded-xl border ${isSelected ? "border-primary bg-primary" : "border-border bg-background"}`}
+              className={`min-h-12 flex-1 items-center justify-center rounded-xl border ${isSelected ? 'border-primary bg-primary' : 'border-border bg-background'}`}
             >
-              <Text
-                className={`font-bold ${isSelected ? "text-background" : "text-foreground"}`}
-              >
+              <Text className={`font-bold ${isSelected ? 'text-background' : 'text-foreground'}`}>
                 {intensity}
               </Text>
             </Pressable>
@@ -661,7 +614,7 @@ function FormTextInput({
   value,
   onChangeText,
   placeholder,
-  keyboardType = "default",
+  keyboardType = 'default',
   maxLength,
   multiline = false,
   error,
@@ -670,16 +623,14 @@ function FormTextInput({
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
-  keyboardType?: "default" | "number-pad" | "decimal-pad";
+  keyboardType?: 'default' | 'number-pad' | 'decimal-pad';
   maxLength?: number;
   multiline?: boolean;
   error?: string;
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-foreground">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-foreground">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -688,8 +639,8 @@ function FormTextInput({
         keyboardType={keyboardType}
         maxLength={maxLength}
         multiline={multiline}
-        textAlignVertical={multiline ? "top" : "center"}
-        className={`${multiline ? "min-h-28 py-3" : "h-14"} rounded-2xl border bg-surface px-4 text-base text-foreground ${error ? "border-error" : "border-border"}`}
+        textAlignVertical={multiline ? 'top' : 'center'}
+        className={`${multiline ? 'min-h-28 py-3' : 'h-14'} rounded-2xl border bg-surface px-4 text-base text-foreground ${error ? 'border-error' : 'border-border'}`}
       />
       {error && <Text className="mt-1 text-sm text-error">{error}</Text>}
     </View>
@@ -710,19 +661,12 @@ function LoadError() {
       <Text className="text-center text-base font-semibold text-error">
         Nije moguće učitati profil paše.
       </Text>
-      <Pressable
-        onPress={() => router.back()}
-        className="mt-5 rounded-2xl bg-primary px-5 py-3"
-      >
+      <Pressable onPress={() => router.back()} className="mt-5 rounded-2xl bg-primary px-5 py-3">
         <Text className="font-bold text-background">Nazad</Text>
       </Pressable>
     </View>
   );
 }
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <Text className="mb-3 mt-8 text-lg font-bold text-foreground">
-      {children}
-    </Text>
-  );
+  return <Text className="mb-3 mt-8 text-lg font-bold text-foreground">{children}</Text>;
 }

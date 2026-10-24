@@ -1,39 +1,15 @@
-import {
-  router,
-} from 'expo-router';
-import type {
-  ComponentProps,
-} from 'react';
+import { router } from 'expo-router';
+import type { ComponentProps } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
-import {
-  useCurrentUser,
-} from '@/features/auth/hooks/use-current-user';
-import {
-  useMyProfile,
-} from '@/features/beekeeper-profile/hooks/use-my-profile';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
+import { useMyProfile } from '@/features/beekeeper-profile/hooks/use-my-profile';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
 type ProfileField = {
   label: string;
@@ -41,32 +17,18 @@ type ProfileField = {
   icon: ComponentProps<typeof Ionicons>['name'];
 };
 
-function displayValue(
-  value: string | number | null | undefined,
-) {
-  return value === null || value === undefined || value === ''
-    ? 'Nije uneto'
-    : value.toString();
+function displayValue(value: string | number | null | undefined) {
+  return value === null || value === undefined || value === '' ? 'Nije uneto' : value.toString();
 }
 
 export function BeekeeperProfileScreen() {
-  const {
-    openDrawer,
-  } = useAppDrawer();
-  const profileQuery =
-    useMyProfile();
-  const currentUserQuery =
-    useCurrentUser();
+  const { openDrawer } = useAppDrawer();
+  const profileQuery = useMyProfile();
+  const currentUserQuery = useCurrentUser();
 
-  const header = (
-    <AppHeader
-      onMenuPress={openDrawer}
-    />
-  );
+  const header = <AppHeader onMenuPress={openDrawer} />;
 
-  const isLoading =
-    profileQuery.isLoading ||
-    currentUserQuery.isLoading;
+  const isLoading = profileQuery.isLoading || currentUserQuery.isLoading;
 
   if (isLoading) {
     return (
@@ -86,10 +48,7 @@ export function BeekeeperProfileScreen() {
       <Screen header={header}>
         <LoadError
           onRetry={() => {
-            void Promise.all([
-              profileQuery.refetch(),
-              currentUserQuery.refetch(),
-            ]);
+            void Promise.all([profileQuery.refetch(), currentUserQuery.refetch()]);
           }}
         />
       </Screen>
@@ -98,11 +57,10 @@ export function BeekeeperProfileScreen() {
 
   const profile = profileQuery.data;
   const user = currentUserQuery.data;
-  const fullName =
-    `${profile.firstName} ${profile.lastName}`;
-  const initials =
-    `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`
-      .toLocaleUpperCase('sr-Latn-RS');
+  const fullName = `${profile.firstName} ${profile.lastName}`;
+  const initials = `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.toLocaleUpperCase(
+    'sr-Latn-RS',
+  );
 
   const identityFields: ProfileField[] = [
     {
@@ -112,9 +70,7 @@ export function BeekeeperProfileScreen() {
     },
     {
       label: 'Broj poljoprivrednog gazdinstva',
-      value: displayValue(
-        profile.agriculturalHoldingNumber,
-      ),
+      value: displayValue(profile.agriculturalHoldingNumber),
       icon: 'business-outline',
     },
   ];
@@ -142,12 +98,9 @@ export function BeekeeperProfileScreen() {
               key: 'change-password',
               label: 'Lozinka',
               icon: 'lock-closed-outline',
-              accessibilityLabel:
-                'Promeni lozinku',
+              accessibilityLabel: 'Promeni lozinku',
               onPress: () => {
-                router.push(
-                  '/profile/change-password' as never,
-                );
+                router.push('/profile/change-password' as never);
               },
             },
           ]}
@@ -155,8 +108,7 @@ export function BeekeeperProfileScreen() {
             key: 'edit-profile',
             label: 'Izmeni',
             icon: 'create-outline',
-            accessibilityLabel:
-              'Izmeni podatke profila',
+            accessibilityLabel: 'Izmeni podatke profila',
             onPress: () => {
               router.push('/profile/edit' as never);
             },
@@ -249,27 +201,15 @@ export function BeekeeperProfileScreen() {
           </Text>
         </View>
 
-        <ProfileSection
-          title="Identifikacioni podaci"
-          fields={identityFields}
-        />
+        <ProfileSection title="Identifikacioni podaci" fields={identityFields} />
 
-        <ProfileSection
-          title="Kontakt podaci"
-          fields={contactFields}
-        />
+        <ProfileSection title="Kontakt podaci" fields={contactFields} />
       </ScrollView>
     </Screen>
   );
 }
 
-function ProfileSection({
-  title,
-  fields,
-}: {
-  title: string;
-  fields: ProfileField[];
-}) {
+function ProfileSection({ title, fields }: { title: string; fields: ProfileField[] }) {
   return (
     <View className="mt-7">
       <Text
@@ -300,18 +240,10 @@ function ProfileSection({
               items-start
               px-4
               py-4
-              ${
-                index < fields.length - 1
-                  ? 'border-b border-border'
-                  : ''
-              }
+              ${index < fields.length - 1 ? 'border-b border-border' : ''}
             `}
           >
-            <Ionicons
-              name={field.icon}
-              size={22}
-              color={colors.primaryDark}
-            />
+            <Ionicons name={field.icon} size={22} color={colors.primaryDark} />
 
             <View className="ml-3 flex-1">
               <Text
@@ -353,23 +285,14 @@ function LoadingState() {
         justify-center
       "
     >
-      <ActivityIndicator
-        size="large"
-        color={colors.primary}
-      />
+      <ActivityIndicator size="large" color={colors.primary} />
 
-      <Text className="mt-3 text-muted">
-        Učitavanje profila...
-      </Text>
+      <Text className="mt-3 text-muted">Učitavanje profila...</Text>
     </View>
   );
 }
 
-function LoadError({
-  onRetry,
-}: {
-  onRetry: () => void;
-}) {
+function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <View
       className="
@@ -402,9 +325,7 @@ function LoadError({
           py-3
         "
       >
-        <Text className="font-bold text-background">
-          Pokušaj ponovo
-        </Text>
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
       </Pressable>
     </View>
   );

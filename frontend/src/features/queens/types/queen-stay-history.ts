@@ -1,10 +1,5 @@
-import type {
-  QueenIntroductionMethod,
-  QueenIntroductionOutcome,
-} from './queen';
-import type {
-  ColonyOrigin,
-} from '@/features/colonies/types/colony';
+import type { QueenIntroductionMethod, QueenIntroductionOutcome } from './queen';
+import type { ColonyOrigin } from '@/features/colonies/types/colony';
 
 export type QueenStayHive = {
   id: string;

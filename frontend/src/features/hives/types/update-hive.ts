@@ -1,10 +1,5 @@
-import type {
-  HiveMaterial,
-  HiveType,
-} from './hive';
-import type {
-  HiveDetails,
-} from './hive-details';
+import type { HiveMaterial, HiveType } from './hive';
+import type { HiveDetails } from './hive-details';
 
 export type UpdateHiveRequest = {
   label: string;

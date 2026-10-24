@@ -1,61 +1,36 @@
-import type {
-  HiveEntranceOrientation,
-} from './apiary-stay';
-import type {
-  ApiaryType,
-  ApiaryStatus,
-} from './apiary';
-import type {
-  UpdateLocationRequest,
-} from './location';
-import type {
-  ApiaryImageUpload,
-} from './apiary-image';
+import type { HiveEntranceOrientation } from './apiary-stay';
+import type { ApiaryType, ApiaryStatus } from './apiary';
+import type { UpdateLocationRequest } from './location';
+import type { ApiaryImageUpload } from './apiary-image';
 export type UpdateApiaryRequest = {
   image?: ApiaryImageUpload | null;
-  identificationNumber:
-    | string
-    | null;
+  identificationNumber: string | null;
 
-  name:
-    string;
+  name: string;
 
-  type:
-    ApiaryType;
+  type: ApiaryType;
 };
 
 export type UpdateApiaryResponse = {
   id: string;
 
-  identificationNumber:
-    | string
-    | null;
+  identificationNumber: string | null;
 
-  name:
-    string;
+  name: string;
 
-  imageUrl:
-    | string
-    | null;
+  imageUrl: string | null;
 
-  type:
-    ApiaryType;
+  type: ApiaryType;
 
-  status:
-    | ApiaryStatus
-    | null;
+  status: ApiaryStatus | null;
 
   createdAtUtc: string;
 
-  updatedAtUtc:
-    | string
-    | null;
+  updatedAtUtc: string | null;
 };
 
 export type UpdateApiaryStayRequest = {
-  orientation:
-    | HiveEntranceOrientation
-    | null;
+  orientation: HiveEntranceOrientation | null;
 };
 
 export type UpdateApiaryFormRequest = {
@@ -63,12 +38,9 @@ export type UpdateApiaryFormRequest = {
   stayId: string;
   locationId: string;
 
-  apiary:
-    UpdateApiaryRequest;
+  apiary: UpdateApiaryRequest;
 
-  stay:
-    UpdateApiaryStayRequest;
+  stay: UpdateApiaryStayRequest;
 
-  location:
-    UpdateLocationRequest;
+  location: UpdateLocationRequest;
 };

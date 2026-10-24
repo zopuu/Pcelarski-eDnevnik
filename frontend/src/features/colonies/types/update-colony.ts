@@ -1,36 +1,21 @@
-import type {
-  ColonyOrigin,
-  ColonyStatus,
-} from './colony';
+import type { ColonyOrigin, ColonyStatus } from './colony';
 
 export type UpdateColonyRequest = {
-  origin:
-    | ColonyOrigin
-    | null;
+  origin: ColonyOrigin | null;
 
-  formedOn:
-    | string
-    | null;
+  formedOn: string | null;
 
-  notes:
-    | string
-    | null;
+  notes: string | null;
 };
 
 export type UpdateColonyResponse = {
   id: string;
 
-  origin:
-    | ColonyOrigin
-    | null;
+  origin: ColonyOrigin | null;
 
   status: ColonyStatus;
 
-  formedOn:
-    | string
-    | null;
+  formedOn: string | null;
 
-  notes:
-    | string
-    | null;
+  notes: string | null;
 };

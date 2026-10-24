@@ -1,42 +1,17 @@
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { TimelineDate } from '@/shared/components/timeline/timeline-date';
 import { TimelineItem } from '@/shared/components/timeline/timeline-item';
-import {
-  router,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { router } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
-import {
-  useApiary,
-} from '@/features/apiaries/hooks/use-apiary';
-import {
-  useApiaryRelocations,
-} from '@/features/relocations/hooks/use-apiary-relocations';
-import type {
-  ApiaryRelocationHistoryItem,
-} from '@/features/relocations/types/relocation-history';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  ContextualActionBar,
-} from '@/shared/components/contextual-action-bar/contextual-action-bar';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useApiary } from '@/features/apiaries/hooks/use-apiary';
+import { useApiaryRelocations } from '@/features/relocations/hooks/use-apiary-relocations';
+import type { ApiaryRelocationHistoryItem } from '@/features/relocations/types/relocation-history';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
 type RelocationHistoryScreenProps = {
   apiaryId: string;
@@ -49,32 +24,20 @@ const transportMethodLabels = {
   other: 'Drugo',
 } as const;
 
-function relocationLabel(
-  relocation: ApiaryRelocationHistoryItem,
-) {
+function relocationLabel(relocation: ApiaryRelocationHistoryItem) {
   return relocation.kind === 'wholeApiary'
     ? 'Ceo pčelinjak'
     : `${relocation.hiveCount ?? 0} košnica`;
 }
 
-export function RelocationHistoryScreen({
-  apiaryId,
-}: RelocationHistoryScreenProps) {
-  const {
-    openDrawer,
-  } = useAppDrawer();
+export function RelocationHistoryScreen({ apiaryId }: RelocationHistoryScreenProps) {
+  const { openDrawer } = useAppDrawer();
   const apiaryQuery = useApiary(apiaryId);
   const relocationsQuery = useApiaryRelocations(apiaryId);
-  const relocations = relocationsQuery.data?.pages.flatMap(
-    (page) => page.items,
-  ) ?? [];
+  const relocations = relocationsQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
-  const isLoading =
-    apiaryQuery.isLoading ||
-    relocationsQuery.isLoading;
-  const isError =
-    apiaryQuery.isError ||
-    relocationsQuery.isError;
+  const isLoading = apiaryQuery.isLoading || relocationsQuery.isLoading;
+  const isError = apiaryQuery.isError || relocationsQuery.isError;
 
   return (
     <Screen
@@ -85,12 +48,10 @@ export function RelocationHistoryScreen({
             key: 'create-relocation',
             label: 'Nova selidba',
             icon: 'add',
-            accessibilityLabel:
-              'Kreiraj novu selidbu pčelinjaka',
+            accessibilityLabel: 'Kreiraj novu selidbu pčelinjaka',
             onPress: () => {
               router.push({
-                pathname:
-                  '/apiaries/[apiaryId]/relocations/create',
+                pathname: '/apiaries/[apiaryId]/relocations/create',
                 params: { apiaryId },
               });
             },
@@ -103,10 +64,7 @@ export function RelocationHistoryScreen({
       ) : isError || !apiaryQuery.data ? (
         <LoadError
           onRetry={() => {
-            void Promise.all([
-              apiaryQuery.refetch(),
-              relocationsQuery.refetch(),
-            ]);
+            void Promise.all([apiaryQuery.refetch(), relocationsQuery.refetch()]);
           }}
         />
       ) : (
@@ -118,8 +76,7 @@ export function RelocationHistoryScreen({
             paddingHorizontal: 16,
             paddingTop: 12,
             paddingBottom: 32,
-            flexGrow:
-              relocations.length === 0 ? 1 : undefined,
+            flexGrow: relocations.length === 0 ? 1 : undefined,
           }}
           ListHeaderComponent={
             <View className="mb-7">
@@ -131,9 +88,7 @@ export function RelocationHistoryScreen({
                 }}
                 className="self-start py-2"
               >
-                <Text className="text-sm font-semibold text-primary">
-                  ← Pčelinjak
-                </Text>
+                <Text className="text-sm font-semibold text-primary">← Pčelinjak</Text>
               </Pressable>
               <Text className="mt-3 text-xs font-bold uppercase tracking-widest text-muted">
                 Pčelinjak
@@ -141,21 +96,13 @@ export function RelocationHistoryScreen({
               <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
                 {apiaryQuery.data.name}
               </Text>
-              <Text className="mt-8 text-xl font-bold text-foreground">
-                Istorija selidbi
-              </Text>
-              <Text className="mt-1 text-sm text-muted">
-                Evidentirane selidbe, od najnovije.
-              </Text>
+              <Text className="mt-8 text-xl font-bold text-foreground">Istorija selidbi</Text>
+              <Text className="mt-1 text-sm text-muted">Evidentirane selidbe, od najnovije.</Text>
             </View>
           }
           ListEmptyComponent={
             <View className="flex-1 items-center justify-center rounded-3xl border border-border bg-surface px-6 py-10">
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={30}
-                color={colors.primary}
-              />
+              <Ionicons name="swap-horizontal-outline" size={30} color={colors.primary} />
               <Text className="mt-3 text-center text-base font-semibold text-foreground">
                 Još nema evidentiranih selidbi.
               </Text>
@@ -173,20 +120,14 @@ export function RelocationHistoryScreen({
             />
           )}
           onEndReached={() => {
-            if (
-              relocationsQuery.hasNextPage &&
-              !relocationsQuery.isFetchingNextPage
-            ) {
+            if (relocationsQuery.hasNextPage && !relocationsQuery.isFetchingNextPage) {
               void relocationsQuery.fetchNextPage();
             }
           }}
           onEndReachedThreshold={0.35}
           ListFooterComponent={
             relocationsQuery.isFetchingNextPage ? (
-              <ActivityIndicator
-                className="my-5"
-                color={colors.primary}
-              />
+              <ActivityIndicator className="my-5" color={colors.primary} />
             ) : null
           }
         />
@@ -217,8 +158,7 @@ function RelocationTimelineItem({
         accessibilityLabel={`Otvori selidbu: ${relocation.originLocationName} do ${relocation.destinationLocationName}`}
         onPress={() => {
           router.push({
-            pathname:
-              '/apiaries/[apiaryId]/relocations/[relocationId]',
+            pathname: '/apiaries/[apiaryId]/relocations/[relocationId]',
             params: {
               apiaryId,
               relocationId: relocation.id,
@@ -232,25 +172,15 @@ function RelocationTimelineItem({
       >
         <View className="flex-row items-start">
           <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
-            <Ionicons
-              name="swap-horizontal-outline"
-              size={21}
-              color={colors.primary}
-            />
+            <Ionicons name="swap-horizontal-outline" size={21} color={colors.primary} />
           </View>
           <View className="ml-3 flex-1">
             <Text className="text-base font-bold text-foreground">
               {relocation.originLocationName} → {relocation.destinationLocationName}
             </Text>
-            <Text className="mt-1 text-sm text-muted">
-              {relocationLabel(relocation)}
-            </Text>
+            <Text className="mt-1 text-sm text-muted">{relocationLabel(relocation)}</Text>
           </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.muted}
-          />
+          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
         </View>
         <View className="mt-4 flex-row flex-wrap gap-x-4 gap-y-2">
           <TimelineDetail
@@ -258,16 +188,11 @@ function RelocationTimelineItem({
             label={transportMethodLabels[relocation.transportMethod]}
           />
           {relocation.distanceKm !== null && (
-            <TimelineDetail
-              icon="navigate-outline"
-              label={`${relocation.distanceKm} km`}
-            />
+            <TimelineDetail icon="navigate-outline" label={`${relocation.distanceKm} km`} />
           )}
         </View>
         {relocation.notes && (
-          <Text className="mt-3 text-sm leading-5 text-muted">
-            {relocation.notes}
-          </Text>
+          <Text className="mt-3 text-sm leading-5 text-muted">{relocation.notes}</Text>
         )}
       </Pressable>
     </TimelineItem>
@@ -283,11 +208,7 @@ function TimelineDetail({
 }) {
   return (
     <View className="flex-row items-center gap-1.5">
-      <Ionicons
-        name={icon}
-        size={15}
-        color={colors.muted}
-      />
+      <Ionicons name={icon} size={15} color={colors.muted} />
       <Text className="text-xs text-muted">{label}</Text>
     </View>
   );
@@ -297,18 +218,12 @@ function LoadingState() {
   return (
     <View className="flex-1 items-center justify-center">
       <ActivityIndicator size="large" color={colors.primary} />
-      <Text className="mt-3 text-muted">
-        Učitavanje selidbi...
-      </Text>
+      <Text className="mt-3 text-muted">Učitavanje selidbi...</Text>
     </View>
   );
 }
 
-function LoadError({
-  onRetry,
-}: {
-  onRetry: () => void;
-}) {
+function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <View className="flex-1 items-center justify-center px-8">
       <Text className="text-center text-base font-semibold text-error">
@@ -319,9 +234,7 @@ function LoadError({
         onPress={onRetry}
         className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
       >
-        <Text className="font-bold text-background">
-          Pokušaj ponovo
-        </Text>
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
       </Pressable>
     </View>
   );

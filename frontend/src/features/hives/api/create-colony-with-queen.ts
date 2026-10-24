@@ -1,6 +1,4 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
 import type {
   CreateColonyWithQueenRequest,
@@ -9,14 +7,9 @@ import type {
 
 export function createColonyWithQueen(
   hiveId: string,
-  request:
-    CreateColonyWithQueenRequest,
-): Promise<
-  CreateColonyWithQueenResponse
-> {
-  return apiClient.post<
-    CreateColonyWithQueenResponse
-  >(
+  request: CreateColonyWithQueenRequest,
+): Promise<CreateColonyWithQueenResponse> {
+  return apiClient.post<CreateColonyWithQueenResponse>(
     `/api/hives/${hiveId}/colony-with-queen`,
     request,
     {

@@ -1,16 +1,10 @@
-import type {
-  ComponentProps,
-} from 'react';
+import type { ComponentProps } from 'react';
 
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 
-export type ContextualActionIconName =
-  ComponentProps<typeof Ionicons>['name'];
+export type ContextualActionIconName = ComponentProps<typeof Ionicons>['name'];
 
-export type ContextualActionVariant =
-  | 'default'
-  | 'danger';
+export type ContextualActionVariant = 'default' | 'danger';
 
 export type ContextualAction = {
   key: string;

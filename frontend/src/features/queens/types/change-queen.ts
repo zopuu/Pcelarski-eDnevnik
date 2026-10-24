@@ -1,8 +1,4 @@
-import type {
-  QueenIntroductionMethod,
-  QueenOrigin,
-  QueenStatus,
-} from './queen';
+import type { QueenIntroductionMethod, QueenOrigin, QueenStatus } from './queen';
 
 export type QueenStayEndReason =
   | 'replaced'

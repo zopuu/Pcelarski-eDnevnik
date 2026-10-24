@@ -1,35 +1,19 @@
-import {
-  Image,
-} from 'expo-image';
-import {
-  MaterialDesignIcons,
-} from '@react-native-vector-icons/material-design-icons';
-import {
-  View,
-} from 'react-native';
+import { Image } from 'expo-image';
+import { MaterialDesignIcons } from '@react-native-vector-icons/material-design-icons';
+import { View } from 'react-native';
 
-import {
-  environment,
-} from '@/shared/config/environment';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { environment } from '@/shared/config/environment';
+import { colors } from '@/shared/theme/colors';
 
 type ApiaryHeaderImageProps = {
   imageUrl: string | null;
 };
 
-export function ApiaryHeaderImage({
-  imageUrl,
-}: ApiaryHeaderImageProps) {
+export function ApiaryHeaderImage({ imageUrl }: ApiaryHeaderImageProps) {
   return (
     <View
       accessible
-      accessibilityLabel={
-        imageUrl
-          ? 'Fotografija pčelinjaka'
-          : 'Ilustracija pčelinjaka'
-      }
+      accessibilityLabel={imageUrl ? 'Fotografija pčelinjaka' : 'Ilustracija pčelinjaka'}
       className="h-36 w-36 items-center justify-center overflow-hidden rounded-3xl bg-primary/15"
     >
       {imageUrl ? (
@@ -42,11 +26,7 @@ export function ApiaryHeaderImage({
           }}
         />
       ) : (
-        <MaterialDesignIcons
-          name="beehive-outline"
-          size={68}
-          color={colors.primaryDark}
-        />
+        <MaterialDesignIcons name="beehive-outline" size={68} color={colors.primaryDark} />
       )}
     </View>
   );

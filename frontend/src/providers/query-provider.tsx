@@ -1,27 +1,11 @@
-import {
-  focusManager,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query';
-import {
-  PropsWithChildren,
-  useEffect,
-  useState,
-} from 'react';
-import {
-  AppState,
-  AppStateStatus,
-  Platform,
-} from 'react-native';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PropsWithChildren, useEffect, useState } from 'react';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 
 import { configureOnlineManager } from '@/providers/query-online-manager';
-import {
-  MissingAccessTokenError,
-} from '@/shared/api/api-error';
+import { MissingAccessTokenError } from '@/shared/api/api-error';
 
-export function QueryProvider({
-  children,
-}: PropsWithChildren) {
+export function QueryProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -29,14 +13,8 @@ export function QueryProvider({
           queries: {
             staleTime: 30_000,
             gcTime: 5 * 60_000,
-            retry: (
-              failureCount,
-              error,
-            ) => {
-              if (
-                error instanceof
-                MissingAccessTokenError
-              ) {
+            retry: (failureCount, error) => {
+              if (error instanceof MissingAccessTokenError) {
                 return false;
               }
 
@@ -52,8 +30,7 @@ export function QueryProvider({
   );
 
   useEffect(() => {
-    const cleanupOnlineManager =
-      configureOnlineManager();
+    const cleanupOnlineManager = configureOnlineManager();
 
     return cleanupOnlineManager;
   }, []);
@@ -63,28 +40,16 @@ export function QueryProvider({
       return;
     }
 
-    const onAppStateChange = (
-      status: AppStateStatus,
-    ) => {
-      focusManager.setFocused(
-        status === 'active',
-      );
+    const onAppStateChange = (status: AppStateStatus) => {
+      focusManager.setFocused(status === 'active');
     };
 
-    const subscription =
-      AppState.addEventListener(
-        'change',
-        onAppStateChange,
-      );
+    const subscription = AppState.addEventListener('change', onAppStateChange);
 
     return () => {
       subscription.remove();
     };
   }, []);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

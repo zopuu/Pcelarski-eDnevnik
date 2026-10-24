@@ -35,9 +35,7 @@ export const recordPattyFeedingSchema = z.object({
       'Masa mora biti pozitivan ceo broj grama.',
     ),
   pattyType: z.enum(pattyTypes),
-  manufacturer: z
-    .string()
-    .max(100, 'Proizvođač može imati najviše 100 znakova.'),
+  manufacturer: z.string().max(100, 'Proizvođač može imati najviše 100 znakova.'),
   notes: z.string().max(1000, 'Napomena može imati najviše 1000 znakova.'),
   hives: z
     .array(
@@ -49,6 +47,4 @@ export const recordPattyFeedingSchema = z.object({
     .min(1, 'Izaberite najmanje jednu košnicu.'),
 });
 
-export type RecordPattyFeedingFormValues = z.infer<
-  typeof recordPattyFeedingSchema
->;
+export type RecordPattyFeedingFormValues = z.infer<typeof recordPattyFeedingSchema>;

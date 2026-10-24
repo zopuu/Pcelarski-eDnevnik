@@ -17,18 +17,15 @@ const fillPercentage = z
   .string()
   .trim()
   .min(1, 'Unesite procenat punjenja.')
-  .refine(
-    (value) => {
-      if (!/^\d+(?:[.,]\d{1,2})?$/.test(value)) {
-        return false;
-      }
+  .refine((value) => {
+    if (!/^\d+(?:[.,]\d{1,2})?$/.test(value)) {
+      return false;
+    }
 
-      const percentage = Number(value.replace(',', '.'));
+    const percentage = Number(value.replace(',', '.'));
 
-      return percentage > 0 && percentage <= 100;
-    },
-    'Procenat mora biti veći od 0 i najviše 100.',
-  );
+    return percentage > 0 && percentage <= 100;
+  }, 'Procenat mora biti veći od 0 i najviše 100.');
 
 export const recordSyrupFeedingSchema = z.object({
   performedOn: z
@@ -53,6 +50,4 @@ export const recordSyrupFeedingSchema = z.object({
     .min(1, 'Izaberite najmanje jednu košnicu.'),
 });
 
-export type RecordSyrupFeedingFormValues = z.infer<
-  typeof recordSyrupFeedingSchema
->;
+export type RecordSyrupFeedingFormValues = z.infer<typeof recordSyrupFeedingSchema>;

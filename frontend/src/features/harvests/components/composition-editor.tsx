@@ -1,5 +1,13 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { Controller, type Control, type FieldErrors, type UseFieldArrayAppend, type UseFieldArrayRemove, type UseFieldArrayReturn, useWatch } from 'react-hook-form';
+import {
+  Controller,
+  type Control,
+  type FieldErrors,
+  type UseFieldArrayAppend,
+  type UseFieldArrayRemove,
+  type UseFieldArrayReturn,
+  useWatch,
+} from 'react-hook-form';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 import type { HoneyBatchCompositionFormInput } from '../schemas/honey-batch-composition.schema';
@@ -14,27 +22,40 @@ type CompositionEditorProps = {
   errors: FieldErrors<HoneyBatchCompositionFormInput>;
 };
 
-export function CompositionEditor({ control, fields, append, remove, errors }: CompositionEditorProps) {
+export function CompositionEditor({
+  control,
+  fields,
+  append,
+  remove,
+  errors,
+}: CompositionEditorProps) {
   const items = useWatch({ control, name: 'items' }) ?? [];
   const total = items.reduce((sum, item) => {
     const percentage = Number(item.percentage);
     return Number.isInteger(percentage) ? sum + percentage : sum;
   }, 0);
-  const totalMessage = total < 100
-    ? `Potrebno je još ${100 - total}%.`
-    : total === 100
-      ? 'Ukupno: 100%'
-      : 'Ukupan procenat ne može biti veći od 100%.';
+  const totalMessage =
+    total < 100
+      ? `Potrebno je još ${100 - total}%.`
+      : total === 100
+        ? 'Ukupno: 100%'
+        : 'Ukupan procenat ne može biti veći od 100%.';
 
   return (
     <View>
       <View className="mb-3 flex-row items-start justify-between gap-4">
         <View className="flex-1">
           <Text className="text-lg font-bold text-foreground">Stavke sastava</Text>
-          <Text className="mt-1 text-sm leading-5 text-muted">Navedite vrste paše i njihov udeo u sastavu meda.</Text>
+          <Text className="mt-1 text-sm leading-5 text-muted">
+            Navedite vrste paše i njihov udeo u sastavu meda.
+          </Text>
         </View>
-        <View className={`rounded-full px-3 py-1.5 ${total > 100 ? 'bg-error/10' : 'bg-primary/10'}`}>
-          <Text className={`text-xs font-bold ${total > 100 ? 'text-error' : 'text-primary'}`}>Ukupno: {total}%</Text>
+        <View
+          className={`rounded-full px-3 py-1.5 ${total > 100 ? 'bg-error/10' : 'bg-primary/10'}`}
+        >
+          <Text className={`text-xs font-bold ${total > 100 ? 'text-error' : 'text-primary'}`}>
+            Ukupno: {total}%
+          </Text>
         </View>
       </View>
 
@@ -113,8 +134,14 @@ export function CompositionEditor({ control, fields, append, remove, errors }: C
       >
         <Text className="font-bold text-primary">+ Dodaj stavku</Text>
       </Pressable>
-      <Text className={`mt-3 text-sm font-semibold ${total > 100 ? 'text-error' : total === 100 ? 'text-success' : 'text-muted'}`}>{totalMessage}</Text>
-      {errors.items?.message && <Text className="mt-2 text-sm text-error">{errors.items.message}</Text>}
+      <Text
+        className={`mt-3 text-sm font-semibold ${total > 100 ? 'text-error' : total === 100 ? 'text-success' : 'text-muted'}`}
+      >
+        {totalMessage}
+      </Text>
+      {errors.items?.message && (
+        <Text className="mt-2 text-sm text-error">{errors.items.message}</Text>
+      )}
     </View>
   );
 }

@@ -98,12 +98,12 @@ export type HarvestGroupExposureSegment = {
   periodEndedOn: string;
   minimumDurationDays: number;
   maximumDurationDays: number;
-  locations: Array<{
+  locations: {
     locationId: string;
     name: string | null;
     latitude: number;
     longitude: number;
-  }>;
+  }[];
 };
 
 export type AvailableHarvestGroupsResponse = {
@@ -133,13 +133,13 @@ export type CreateHarvestResponse = {
   batchPeriodStartedOn: string;
   batchPeriodEndedOn: string;
   remainingFramesInSourceGroup: number;
-  sources: Array<{
+  sources: {
     hiveSuperStayId: string;
     hiveSuperId: string;
     hiveId: string;
     hiveLabel: string;
     framesHarvested: number;
-  }>;
+  }[];
 };
 
 export type HoneyBatchListItem = {
@@ -174,14 +174,14 @@ export type HoneyBatchDetails = {
   harvestCount: number;
   totalHarvestedFrameCount: number;
   sourceSuperCount: number;
-  harvests: Array<{
+  harvests: {
     id: string;
     harvestedOn: string;
     honeyAmount: number;
     unit: string;
     harvestedFrameCount: number;
     superCount: number;
-  }>;
+  }[];
   sources: HarvestSource[];
   currentComposition: HoneyBatchComposition | null;
   canCalculateComposition: boolean;
@@ -190,10 +190,7 @@ export type HoneyBatchDetails = {
   sourceIssues: HarvestSourceIssue[];
 };
 
-export type HoneyBatchCompositionMethod =
-  | 'Calculated'
-  | 'Manual'
-  | 'Laboratory';
+export type HoneyBatchCompositionMethod = 'Calculated' | 'Manual' | 'Laboratory';
 
 export type HoneyBatchCompositionItem = {
   id: string;

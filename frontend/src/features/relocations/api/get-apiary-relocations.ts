@@ -1,10 +1,6 @@
-import {
-  apiClient,
-} from '@/shared/api/api-client';
+import { apiClient } from '@/shared/api/api-client';
 
-import type {
-  ApiaryRelocationsPage,
-} from '../types/relocation-history';
+import type { ApiaryRelocationsPage } from '../types/relocation-history';
 
 export function getApiaryRelocations(
   apiaryId: string,

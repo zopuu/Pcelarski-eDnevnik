@@ -65,10 +65,13 @@ function NativeDatePickerField({
         </Pressable>
 
         {!required && value && (
-          <ClearDateButton label={label} onPress={() => {
-            onChange('');
-            setIsPickerVisible(false);
-          }} />
+          <ClearDateButton
+            label={label}
+            onPress={() => {
+              onChange('');
+              setIsPickerVisible(false);
+            }}
+          />
         )}
       </View>
 
@@ -104,10 +107,7 @@ function WebDatePickerField({
   error,
   required = false,
 }: DatePickerFieldProps) {
-  const inputId =
-    `date-${label
-      .toLocaleLowerCase('sr-Latn-RS')
-      .replace(/[^a-z0-9]+/g, '-')}`;
+  const inputId = `date-${label.toLocaleLowerCase('sr-Latn-RS').replace(/[^a-z0-9]+/g, '-')}`;
 
   return (
     <div
@@ -190,16 +190,11 @@ function WebDatePickerField({
         style={{
           marginBottom: 0,
           marginTop: 4,
-          color: error
-            ? colors.error
-            : colors.muted,
+          color: error ? colors.error : colors.muted,
           fontSize: 14,
         }}
       >
-        {error ??
-          (value
-            ? formatDateOnlyForDisplay(value)
-            : 'Izaberite datum')}
+        {error ?? (value ? formatDateOnlyForDisplay(value) : 'Izaberite datum')}
       </p>
     </div>
   );

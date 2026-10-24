@@ -1,301 +1,169 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  router,
-} from 'expo-router';
+import { router } from 'expo-router';
 
-import {
-  Controller,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import {
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  useCreateColonyWithQueen,
-} from '../hooks/use-create-colony-with-queen';
+import { useCreateColonyWithQueen } from '../hooks/use-create-colony-with-queen';
 
 import {
   createColonyWithQueenSchema,
   type CreateColonyWithQueenFormValues,
 } from '../schemas/create-colony-with-queen-schema';
 
-import type {
-  CreateColonyWithQueenRequest,
-} from '../types/create-colony-with-queen';
+import type { CreateColonyWithQueenRequest } from '../types/create-colony-with-queen';
 
-import {
-  colors,
-} from '@/shared/theme/colors';
-import {
-  DatePickerField,
-} from '@/shared/components/date-picker-field';
-import {
-  getCurrentUtcDateOnly,
-} from '@/shared/utils/date-only';
-import {
-  QueenMarkingColorPicker,
-} from '@/features/queens/components/queen-marking-color-picker';
+import { colors } from '@/shared/theme/colors';
+import { DatePickerField } from '@/shared/components/date-picker-field';
+import { getCurrentUtcDateOnly } from '@/shared/utils/date-only';
+import { QueenMarkingColorPicker } from '@/features/queens/components/queen-marking-color-picker';
 
 type Props = {
   hiveId: string;
 };
 
-function optionalText(
-  value: string,
-): string | null {
-  const normalized =
-    value.trim();
+function optionalText(value: string): string | null {
+  const normalized = value.trim();
 
-  return normalized
-    ? normalized
-    : null;
+  return normalized ? normalized : null;
 }
 
-function earliestDate(
-  ...dates: (string | undefined)[]
-) {
-  return dates
-    .filter(
-      (date): date is string =>
-        Boolean(date),
-    )
-    .sort()[0];
+function earliestDate(...dates: (string | undefined)[]) {
+  return dates.filter((date): date is string => Boolean(date)).sort()[0];
 }
 
-function latestDate(
-  ...dates: (string | undefined)[]
-) {
+function latestDate(...dates: (string | undefined)[]) {
   return dates
-    .filter(
-      (date): date is string =>
-        Boolean(date),
-    )
+    .filter((date): date is string => Boolean(date))
     .sort()
     .at(-1);
 }
 
-export function CreateColonyWithQueenScreen({
-  hiveId,
-}: Props) {
-  const mutation =
-    useCreateColonyWithQueen(
-      hiveId,
-    );
+export function CreateColonyWithQueenScreen({ hiveId }: Props) {
+  const mutation = useCreateColonyWithQueen(hiveId);
 
-  const today =
-    getCurrentUtcDateOnly();
+  const today = getCurrentUtcDateOnly();
 
   const {
     control,
     handleSubmit,
-    formState: {
-      errors,
+    formState: { errors },
+  } = useForm<CreateColonyWithQueenFormValues>({
+    resolver: zodResolver(createColonyWithQueenSchema),
+
+    defaultValues: {
+      colonyOrigin: null,
+
+      colonyFormedOn: '',
+
+      colonyStartedOn: today,
+
+      colonyNotes: '',
+
+      colonyStayNotes: '',
+
+      queenMarkingColorHex: '',
+
+      queenOrigin: null,
+
+      queenBreeder: '',
+
+      queenBreed: '',
+
+      queenEmergedOn: '',
+
+      queenAcquiredOn: '',
+
+      queenNotes: '',
+
+      queenStartedOn: today,
+
+      queenIntroductionMethod: null,
+
+      queenIntroductionOutcome: null,
+
+      queenStayNotes: '',
     },
-  } =
-    useForm<
-      CreateColonyWithQueenFormValues
-    >({
-      resolver:
-        zodResolver(
-          createColonyWithQueenSchema,
-        ),
+  });
 
-      defaultValues: {
-        colonyOrigin:
-          null,
+  const colonyFormedOn = useWatch({
+    control,
+    name: 'colonyFormedOn',
+  });
 
-        colonyFormedOn:
-          '',
+  const colonyStartedOn = useWatch({
+    control,
+    name: 'colonyStartedOn',
+  });
 
-        colonyStartedOn:
-          today,
+  const queenEmergedOn = useWatch({
+    control,
+    name: 'queenEmergedOn',
+  });
 
-        colonyNotes:
-          '',
+  const queenAcquiredOn = useWatch({
+    control,
+    name: 'queenAcquiredOn',
+  });
 
-        colonyStayNotes:
-          '',
+  const queenStartedOn = useWatch({
+    control,
+    name: 'queenStartedOn',
+  });
 
-        queenMarkingColorHex:
-          '',
+  const onSubmit = async (values: CreateColonyWithQueenFormValues) => {
+    const request: CreateColonyWithQueenRequest = {
+      colonyOrigin: values.colonyOrigin,
 
-        queenOrigin:
-          null,
+      colonyFormedOn: optionalText(values.colonyFormedOn),
 
-        queenBreeder:
-          '',
+      colonyStartedOn: values.colonyStartedOn,
 
-        queenBreed:
-          '',
+      colonyNotes: optionalText(values.colonyNotes),
 
-        queenEmergedOn:
-          '',
+      colonyStayNotes: optionalText(values.colonyStayNotes),
 
-        queenAcquiredOn:
-          '',
+      queenMarkingColorHex: optionalText(values.queenMarkingColorHex)?.toUpperCase() ?? null,
 
-        queenNotes:
-          '',
+      queenOrigin: values.queenOrigin,
 
-        queenStartedOn:
-          today,
+      queenBreeder: optionalText(values.queenBreeder),
 
-        queenIntroductionMethod:
-          null,
+      queenBreed: optionalText(values.queenBreed),
 
-        queenIntroductionOutcome:
-          null,
+      queenEmergedOn: optionalText(values.queenEmergedOn),
 
-        queenStayNotes:
-          '',
-      },
-    });
+      queenAcquiredOn: optionalText(values.queenAcquiredOn),
 
-  const colonyFormedOn =
-    useWatch({
-      control,
-      name: 'colonyFormedOn',
-    });
+      queenNotes: optionalText(values.queenNotes),
 
-  const colonyStartedOn =
-    useWatch({
-      control,
-      name: 'colonyStartedOn',
-    });
+      queenStartedOn: values.queenStartedOn,
 
-  const queenEmergedOn =
-    useWatch({
-      control,
-      name: 'queenEmergedOn',
-    });
+      queenIntroductionMethod: values.queenIntroductionMethod,
 
-  const queenAcquiredOn =
-    useWatch({
-      control,
-      name: 'queenAcquiredOn',
-    });
+      queenIntroductionOutcome: values.queenIntroductionOutcome,
 
-  const queenStartedOn =
-    useWatch({
-      control,
-      name: 'queenStartedOn',
-    });
-
-  const onSubmit =
-    async (
-      values:
-        CreateColonyWithQueenFormValues,
-    ) => {
-      const request:
-        CreateColonyWithQueenRequest = {
-        colonyOrigin:
-          values.colonyOrigin,
-
-        colonyFormedOn:
-          optionalText(
-            values.colonyFormedOn,
-          ),
-
-        colonyStartedOn:
-          values
-            .colonyStartedOn,
-
-        colonyNotes:
-          optionalText(
-            values.colonyNotes,
-          ),
-
-        colonyStayNotes:
-          optionalText(
-            values
-              .colonyStayNotes,
-          ),
-
-        queenMarkingColorHex:
-          optionalText(
-            values
-              .queenMarkingColorHex,
-          )?.toUpperCase() ??
-          null,
-
-        queenOrigin:
-          values.queenOrigin,
-
-        queenBreeder:
-          optionalText(
-            values.queenBreeder,
-          ),
-
-        queenBreed:
-          optionalText(
-            values.queenBreed,
-          ),
-
-        queenEmergedOn:
-          optionalText(
-            values.queenEmergedOn,
-          ),
-
-        queenAcquiredOn:
-          optionalText(
-            values.queenAcquiredOn,
-          ),
-
-        queenNotes:
-          optionalText(
-            values.queenNotes,
-          ),
-
-        queenStartedOn:
-          values
-            .queenStartedOn,
-
-        queenIntroductionMethod:
-          values
-            .queenIntroductionMethod,
-
-        queenIntroductionOutcome:
-          values
-            .queenIntroductionOutcome,
-
-        queenStayNotes:
-          optionalText(
-            values
-              .queenStayNotes,
-          ),
-      };
-
-      try {
-        await mutation
-          .mutateAsync(
-            request,
-          );
-
-        router.replace({
-          pathname:
-            '/hives/[hiveId]',
-
-          params: {
-            hiveId,
-          },
-        });
-      } catch {
-        // mutation error below
-      }
+      queenStayNotes: optionalText(values.queenStayNotes),
     };
+
+    try {
+      await mutation.mutateAsync(request);
+
+      router.replace({
+        pathname: '/hives/[hiveId]',
+
+        params: {
+          hiveId,
+        },
+      });
+    } catch {
+      // mutation error below
+    }
+  };
 
   return (
     <View
@@ -307,9 +175,7 @@ export function CreateColonyWithQueenScreen({
       <KeyboardAwareScrollView
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 48,
@@ -353,46 +219,31 @@ export function CreateColonyWithQueenScreen({
             text-muted
           "
         >
-          Društvo i matica biće
-          evidentirani zajedno u
-          ovoj košnici.
+          Društvo i matica biće evidentirani zajedno u ovoj košnici.
         </Text>
 
-        <SectionTitle>
-          Pčelinje društvo
-        </SectionTitle>
+        <SectionTitle>Pčelinje društvo</SectionTitle>
 
         <Controller
           control={control}
           name="colonyOrigin"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <ChoiceGroup
               label="Poreklo"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
+              value={field.value}
+              onChange={field.onChange}
               options={[
                 {
-                  value:
-                    'swarm',
+                  value: 'swarm',
                   label: 'Roj',
                 },
                 {
-                  value:
-                    'purchased',
-                  label:
-                    'Kupljeno',
+                  value: 'purchased',
+                  label: 'Kupljeno',
                 },
                 {
-                  value:
-                    'split',
-                  label:
-                    'Podelom',
+                  value: 'split',
+                  label: 'Podelom',
                 },
               ]}
             />
@@ -402,33 +253,14 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="colonyFormedOn"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <DatePickerField
               label="Datum formiranja"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              maximumDate={
-                earliestDate(
-                  colonyStartedOn ||
-                    undefined,
-                  today,
-                )
-              }
-              minimumDate={
-                queenAcquiredOn ||
-                undefined
-              }
-              error={
-                errors
-                  .colonyFormedOn
-                  ?.message
-              }
+              value={field.value}
+              onChange={field.onChange}
+              maximumDate={earliestDate(colonyStartedOn || undefined, today)}
+              minimumDate={queenAcquiredOn || undefined}
+              error={errors.colonyFormedOn?.message}
             />
           )}
         />
@@ -436,28 +268,15 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="colonyStartedOn"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <DatePickerField
               label="U košnici od *"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              minimumDate={
-                colonyFormedOn ||
-                undefined
-              }
+              value={field.value}
+              onChange={field.onChange}
+              minimumDate={colonyFormedOn || undefined}
               maximumDate={today}
               required
-              error={
-                errors
-                  .colonyStartedOn
-                  ?.message
-              }
+              error={errors.colonyStartedOn?.message}
             />
           )}
         />
@@ -465,51 +284,33 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="colonyNotes"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormInput
               label="Napomena o društvu"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
             />
           )}
         />
 
-        <SectionTitle>
-          Matica
-        </SectionTitle>
+        <SectionTitle>Matica</SectionTitle>
 
         <Controller
           control={control}
           name="queenOrigin"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <ChoiceGroup
               label="Poreklo"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
+              value={field.value}
+              onChange={field.onChange}
               options={[
                 {
-                  value:
-                    'purchased',
-                  label:
-                    'Kupljena',
+                  value: 'purchased',
+                  label: 'Kupljena',
                 },
                 {
-                  value:
-                    'produced',
-                  label:
-                    'Odgojena',
+                  value: 'produced',
+                  label: 'Odgojena',
                 },
               ]}
             />
@@ -519,57 +320,27 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenBreed"
-          render={({
-            field,
-          }) => (
-            <FormInput
-              label="Rasa"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
-            />
+          render={({ field }) => (
+            <FormInput label="Rasa" value={field.value} onChangeText={field.onChange} />
           )}
         />
 
         <Controller
           control={control}
           name="queenBreeder"
-          render={({
-            field,
-          }) => (
-            <FormInput
-              label="Odgaјivač"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
-            />
+          render={({ field }) => (
+            <FormInput label="Odgaјivač" value={field.value} onChangeText={field.onChange} />
           )}
         />
 
         <Controller
           control={control}
           name="queenMarkingColorHex"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <QueenMarkingColorPicker
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              error={
-                errors
-                  .queenMarkingColorHex
-                  ?.message
-              }
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.queenMarkingColorHex?.message}
             />
           )}
         />
@@ -577,31 +348,17 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenEmergedOn"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <DatePickerField
               label="Datum izleganja"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              maximumDate={
-                earliestDate(
-                  queenAcquiredOn ||
-                    undefined,
-                  queenStartedOn ||
-                    undefined,
-                  today,
-                )
-              }
-              error={
-                errors
-                  .queenEmergedOn
-                  ?.message
-              }
+              value={field.value}
+              onChange={field.onChange}
+              maximumDate={earliestDate(
+                queenAcquiredOn || undefined,
+                queenStartedOn || undefined,
+                today,
+              )}
+              error={errors.queenEmergedOn?.message}
             />
           )}
         />
@@ -609,31 +366,14 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenAcquiredOn"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <DatePickerField
               label="Datum nabavke"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              minimumDate={
-                queenEmergedOn ||
-                undefined
-              }
-              maximumDate={
-                earliestDate(
-                  today,
-                )
-              }
-              error={
-                errors
-                  .queenAcquiredOn
-                  ?.message
-              }
+              value={field.value}
+              onChange={field.onChange}
+              minimumDate={queenEmergedOn || undefined}
+              maximumDate={earliestDate(today)}
+              error={errors.queenAcquiredOn?.message}
             />
           )}
         />
@@ -641,30 +381,15 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenStartedOn"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <DatePickerField
               label="U društvu od *"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
-              minimumDate={
-                latestDate(
-                  queenEmergedOn ||
-                    undefined,
-                )
-              }
+              value={field.value}
+              onChange={field.onChange}
+              minimumDate={latestDate(queenEmergedOn || undefined)}
               maximumDate={today}
               required
-              error={
-                errors
-                  .queenStartedOn
-                  ?.message
-              }
+              error={errors.queenStartedOn?.message}
             />
           )}
         />
@@ -672,47 +397,31 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenIntroductionMethod"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <ChoiceGroup
               label="Način uvođenja"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
+              value={field.value}
+              onChange={field.onChange}
               options={[
                 {
-                  value:
-                    'placement',
-                  label:
-                    'Postavljanje',
+                  value: 'placement',
+                  label: 'Postavljanje',
                 },
                 {
-                  value:
-                    'caged',
-                  label:
-                    'Kavez',
+                  value: 'caged',
+                  label: 'Kavez',
                 },
                 {
-                  value:
-                    'direct',
-                  label:
-                    'Direktno',
+                  value: 'direct',
+                  label: 'Direktno',
                 },
                 {
-                  value:
-                    'unknown',
-                  label:
-                    'Nepoznato',
+                  value: 'unknown',
+                  label: 'Nepoznato',
                 },
                 {
-                  value:
-                    'other',
-                  label:
-                    'Ostalo',
+                  value: 'other',
+                  label: 'Ostalo',
                 },
               ]}
             />
@@ -722,47 +431,31 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenIntroductionOutcome"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <ChoiceGroup
               label="Ishod uvođenja"
-              value={
-                field.value
-              }
-              onChange={
-                field.onChange
-              }
+              value={field.value}
+              onChange={field.onChange}
               options={[
                 {
-                  value:
-                    'accepted',
-                  label:
-                    'Prihvaćena',
+                  value: 'accepted',
+                  label: 'Prihvaćena',
                 },
                 {
-                  value:
-                    'killed',
-                  label:
-                    'Ubijena',
+                  value: 'killed',
+                  label: 'Ubijena',
                 },
                 {
-                  value:
-                    'missing',
-                  label:
-                    'Nestala',
+                  value: 'missing',
+                  label: 'Nestala',
                 },
                 {
-                  value:
-                    'unverified',
-                  label:
-                    'Nepotvrđeno',
+                  value: 'unverified',
+                  label: 'Nepotvrđeno',
                 },
                 {
-                  value:
-                    'other',
-                  label:
-                    'Ostalo',
+                  value: 'other',
+                  label: 'Ostalo',
                 },
               ]}
             />
@@ -772,17 +465,11 @@ export function CreateColonyWithQueenScreen({
         <Controller
           control={control}
           name="queenNotes"
-          render={({
-            field,
-          }) => (
+          render={({ field }) => (
             <FormInput
               label="Napomena o matici"
-              value={
-                field.value
-              }
-              onChangeText={
-                field.onChange
-              }
+              value={field.value}
+              onChangeText={field.onChange}
             />
           )}
         />
@@ -795,23 +482,15 @@ export function CreateColonyWithQueenScreen({
               text-error
             "
           >
-            {mutation
-              .error instanceof Error
-              ? mutation
-                .error.message
+            {mutation.error instanceof Error
+              ? mutation.error.message
               : 'Podatke nije moguće sačuvati.'}
           </Text>
         )}
 
         <Pressable
-          disabled={
-            mutation.isPending
-          }
-          onPress={
-            handleSubmit(
-              onSubmit,
-            )
-          }
+          disabled={mutation.isPending}
+          onPress={handleSubmit(onSubmit)}
           className={`
             min-h-14
             items-center
@@ -819,10 +498,7 @@ export function CreateColonyWithQueenScreen({
             rounded-2xl
             bg-primary
             px-5
-            ${mutation.isPending
-              ? 'opacity-60'
-              : ''
-            }
+            ${mutation.isPending ? 'opacity-60' : ''}
           `}
         >
           <Text
@@ -832,9 +508,7 @@ export function CreateColonyWithQueenScreen({
               text-background
             "
           >
-            {mutation.isPending
-              ? 'Čuvanje...'
-              : 'Sačuvaj društvo i maticu'}
+            {mutation.isPending ? 'Čuvanje...' : 'Sačuvaj društvo i maticu'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -842,13 +516,10 @@ export function CreateColonyWithQueenScreen({
   );
 }
 type SectionTitleProps = {
-  children:
-  React.ReactNode;
+  children: React.ReactNode;
 };
 
-function SectionTitle({
-  children,
-}: SectionTitleProps) {
+function SectionTitle({ children }: SectionTitleProps) {
   return (
     <Text
       className="
@@ -868,18 +539,13 @@ type FormInputProps = {
 
   value: string;
 
-  onChangeText:
-  (value: string) => void;
+  onChangeText: (value: string) => void;
 
   placeholder?: string;
 
   error?: string;
 
-  autoCapitalize?:
-  | 'none'
-  | 'sentences'
-  | 'words'
-  | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 
   multiline?: boolean;
 };
@@ -908,26 +574,12 @@ function FormInput({
 
       <TextInput
         value={value}
-        onChangeText={
-          onChangeText
-        }
-        placeholder={
-          placeholder
-        }
-        placeholderTextColor={
-          colors.muted
-        }
-        autoCapitalize={
-          autoCapitalize
-        }
-        multiline={
-          multiline
-        }
-        textAlignVertical={
-          multiline
-            ? 'top'
-            : 'center'
-        }
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.muted}
+        autoCapitalize={autoCapitalize}
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
         className={`
           rounded-2xl
           border
@@ -935,14 +587,8 @@ function FormInput({
           px-4
           text-base
           text-foreground
-          ${multiline
-            ? 'min-h-28 py-4'
-            : 'h-14'
-          }
-          ${error
-            ? 'border-error'
-            : 'border-border'
-          }
+          ${multiline ? 'min-h-28 py-4' : 'h-14'}
+          ${error ? 'border-error' : 'border-border'}
         `}
       />
 
@@ -960,37 +606,24 @@ function FormInput({
     </View>
   );
 }
-type ChoiceOption<
-  T extends string,
-> = {
+type ChoiceOption<T extends string> = {
   value: T;
   label: string;
 };
 
-type ChoiceGroupProps<
-  T extends string,
-> = {
+type ChoiceGroupProps<T extends string> = {
   label: string;
 
-  value:
-  | T
-  | null;
+  value: T | null;
 
-  onChange: (
-    value:
-      | T
-      | null,
-  ) => void;
+  onChange: (value: T | null) => void;
 
-  options:
-  readonly ChoiceOption<T>[];
+  options: readonly ChoiceOption<T>[];
 
   error?: string;
 };
 
-function ChoiceGroup<
-  T extends string,
->({
+function ChoiceGroup<T extends string>({
   label,
   value,
   onChange,
@@ -1024,59 +657,43 @@ function ChoiceGroup<
           rowGap: 8,
         }}
       >
-        {options.map(
-          (option) => {
-            const selected =
-              value ===
-              option.value;
+        {options.map((option) => {
+          const selected = value === option.value;
 
-            return (
-              <Pressable
-                key={
-                  option.value
-                }
-                onPress={() => {
-                  onChange(
-                    selected
-                      ? null
-                      : option.value,
-                  );
-                }}
-                style={{
-                  width: '32%',
-                  minHeight: 52,
-                }}
-                className={`
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => {
+                onChange(selected ? null : option.value);
+              }}
+              style={{
+                width: '32%',
+                minHeight: 52,
+              }}
+              className={`
                   items-center
                   justify-center
                   rounded-2xl
                   border
                   px-2
                   py-3
-                  ${selected
-                    ? 'border-primary bg-primary'
-                    : 'border-border bg-surface'
-                  }
+                  ${selected ? 'border-primary bg-primary' : 'border-border bg-surface'}
                 `}
-              >
-                <Text
-                  numberOfLines={2}
-                  className={`
+            >
+              <Text
+                numberOfLines={2}
+                className={`
                     text-center
                     text-sm
                     font-semibold
-                    ${selected
-                      ? 'text-background'
-                      : 'text-foreground'
-                    }
+                    ${selected ? 'text-background' : 'text-foreground'}
                   `}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          },
-        )}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {error && (

@@ -59,9 +59,7 @@ function DateLabel({
   const time = showTime ? formatTimelineTime(value) : null;
   const formattedDate = formatTimelineDate(value);
   const yearMatch = /\s(\d{4}\.)$/.exec(formattedDate);
-  const dayAndMonth = yearMatch
-    ? formattedDate.slice(0, yearMatch.index)
-    : formattedDate;
+  const dayAndMonth = yearMatch ? formattedDate.slice(0, yearMatch.index) : formattedDate;
 
   return (
     <View className="items-center">
@@ -79,9 +77,7 @@ function DateLabel({
           {yearMatch[1]}
         </Text>
       )}
-      {time && (
-        <Text className="mt-1 text-center text-xs text-muted">{time}</Text>
-      )}
+      {time && <Text className="mt-1 text-center text-xs text-muted">{time}</Text>}
     </View>
   );
 }

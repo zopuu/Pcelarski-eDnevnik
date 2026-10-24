@@ -1,87 +1,43 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  router,
-} from 'expo-router';
-import {
-  Controller,
-  useForm,
-} from 'react-hook-form';
-import {
-  useEffect,
-} from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { useEffect } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  ProfileTextInput,
-} from '@/features/beekeeper-profile/components/profile-text-input';
-import {
-  useMyProfile,
-} from '@/features/beekeeper-profile/hooks/use-my-profile';
-import {
-  useUpdateMyProfile,
-} from '@/features/beekeeper-profile/hooks/use-update-my-profile';
+import { ProfileTextInput } from '@/features/beekeeper-profile/components/profile-text-input';
+import { useMyProfile } from '@/features/beekeeper-profile/hooks/use-my-profile';
+import { useUpdateMyProfile } from '@/features/beekeeper-profile/hooks/use-update-my-profile';
 import {
   updateMyProfileSchema,
   type UpdateMyProfileFormValues,
 } from '@/features/beekeeper-profile/schemas/update-my-profile-schema';
-import {
-  useCurrentUser,
-} from '@/features/auth/hooks/use-current-user';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ApiError } from '@/shared/api/api-error';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
-function optionalText(
-  value: string,
-) {
+function optionalText(value: string) {
   const normalized = value.trim();
 
   return normalized || null;
 }
 
-function getFieldError(
-  error: unknown,
-  field: string,
-) {
+function getFieldError(error: unknown, field: string) {
   if (!(error instanceof ApiError)) {
     return undefined;
   }
 
-  const entry = Object.entries(
-    error.problem?.errors ?? {},
-  ).find(([key]) =>
-    key.toLocaleLowerCase('en-US') ===
-    field.toLocaleLowerCase('en-US'),
+  const entry = Object.entries(error.problem?.errors ?? {}).find(
+    ([key]) => key.toLocaleLowerCase('en-US') === field.toLocaleLowerCase('en-US'),
   );
 
   return entry?.[1]?.[0];
 }
 
-function getUpdateErrorMessage(
-  error: unknown,
-) {
+function getUpdateErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
     const code = error.problem?.code;
 
@@ -93,10 +49,7 @@ function getUpdateErrorMessage(
       return 'HID je već u upotrebi.';
     }
 
-    if (
-      code ===
-      'beekeeper_profiles.agricultural_holding_number_already_exists'
-    ) {
+    if (code === 'beekeeper_profiles.agricultural_holding_number_already_exists') {
       return 'Broj poljoprivrednog gazdinstva je već u upotrebi.';
     }
   }
@@ -105,25 +58,17 @@ function getUpdateErrorMessage(
 }
 
 export function EditBeekeeperProfileScreen() {
-  const {
-    openDrawer,
-  } = useAppDrawer();
-  const profileQuery =
-    useMyProfile();
-  const currentUserQuery =
-    useCurrentUser();
-  const updateMutation =
-    useUpdateMyProfile();
+  const { openDrawer } = useAppDrawer();
+  const profileQuery = useMyProfile();
+  const currentUserQuery = useCurrentUser();
+  const updateMutation = useUpdateMyProfile();
 
   const {
     control,
     handleSubmit,
     reset,
     setError,
-    formState: {
-      errors,
-      isDirty,
-    },
+    formState: { errors, isDirty },
   } = useForm<UpdateMyProfileFormValues>({
     resolver: zodResolver(updateMyProfileSchema),
     defaultValues: {
@@ -137,10 +82,7 @@ export function EditBeekeeperProfileScreen() {
   });
 
   useEffect(() => {
-    if (
-      !profileQuery.data ||
-      !currentUserQuery.data
-    ) {
+    if (!profileQuery.data || !currentUserQuery.data) {
       return;
     }
 
@@ -150,20 +92,11 @@ export function EditBeekeeperProfileScreen() {
       email: currentUserQuery.data.email ?? '',
       hid: profileQuery.data.hid ?? '',
       phone: profileQuery.data.phone ?? '',
-      agriculturalHoldingNumber:
-        profileQuery.data
-          .agriculturalHoldingNumber
-          ?.toString() ?? '',
+      agriculturalHoldingNumber: profileQuery.data.agriculturalHoldingNumber?.toString() ?? '',
     });
-  }, [
-    currentUserQuery.data,
-    profileQuery.data,
-    reset,
-  ]);
+  }, [currentUserQuery.data, profileQuery.data, reset]);
 
-  const onSubmit = async (
-    values: UpdateMyProfileFormValues,
-  ) => {
+  const onSubmit = async (values: UpdateMyProfileFormValues) => {
     try {
       await updateMutation.mutateAsync({
         firstName: values.firstName.trim(),
@@ -171,12 +104,9 @@ export function EditBeekeeperProfileScreen() {
         email: values.email.trim(),
         hid: optionalText(values.hid),
         phone: optionalText(values.phone),
-        agriculturalHoldingNumber:
-          values.agriculturalHoldingNumber
-            ? Number(
-              values.agriculturalHoldingNumber,
-            )
-            : null,
+        agriculturalHoldingNumber: values.agriculturalHoldingNumber
+          ? Number(values.agriculturalHoldingNumber)
+          : null,
       });
 
       router.back();
@@ -203,16 +133,9 @@ export function EditBeekeeperProfileScreen() {
     }
   };
 
-  const header = (
-    <AppHeader
-      onMenuPress={openDrawer}
-    />
-  );
+  const header = <AppHeader onMenuPress={openDrawer} />;
 
-  if (
-    profileQuery.isLoading ||
-    currentUserQuery.isLoading
-  ) {
+  if (profileQuery.isLoading || currentUserQuery.isLoading) {
     return (
       <Screen header={header}>
         <LoadingState />
@@ -350,9 +273,7 @@ export function EditBeekeeperProfileScreen() {
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               keyboardType="number-pad"
-              error={
-                errors.agriculturalHoldingNumber?.message
-              }
+              error={errors.agriculturalHoldingNumber?.message}
             />
           )}
         />
@@ -415,9 +336,7 @@ export function EditBeekeeperProfileScreen() {
             "
           >
             <Text className="text-sm text-error">
-              {getUpdateErrorMessage(
-                updateMutation.error,
-              )}
+              {getUpdateErrorMessage(updateMutation.error)}
             </Text>
           </View>
         )}
@@ -425,10 +344,7 @@ export function EditBeekeeperProfileScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Sačuvaj izmene profila"
-          disabled={
-            updateMutation.isPending ||
-            !isDirty
-          }
+          disabled={updateMutation.isPending || !isDirty}
           onPress={handleSubmit(onSubmit)}
           className={`
             min-h-14
@@ -437,12 +353,7 @@ export function EditBeekeeperProfileScreen() {
             rounded-2xl
             bg-primary
             px-5
-            ${
-              updateMutation.isPending ||
-              !isDirty
-                ? 'opacity-60'
-                : ''
-            }
+            ${updateMutation.isPending || !isDirty ? 'opacity-60' : ''}
           `}
         >
           <Text
@@ -452,9 +363,7 @@ export function EditBeekeeperProfileScreen() {
               text-background
             "
           >
-            {updateMutation.isPending
-              ? 'Čuvanje...'
-              : 'Sačuvaj izmene'}
+            {updateMutation.isPending ? 'Čuvanje...' : 'Sačuvaj izmene'}
           </Text>
         </Pressable>
       </KeyboardAwareScrollView>
@@ -471,14 +380,9 @@ function LoadingState() {
         justify-center
       "
     >
-      <ActivityIndicator
-        size="large"
-        color={colors.primary}
-      />
+      <ActivityIndicator size="large" color={colors.primary} />
 
-      <Text className="mt-3 text-muted">
-        Učitavanje profila...
-      </Text>
+      <Text className="mt-3 text-muted">Učitavanje profila...</Text>
     </View>
   );
 }
@@ -518,9 +422,7 @@ function LoadError() {
           py-3
         "
       >
-        <Text className="font-bold text-background">
-          Nazad
-        </Text>
+        <Text className="font-bold text-background">Nazad</Text>
       </Pressable>
     </View>
   );

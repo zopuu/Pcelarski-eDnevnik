@@ -7,8 +7,13 @@ export function useSetManualHoneyBatchComposition() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ batchId, request }: { batchId: string; request: SetManualHoneyBatchCompositionRequest }) =>
-      setManualHoneyBatchComposition(batchId, request),
+    mutationFn: ({
+      batchId,
+      request,
+    }: {
+      batchId: string;
+      request: SetManualHoneyBatchCompositionRequest;
+    }) => setManualHoneyBatchComposition(batchId, request),
     onSuccess: async (_, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: honeyBatchQueryKeys.detail(variables.batchId) }),

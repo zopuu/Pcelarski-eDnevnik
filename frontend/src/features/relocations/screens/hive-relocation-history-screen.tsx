@@ -1,56 +1,27 @@
-import Ionicons
-  from '@react-native-vector-icons/ionicons';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { TimelineDate } from '@/shared/components/timeline/timeline-date';
 import { TimelineItem } from '@/shared/components/timeline/timeline-item';
-import {
-  router,
-} from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { router } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 
-import {
-  useHive,
-} from '@/features/hives/hooks/use-hive';
-import {
-  HiveHeaderIllustration,
-} from '@/features/hives/components/hive-header-illustration';
-import {
-  useHiveRelocations,
-} from '@/features/relocations/hooks/use-hive-relocations';
-import type {
-  ApiaryRelocationHistoryItem,
-} from '@/features/relocations/types/relocation-history';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
-import {
-  colors,
-} from '@/shared/theme/colors';
+import { useHive } from '@/features/hives/hooks/use-hive';
+import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
+import { useHiveRelocations } from '@/features/relocations/hooks/use-hive-relocations';
+import type { ApiaryRelocationHistoryItem } from '@/features/relocations/types/relocation-history';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
+import { colors } from '@/shared/theme/colors';
 
 type HiveRelocationHistoryScreenProps = {
   hiveId: string;
 };
 
-export function HiveRelocationHistoryScreen({
-  hiveId,
-}: HiveRelocationHistoryScreenProps) {
+export function HiveRelocationHistoryScreen({ hiveId }: HiveRelocationHistoryScreenProps) {
   const { openDrawer } = useAppDrawer();
   const hiveQuery = useHive(hiveId);
   const relocationsQuery = useHiveRelocations(hiveId);
-  const relocations = relocationsQuery.data?.pages.flatMap(
-    (page) => page.items,
-  ) ?? [];
+  const relocations = relocationsQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
   if (hiveQuery.isLoading || relocationsQuery.isLoading) {
     return <StateScreen label="Učitavanje selidbi..." />;
@@ -61,10 +32,7 @@ export function HiveRelocationHistoryScreen({
       <Screen header={<AppHeader onMenuPress={openDrawer} />}>
         <ErrorState
           onRetry={() => {
-            void Promise.all([
-              hiveQuery.refetch(),
-              relocationsQuery.refetch(),
-            ]);
+            void Promise.all([hiveQuery.refetch(), relocationsQuery.refetch()]);
           }}
         />
       </Screen>
@@ -95,8 +63,12 @@ export function HiveRelocationHistoryScreen({
             </Pressable>
             <View className="mt-3 flex-row items-start">
               <View className="flex-1">
-                <Text className="text-xs font-bold uppercase tracking-widest text-muted">Košnica</Text>
-                <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">{hiveQuery.data.label}</Text>
+                <Text className="text-xs font-bold uppercase tracking-widest text-muted">
+                  Košnica
+                </Text>
+                <Text className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+                  {hiveQuery.data.label}
+                </Text>
               </View>
               <HiveHeaderIllustration
                 colorHex={hiveQuery.data.colorHex}
@@ -110,7 +82,9 @@ export function HiveRelocationHistoryScreen({
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center rounded-3xl border border-border bg-surface px-6 py-10">
             <Ionicons name="swap-horizontal-outline" size={30} color={colors.primary} />
-            <Text className="mt-3 text-center text-base font-semibold text-foreground">Još nema evidentiranih selidbi.</Text>
+            <Text className="mt-3 text-center text-base font-semibold text-foreground">
+              Još nema evidentiranih selidbi.
+            </Text>
           </View>
         }
         renderItem={({ item, index }) => (
@@ -127,7 +101,11 @@ export function HiveRelocationHistoryScreen({
           }
         }}
         onEndReachedThreshold={0.35}
-        ListFooterComponent={relocationsQuery.isFetchingNextPage ? <ActivityIndicator className="my-5" color={colors.primary} /> : null}
+        ListFooterComponent={
+          relocationsQuery.isFetchingNextPage ? (
+            <ActivityIndicator className="my-5" color={colors.primary} />
+          ) : null
+        }
       />
     </Screen>
   );
@@ -144,9 +122,8 @@ function HiveRelocationTimelineItem({
   isFirst: boolean;
   isLast: boolean;
 }) {
-  const relocationLabel = relocation.kind === 'wholeApiary'
-    ? 'Ceo pčelinjak'
-    : `${relocation.hiveCount ?? 0} košnica`;
+  const relocationLabel =
+    relocation.kind === 'wholeApiary' ? 'Ceo pčelinjak' : `${relocation.hiveCount ?? 0} košnica`;
 
   return (
     <TimelineItem
@@ -167,8 +144,15 @@ function HiveRelocationTimelineItem({
         style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
       >
         <View className="flex-row items-start">
-          <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10"><Ionicons name="swap-horizontal-outline" size={21} color={colors.primary} /></View>
-          <View className="ml-3 flex-1"><Text className="text-base font-bold text-foreground">{relocation.originLocationName} → {relocation.destinationLocationName}</Text><Text className="mt-1 text-sm text-muted">{relocationLabel}</Text></View>
+          <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
+            <Ionicons name="swap-horizontal-outline" size={21} color={colors.primary} />
+          </View>
+          <View className="ml-3 flex-1">
+            <Text className="text-base font-bold text-foreground">
+              {relocation.originLocationName} → {relocation.destinationLocationName}
+            </Text>
+            <Text className="mt-1 text-sm text-muted">{relocationLabel}</Text>
+          </View>
           <Ionicons name="chevron-forward" size={20} color={colors.muted} />
         </View>
       </Pressable>
@@ -177,9 +161,29 @@ function HiveRelocationTimelineItem({
 }
 
 function StateScreen({ label }: { label: string }) {
-  return <Screen><View className="flex-1 items-center justify-center"><ActivityIndicator size="large" color={colors.primary} /><Text className="mt-3 text-muted">{label}</Text></View></Screen>;
+  return (
+    <Screen>
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="mt-3 text-muted">{label}</Text>
+      </View>
+    </Screen>
+  );
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
-  return <View className="flex-1 items-center justify-center px-8"><Text className="text-center text-base font-semibold text-error">Nije moguće učitati selidbe.</Text><Pressable accessibilityRole="button" onPress={onRetry} className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"><Text className="font-bold text-background">Pokušaj ponovo</Text></Pressable></View>;
+  return (
+    <View className="flex-1 items-center justify-center px-8">
+      <Text className="text-center text-base font-semibold text-error">
+        Nije moguće učitati selidbe.
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        className="mt-5 min-h-12 items-center justify-center rounded-2xl bg-primary px-5"
+      >
+        <Text className="font-bold text-background">Pokušaj ponovo</Text>
+      </Pressable>
+    </View>
+  );
 }

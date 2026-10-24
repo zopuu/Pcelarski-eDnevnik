@@ -1,78 +1,41 @@
-import {
-  zodResolver,
-} from '@hookform/resolvers/zod';
-import {
-  router,
-} from 'expo-router';
-import {
-  Controller,
-  useForm,
-} from 'react-hook-form';
-import {
-  Alert,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
-import {
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { Alert, Pressable, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import {
-  ProfileTextInput,
-} from '@/features/beekeeper-profile/components/profile-text-input';
-import {
-  useChangePassword,
-} from '@/features/beekeeper-profile/hooks/use-change-password';
+import { ProfileTextInput } from '@/features/beekeeper-profile/components/profile-text-input';
+import { useChangePassword } from '@/features/beekeeper-profile/hooks/use-change-password';
 import {
   changePasswordSchema,
   type ChangePasswordFormValues,
 } from '@/features/beekeeper-profile/schemas/change-password-schema';
-import {
-  useAppDrawer,
-} from '@/providers/app-drawer-provider';
-import {
-  ApiError,
-} from '@/shared/api/api-error';
-import {
-  AppHeader,
-} from '@/shared/components/navigation/app-header';
-import {
-  Screen,
-} from '@/shared/components/screen/screen';
+import { useAppDrawer } from '@/providers/app-drawer-provider';
+import { ApiError } from '@/shared/api/api-error';
+import { AppHeader } from '@/shared/components/navigation/app-header';
+import { Screen } from '@/shared/components/screen/screen';
 
-function getFieldError(
-  error: unknown,
-  field: string,
-) {
+function getFieldError(error: unknown, field: string) {
   if (!(error instanceof ApiError)) {
     return undefined;
   }
 
-  const entry = Object.entries(
-    error.problem?.errors ?? {},
-  ).find(([key]) =>
-    key.toLocaleLowerCase('en-US') ===
-    field.toLocaleLowerCase('en-US'),
+  const entry = Object.entries(error.problem?.errors ?? {}).find(
+    ([key]) => key.toLocaleLowerCase('en-US') === field.toLocaleLowerCase('en-US'),
   );
 
   return entry?.[1]?.[0];
 }
 
 export function ChangePasswordScreen() {
-  const {
-    openDrawer,
-  } = useAppDrawer();
-  const changePasswordMutation =
-    useChangePassword();
+  const { openDrawer } = useAppDrawer();
+  const changePasswordMutation = useChangePassword();
 
   const {
     control,
     handleSubmit,
     setError,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
@@ -82,36 +45,24 @@ export function ChangePasswordScreen() {
     },
   });
 
-  const onSubmit = async (
-    values: ChangePasswordFormValues,
-  ) => {
+  const onSubmit = async (values: ChangePasswordFormValues) => {
     try {
       await changePasswordMutation.mutateAsync({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
 
-      Alert.alert(
-        'Lozinka je promenjena',
-        'Nova lozinka je uspešno sačuvana.',
-        [
-          {
-            text: 'U redu',
-            onPress: () => {
-              router.back();
-            },
+      Alert.alert('Lozinka je promenjena', 'Nova lozinka je uspešno sačuvana.', [
+        {
+          text: 'U redu',
+          onPress: () => {
+            router.back();
           },
-        ],
-      );
+        },
+      ]);
     } catch (error) {
-      const currentPasswordError = getFieldError(
-        error,
-        'currentPassword',
-      );
-      const newPasswordError = getFieldError(
-        error,
-        'newPassword',
-      );
+      const currentPasswordError = getFieldError(error, 'currentPassword');
+      const newPasswordError = getFieldError(error, 'newPassword');
 
       if (currentPasswordError) {
         setError('currentPassword', {
@@ -123,21 +74,14 @@ export function ChangePasswordScreen() {
       if (newPasswordError) {
         setError('newPassword', {
           type: 'server',
-          message:
-            'Nova lozinka ne ispunjava bezbednosne zahteve.',
+          message: 'Nova lozinka ne ispunjava bezbednosne zahteve.',
         });
       }
     }
   };
 
   return (
-    <Screen
-      header={
-        <AppHeader
-          onMenuPress={openDrawer}
-        />
-      }
-    >
+    <Screen header={<AppHeader onMenuPress={openDrawer} />}>
       <KeyboardAwareScrollView
         bottomOffset={24}
         keyboardShouldPersistTaps="handled"
@@ -245,9 +189,7 @@ export function ChangePasswordScreen() {
             )}
           />
 
-          {changePasswordMutation.isError &&
-            !errors.currentPassword &&
-            !errors.newPassword && (
+          {changePasswordMutation.isError && !errors.currentPassword && !errors.newPassword && (
             <Text
               className="
                 mb-4
@@ -271,11 +213,7 @@ export function ChangePasswordScreen() {
               rounded-2xl
               bg-primary
               px-5
-              ${
-                changePasswordMutation.isPending
-                  ? 'opacity-60'
-                  : ''
-              }
+              ${changePasswordMutation.isPending ? 'opacity-60' : ''}
             `}
           >
             <Text
@@ -285,9 +223,7 @@ export function ChangePasswordScreen() {
                 text-background
               "
             >
-              {changePasswordMutation.isPending
-                ? 'Čuvanje...'
-                : 'Sačuvaj novu lozinku'}
+              {changePasswordMutation.isPending ? 'Čuvanje...' : 'Sačuvaj novu lozinku'}
             </Text>
           </Pressable>
         </View>

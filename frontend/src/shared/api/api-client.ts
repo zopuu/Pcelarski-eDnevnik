@@ -1,37 +1,19 @@
-import {
-  ApiError,
-  MissingAccessTokenError,
-  ProblemDetails,
-} from '@/shared/api/api-error';
-import {
-  fetch,
-} from 'expo/fetch';
+import { ApiError, MissingAccessTokenError, ProblemDetails } from '@/shared/api/api-error';
+import { fetch } from 'expo/fetch';
 import { environment } from '@/shared/config/environment';
 
-type HttpMethod =
-  | 'GET'
-  | 'POST'
-  | 'PUT'
-  | 'PATCH'
-  | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface AccessTokenRequestOptions {
   forceRefresh?: boolean;
   staleAccessToken?: string;
 }
 
-type AccessTokenProvider =
-  (
-    options?: AccessTokenRequestOptions,
-  ) => Promise<string | null>;
+type AccessTokenProvider = (options?: AccessTokenRequestOptions) => Promise<string | null>;
 
-let accessTokenProvider:
-  AccessTokenProvider =
-  async () => null;
+let accessTokenProvider: AccessTokenProvider = async () => null;
 
-export function setApiAccessTokenProvider(
-  provider: AccessTokenProvider,
-): void {
+export function setApiAccessTokenProvider(provider: AccessTokenProvider): void {
   accessTokenProvider = provider;
 }
 
@@ -44,25 +26,17 @@ export interface ApiRequestOptions {
 }
 
 function buildUrl(path: string): string {
-  const normalizedPath = path.startsWith('/')
-    ? path
-    : `/${path}`;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
   return `${environment.apiUrl}${normalizedPath}`;
 }
 
-function isProblemDetails(
-  value: unknown,
-): value is ProblemDetails {
-  if (
-    typeof value !== 'object' ||
-    value === null
-  ) {
+function isProblemDetails(value: unknown): value is ProblemDetails {
+  if (typeof value !== 'object' || value === null) {
     return false;
   }
 
-  const candidate =
-    value as Record<string, unknown>;
+  const candidate = value as Record<string, unknown>;
 
   return (
     'title' in candidate ||
@@ -73,13 +47,8 @@ function isProblemDetails(
   );
 }
 
-async function readResponseBody(
-  response: Response,
-): Promise<unknown> {
-  if (
-    response.status === 204 ||
-    response.status === 205
-  ) {
+async function readResponseBody(response: Response): Promise<unknown> {
+  if (response.status === 204 || response.status === 205) {
     return null;
   }
 
@@ -89,14 +58,11 @@ async function readResponseBody(
     return null;
   }
 
-  const contentType =
-    response.headers.get('content-type') ?? '';
+  const contentType = response.headers.get('content-type') ?? '';
 
   if (
     contentType.includes('application/json') ||
-    contentType.includes(
-      'application/problem+json',
-    )
+    contentType.includes('application/problem+json')
   ) {
     try {
       return JSON.parse(text);
@@ -112,186 +78,108 @@ export async function apiRequest<TResponse>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<TResponse> {
-  const {
-    method = 'GET',
-    body,
-    authenticated = false,
-    signal,
-  } = options;
+  const { method = 'GET', body, authenticated = false, signal } = options;
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...options.headers,
   };
 
-  const isFormData =
-    typeof FormData !== 'undefined' &&
-    body instanceof FormData;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
   if (body !== undefined && !isFormData) {
-    headers['Content-Type'] =
-      'application/json';
+    headers['Content-Type'] = 'application/json';
   }
 
   let accessToken: string | null = null;
 
   if (authenticated) {
-    accessToken =
-      await accessTokenProvider();
+    accessToken = await accessTokenProvider();
 
     if (!accessToken) {
       throw new MissingAccessTokenError();
     }
 
-    headers.Authorization =
-      `Bearer ${accessToken}`;
+    headers.Authorization = `Bearer ${accessToken}`;
   }
-  const requestBody =
-    body === undefined
-      ? undefined
-      : isFormData
-        ? body
-        : JSON.stringify(body);
-  let response = await fetch(
-    buildUrl(path),
-    {
-      method,
-      headers,
-      signal,
-      body: requestBody,
-    },
-  );
-  if (
-    authenticated &&
-    response.status === 401
-  ) {
-    const refreshedAccessToken =
-      await accessTokenProvider({
-        forceRefresh: true,
-        staleAccessToken:
-          accessToken ?? undefined,
-      });
+  const requestBody = body === undefined ? undefined : isFormData ? body : JSON.stringify(body);
+  let response = await fetch(buildUrl(path), {
+    method,
+    headers,
+    signal,
+    body: requestBody,
+  });
+  if (authenticated && response.status === 401) {
+    const refreshedAccessToken = await accessTokenProvider({
+      forceRefresh: true,
+      staleAccessToken: accessToken ?? undefined,
+    });
 
     if (refreshedAccessToken) {
-      headers.Authorization =
-        `Bearer ${refreshedAccessToken}`;
+      headers.Authorization = `Bearer ${refreshedAccessToken}`;
 
-      response = await fetch(
-        buildUrl(path),
-        {
-          method,
-          headers,
-          signal,
-          body: requestBody,
-        },
-      );
+      response = await fetch(buildUrl(path), {
+        method,
+        headers,
+        signal,
+        body: requestBody,
+      });
     }
   }
 
-  const payload =
-    await readResponseBody(response);
+  const payload = await readResponseBody(response);
 
   if (!response.ok) {
-    const problem = isProblemDetails(payload)
-      ? payload
-      : undefined;
+    const problem = isProblemDetails(payload) ? payload : undefined;
 
     const message =
-      problem?.detail ??
-      problem?.title ??
-      `HTTP request failed with status ${response.status}.`;
+      problem?.detail ?? problem?.title ?? `HTTP request failed with status ${response.status}.`;
 
-    throw new ApiError(
-      response.status,
-      message,
-      problem,
-      payload,
-    );
+    throw new ApiError(response.status, message, problem, payload);
   }
 
   return payload as TResponse;
 }
-type ReadRequestOptions =
-  Omit<
-    ApiRequestOptions,
-    'method' | 'body'
-  >;
+type ReadRequestOptions = Omit<ApiRequestOptions, 'method' | 'body'>;
 
-type WriteRequestOptions =
-  Omit<
-    ApiRequestOptions,
-    'method' | 'body'
-  >;
+type WriteRequestOptions = Omit<ApiRequestOptions, 'method' | 'body'>;
 
 export const apiClient = {
-  get<TResponse>(
-    path: string,
-    options?: ReadRequestOptions,
-  ) {
-    return apiRequest<TResponse>(
-      path,
-      {
-        ...options,
-        method: 'GET',
-      },
-    );
+  get<TResponse>(path: string, options?: ReadRequestOptions) {
+    return apiRequest<TResponse>(path, {
+      ...options,
+      method: 'GET',
+    });
   },
 
-  post<TResponse, TBody = unknown>(
-    path: string,
-    body: TBody,
-    options?: WriteRequestOptions,
-  ) {
-    return apiRequest<TResponse>(
-      path,
-      {
-        ...options,
-        method: 'POST',
-        body,
-      },
-    );
+  post<TResponse, TBody = unknown>(path: string, body: TBody, options?: WriteRequestOptions) {
+    return apiRequest<TResponse>(path, {
+      ...options,
+      method: 'POST',
+      body,
+    });
   },
 
-  put<TResponse, TBody = unknown>(
-    path: string,
-    body: TBody,
-    options?: WriteRequestOptions,
-  ) {
-    return apiRequest<TResponse>(
-      path,
-      {
-        ...options,
-        method: 'PUT',
-        body,
-      },
-    );
+  put<TResponse, TBody = unknown>(path: string, body: TBody, options?: WriteRequestOptions) {
+    return apiRequest<TResponse>(path, {
+      ...options,
+      method: 'PUT',
+      body,
+    });
   },
 
-  patch<TResponse, TBody = unknown>(
-    path: string,
-    body: TBody,
-    options?: WriteRequestOptions,
-  ) {
-    return apiRequest<TResponse>(
-      path,
-      {
-        ...options,
-        method: 'PATCH',
-        body,
-      },
-    );
+  patch<TResponse, TBody = unknown>(path: string, body: TBody, options?: WriteRequestOptions) {
+    return apiRequest<TResponse>(path, {
+      ...options,
+      method: 'PATCH',
+      body,
+    });
   },
 
-  delete<TResponse>(
-    path: string,
-    options?: ReadRequestOptions,
-  ) {
-    return apiRequest<TResponse>(
-      path,
-      {
-        ...options,
-        method: 'DELETE',
-      },
-    );
+  delete<TResponse>(path: string, options?: ReadRequestOptions) {
+    return apiRequest<TResponse>(path, {
+      ...options,
+      method: 'DELETE',
+    });
   },
 };

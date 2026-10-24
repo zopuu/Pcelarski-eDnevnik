@@ -1,12 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useHive } from '@/features/hives/hooks/use-hive';
 import { useAppDrawer } from '@/providers/app-drawer-provider';
