@@ -15,6 +15,12 @@ public sealed class ApiariesDbContext(
     public DbSet<ApiaryStay> ApiaryStays =>
         Set<ApiaryStay>();
 
+    public DbSet<ApiaryLayout> ApiaryLayouts =>
+        Set<ApiaryLayout>();
+
+    public DbSet<ApiaryLayoutPosition> ApiaryLayoutPositions =>
+        Set<ApiaryLayoutPosition>();
+
     public DbSet<ForageProfile> ForageProfiles =>
         Set<ForageProfile>();
 

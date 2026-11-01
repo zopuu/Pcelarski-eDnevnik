@@ -86,6 +86,70 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayout", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApiaryStayId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("apiary_stay_id");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_apiary_layouts");
+
+                    b.HasIndex("ApiaryStayId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_apiary_layouts_apiary_stay_id");
+
+                    b.ToTable("apiary_layouts", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_apiary_layouts_version", "\"version\" >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayoutPosition", b =>
+                {
+                    b.Property<Guid>("LayoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("layout_id");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hive_id");
+
+                    b.Property<int>("X")
+                        .HasColumnType("integer")
+                        .HasColumnName("x");
+
+                    b.Property<int>("Y")
+                        .HasColumnType("integer")
+                        .HasColumnName("y");
+
+                    b.HasKey("LayoutId", "HiveId")
+                        .HasName("pk_apiary_layout_positions");
+
+                    b.ToTable("apiary_layout_positions", "apiaries", t =>
+                        {
+                            t.HasCheckConstraint("ck_apiary_layout_positions_x", "\"x\" >= 0");
+
+                            t.HasCheckConstraint("ck_apiary_layout_positions_y", "\"y\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLocation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -370,6 +434,26 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         });
                 });
 
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayout", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStay", null)
+                        .WithOne()
+                        .HasForeignKey("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayout", "ApiaryStayId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_apiary_layouts_apiary_stays_apiary_stay_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayoutPosition", b =>
+                {
+                    b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayout", null)
+                        .WithMany("Positions")
+                        .HasForeignKey("LayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_apiary_layout_positions_apiary_layouts_layout_id");
+                });
+
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryStay", b =>
                 {
                     b.HasOne("PcelarskiEDnevnik.Modules.Apiaries.Domain.Apiary", null)
@@ -421,6 +505,11 @@ namespace PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence.Migratio
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_forage_profile_items_forage_profiles_forage_profile_id");
+                });
+
+            modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ApiaryLayout", b =>
+                {
+                    b.Navigation("Positions");
                 });
 
             modelBuilder.Entity("PcelarskiEDnevnik.Modules.Apiaries.Domain.ForageProfile", b =>
