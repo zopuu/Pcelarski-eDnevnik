@@ -30,6 +30,42 @@ public sealed class ApiariesDbContext(
     public DbSet<ForageObservation> ForageObservations =>
         Set<ForageObservation>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) {
+        AddLayoutsForNewStays();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default) {
+        AddLayoutsForNewStays();
+        return base.SaveChangesAsync(
+            acceptAllChangesOnSuccess,
+            cancellationToken);
+    }
+
+    private void AddLayoutsForNewStays() {
+        var newStays = ChangeTracker.Entries<ApiaryStay>()
+            .Where(entry => entry.State == EntityState.Added)
+            .Select(entry => entry.Entity)
+            .ToArray();
+
+        if (newStays.Length == 0) {
+            return;
+        }
+
+        var layoutStayIds = ChangeTracker.Entries<ApiaryLayout>()
+            .Where(entry => entry.State != EntityState.Deleted)
+            .Select(entry => entry.Entity.ApiaryStayId)
+            .ToHashSet();
+
+        foreach (var stay in newStays) {
+            if (layoutStayIds.Add(stay.Id)) {
+                ApiaryLayouts.Add(ApiaryLayout.Create(stay.Id));
+            }
+        }
+    }
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
