@@ -29,6 +29,9 @@ public static class HivesModule {
         services.AddScoped<
             IApiaryHiveStayManager,
             ApiaryHiveStayManager>();
+        services.AddScoped<
+            IApiaryActiveHiveReader,
+            ApiaryActiveHiveReader>();
 
         return services;
     }

@@ -36,31 +36,17 @@ public static class GetHivesEndpoint {
                     }
 
                     var hives =
-                        await (
-                            from stay in dbContext.HiveStays
-                                .AsNoTracking()
-
-                            join hive in dbContext.Hives
-                                .AsNoTracking()
-                                on stay.HiveId equals hive.Id
-
-                            where
-                                stay.ApiaryId == apiaryId &&
-                                stay.EndedAtUtc == null &&
-                                hive.OwnerBeekeeperId == beekeeperId
-
-                            orderby hive.Label
-
-                            select new HiveListItemResponse(
+                        await ActiveApiaryHivesQuery
+                            .ForApiary(dbContext, beekeeperId, apiaryId)
+                            .OrderBy(hive => hive.Label)
+                            .Select(hive => new HiveListItemResponse(
                                 hive.Id,
                                 hive.IdentificationNumber,
                                 hive.Label,
                                 hive.Type,
                                 hive.ColorHex,
-                                hive.Status)
-                        )
-                        .ToListAsync(
-                            cancellationToken);
+                                hive.Status))
+                            .ToListAsync(cancellationToken);
 
                     return Results.Ok(
                         hives);
