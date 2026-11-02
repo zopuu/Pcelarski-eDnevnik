@@ -3,6 +3,8 @@ export const apiaryQueryKeys = {
 
   detail: (apiaryId: string) => ['apiary', apiaryId] as const,
 
+  layout: (apiaryId: string) => [...apiaryQueryKeys.all, 'layout', apiaryId] as const,
+
   currentStay: (apiaryId: string) => ['apiary-stays', apiaryId, 'current'] as const,
 
   stayHistory: (apiaryId: string) => ['apiary-stays', apiaryId, 'history'] as const,
