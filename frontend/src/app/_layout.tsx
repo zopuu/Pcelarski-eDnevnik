@@ -1,6 +1,7 @@
 import '../global.css';
 import { Stack } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { AuthProvider } from '@/providers/auth-provider';
@@ -39,15 +40,20 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <QueryProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </QueryProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <QueryProvider>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </QueryProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   loading: {
     flex: 1,
     alignItems: 'center',

@@ -11,14 +11,14 @@ function isUnplacedHive(hive: ApiaryLayoutHive): hive is UnplacedApiaryLayoutHiv
   return hive.x === null && hive.y === null;
 }
 
-export function getPlacedAndUnplacedHives(layout: ApiaryLayoutResponse): {
+export function partitionApiaryLayoutHives(hives: readonly ApiaryLayoutHive[]): {
   placed: PlacedApiaryLayoutHive[];
   unplaced: UnplacedApiaryLayoutHive[];
 } {
   const placed: PlacedApiaryLayoutHive[] = [];
   const unplaced: UnplacedApiaryLayoutHive[] = [];
 
-  for (const hive of layout.hives) {
+  for (const hive of hives) {
     if (isPlacedHive(hive)) {
       placed.push(hive);
     } else if (isUnplacedHive(hive)) {
@@ -29,4 +29,8 @@ export function getPlacedAndUnplacedHives(layout: ApiaryLayoutResponse): {
   }
 
   return { placed, unplaced };
+}
+
+export function getPlacedAndUnplacedHives(layout: ApiaryLayoutResponse) {
+  return partitionApiaryLayoutHives(layout.hives);
 }
