@@ -50,6 +50,17 @@ export function clampCameraPosition(position: MapPoint, limits: CameraLimits): M
   };
 }
 
+function softenAxis(value: number, minimum: number, maximum: number, overscroll: number): number {
+  'worklet';
+  if (value < minimum) {
+    return minimum - overscroll * (1 - Math.exp((value - minimum) / overscroll));
+  }
+  if (value > maximum) {
+    return maximum + overscroll * (1 - Math.exp((maximum - value) / overscroll));
+  }
+  return value;
+}
+
 export function softenCameraPosition(
   position: MapPoint,
   limits: CameraLimits,
@@ -61,15 +72,4 @@ export function softenCameraPosition(
     x: softenAxis(position.x, limits.minX, limits.maxX, overscroll),
     y: softenAxis(position.y, limits.minY, limits.maxY, overscroll),
   };
-}
-
-function softenAxis(value: number, minimum: number, maximum: number, overscroll: number): number {
-  'worklet';
-  if (value < minimum) {
-    return minimum - overscroll * (1 - Math.exp((value - minimum) / overscroll));
-  }
-  if (value > maximum) {
-    return maximum + overscroll * (1 - Math.exp((maximum - value) / overscroll));
-  }
-  return value;
 }

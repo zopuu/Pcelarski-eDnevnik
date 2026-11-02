@@ -1,24 +1,32 @@
 import { router } from 'expo-router';
 import Ionicons from '@react-native-vector-icons/ionicons';
 
-import { ActivityIndicator, FlatList, Pressable, Alert, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  Alert,
+  ScrollView,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMemo, useState } from 'react';
 import { useApiary } from '@/features/apiaries/hooks/use-apiary';
+import { useApiaryLayout } from '@/features/apiaries/hooks/use-apiary-layout';
 import { useCurrentApiaryStay } from '@/features/apiaries/hooks/use-current-apiary-stay';
 import { useDeactivateApiary } from '@/features/apiaries/hooks/use-deactivate-apiary';
 import { useLocation } from '@/features/apiaries/hooks/use-location';
+import { getPlacedAndUnplacedHives } from '@/features/apiaries/layout/apiary-layout-selectors';
+import { ApiaryMap } from '@/features/apiaries/layout/components/apiary-map';
+import { UnplacedHiveTray } from '@/features/apiaries/layout/components/unplaced-hive-tray';
 import type {
   CurrentApiaryStay,
   HiveEntranceOrientation,
 } from '@/features/apiaries/types/apiary-stay';
 import type { ApiaryLocation } from '@/features/apiaries/types/location';
 import { ApiaryHeaderImage } from '@/features/apiaries/components/apiary-header-image';
-
-import { HiveCard } from '@/features/hives/components/hive-card';
-import { HiveListFilters } from '@/features/hives/components/hive-list-filters';
-
-import { useHives } from '@/features/hives/hooks/use-hives';
-import type { HiveStatus, HiveType } from '@/features/hives/types/hive';
 
 import { useAppDrawer } from '@/providers/app-drawer-provider';
 import { useAuth } from '@/features/auth/hooks/use-auth';
@@ -30,8 +38,10 @@ import { colors } from '@/shared/theme/colors';
 import { ActionOverflowSheet } from '@/shared/components/contextual-action-bar/action-overflow-sheet';
 
 import { ContextualActionBar } from '@/shared/components/contextual-action-bar/contextual-action-bar';
+import { CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT } from '@/shared/components/contextual-action-bar/layout';
 
 import { Screen } from '@/shared/components/screen/screen';
+import { ApiError } from '@/shared/api/api-error';
 
 type ApiaryHivesScreenProps = {
   apiaryId: string;
@@ -53,16 +63,27 @@ function getApiaryTypeLabel(type: 'stationary' | 'migratory' | null) {
 export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
   const { openDrawer } = useAppDrawer();
   const { isRefreshingSession } = useAuth();
+  const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const parentScrollGesture = useMemo(() => Gesture.Native(), []);
+  const mapHeight = Math.max(
+    200,
+    Math.min(
+      windowHeight * 0.5,
+      windowHeight - insets.top - insets.bottom - CONTEXTUAL_ACTION_BAR_RESERVED_HEIGHT - 64,
+    ),
+  );
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isApiaryActionsOpen, setIsApiaryActionsOpen] = useState(false);
   const deactivateApiaryMutation = useDeactivateApiary();
   const currentStayQuery = useCurrentApiaryStay(apiaryId);
   const locationQuery = useLocation(currentStayQuery.data?.locationId ?? '');
-  const [labelSearch, setLabelSearch] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<HiveStatus | null>(null);
-  const [selectedType, setSelectedType] = useState<HiveType | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null | undefined>(undefined);
+  const layoutQuery = useApiaryLayout(apiaryId);
+  const layoutHives = useMemo(
+    () => (layoutQuery.data ? getPlacedAndUnplacedHives(layoutQuery.data) : null),
+    [layoutQuery.data],
+  );
 
   const {
     data: apiary,
@@ -72,49 +93,15 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
     refetch: refetchApiary,
   } = useApiary(apiaryId);
 
-  const {
-    data: hives,
-    isLoading: areHivesLoading,
-    isError: areHivesError,
-    fetchStatus: hivesFetchStatus,
-    refetch: refetchHives,
-  } = useHives(apiaryId);
-
-  const availableColors = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          (hives ?? [])
-            .map((hive) => hive.colorHex)
-            .filter((color): color is string => color !== null),
-        ),
-      ).sort(),
-    [hives],
-  );
-
-  const filteredHives = useMemo(() => {
-    const normalizedSearch = labelSearch.trim().toLocaleLowerCase('sr-Latn-RS');
-
-    return (hives ?? []).filter((hive) => {
-      const matchesLabel =
-        !normalizedSearch || hive.label.toLocaleLowerCase('sr-Latn-RS').includes(normalizedSearch);
-      const matchesStatus = !selectedStatus || hive.status === selectedStatus;
-      const matchesType = !selectedType || hive.type === selectedType;
-      const matchesColor = selectedColor === undefined || hive.colorHex === selectedColor;
-
-      return matchesLabel && matchesStatus && matchesType && matchesColor;
-    });
-  }, [hives, labelSearch, selectedColor, selectedStatus, selectedType]);
-
-  const isQueryPaused = apiaryFetchStatus === 'paused' || hivesFetchStatus === 'paused';
+  const isQueryPaused = apiaryFetchStatus === 'paused';
 
   const retryLoading = () => {
-    void Promise.all([refetchApiary(), refetchHives()]);
+    void refetchApiary();
   };
 
   const header = <AppHeader onMenuPress={openDrawer} />;
 
-  if (isApiaryLoading || areHivesLoading) {
+  if (isApiaryLoading) {
     return (
       <Screen header={header}>
         <View
@@ -132,14 +119,14 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
               text-muted
             "
           >
-            {isRefreshingSession ? 'Obnavljanje sesije...' : 'Učitavanje košnica...'}
+            {isRefreshingSession ? 'Obnavljanje sesije...' : 'Učitavanje pčelinjaka...'}
           </Text>
         </View>
       </Screen>
     );
   }
 
-  if (isQueryPaused && (!apiary || !hives)) {
+  if (isQueryPaused && !apiary) {
     return (
       <Screen header={header}>
         <LoadError
@@ -150,7 +137,7 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
     );
   }
 
-  if (isApiaryError || areHivesError || !apiary || !hives) {
+  if (isApiaryError || !apiary) {
     return (
       <Screen header={header}>
         <LoadError message="Nije moguće učitati podatke o pčelinjaku." onRetry={retryLoading} />
@@ -161,6 +148,10 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
   const displayName = apiary.name;
 
   const typeLabel = getApiaryTypeLabel(apiary.type);
+
+  const handleHivePress = (hiveId: string) => {
+    router.push({ pathname: '/hives/[hiveId]', params: { hiveId } });
+  };
 
   const handleAddHive = () => {
     router.push({
@@ -322,103 +313,96 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
           />
         }
       >
-        <FlatList
-          data={filteredHives}
-          keyExtractor={(hive) => hive.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-
-            paddingBottom: 24,
-          }}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListHeaderComponent={
-            <View>
-              <Pressable
-                onPress={() => {
-                  router.back();
-                }}
-                className="
+        <GestureDetector gesture={parentScrollGesture}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+          >
+            <Pressable
+              onPress={() => {
+                router.back();
+              }}
+              className="
                   mb-3
                   mt-3
                   self-start
                   py-2
                 "
-              >
-                <Text
-                  className="
+            >
+              <Text
+                className="
                     text-sm
                     font-semibold
                     text-primary
                   "
-                >
-                  ← Pčelinjaci
-                </Text>
-              </Pressable>
+              >
+                ← Pčelinjaci
+              </Text>
+            </Pressable>
 
-              <View className="flex-row items-start justify-between gap-4">
-                <View className="flex-1 pt-1">
-                  <Text
-                    className="
+            <View className="flex-row items-start justify-between gap-4">
+              <View className="flex-1 pt-1">
+                <Text
+                  className="
                       text-xs
                       font-bold
                       uppercase
                       tracking-widest
                       text-muted
                     "
-                  >
-                    Pčelinjak
-                  </Text>
+                >
+                  Pčelinjak
+                </Text>
 
-                  <Text
-                    numberOfLines={3}
-                    className="
+                <Text
+                  numberOfLines={3}
+                  className="
                       mt-1
                       text-3xl
                       font-bold
                       tracking-tight
                       text-foreground
                     "
-                  >
-                    {displayName}
-                  </Text>
-                </View>
-
-                <ApiaryHeaderImage imageUrl={apiary.imageUrl} />
+                >
+                  {displayName}
+                </Text>
               </View>
 
-              <View
-                className="
+              <ApiaryHeaderImage imageUrl={apiary.imageUrl} />
+            </View>
+
+            <View
+              className="
                   mt-3
                   flex-row
                   flex-wrap
                   gap-2
                 "
-              >
-                {typeLabel && (
-                  <View
-                    className="
+            >
+              {typeLabel && (
+                <View
+                  className="
                       rounded-full
                       bg-primary/10
                       px-3
                       py-1.5
                     "
-                  >
-                    <Text
-                      className="
+                >
+                  <Text
+                    className="
                         text-xs
                         font-bold
                         text-primary
                       "
-                    >
-                      {typeLabel}
-                    </Text>
-                  </View>
-                )}
+                  >
+                    {typeLabel}
+                  </Text>
+                </View>
+              )}
 
-                {apiary.identificationNumber && (
-                  <View
-                    className="
+              {apiary.identificationNumber && (
+                <View
+                  className="
                       rounded-full
                       border
                       border-border
@@ -426,137 +410,116 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
                       px-3
                       py-1.5
                     "
-                  >
-                    <Text
-                      className="
+                >
+                  <Text
+                    className="
                         text-xs
                         font-semibold
                         text-muted
                       "
-                    >
-                      {apiary.identificationNumber}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View
-                className="
-                  mb-4
-                  mt-8
-                  flex-row
-                  items-end
-                  justify-between
-                "
-              >
-                <View>
-                  <Text
-                    className="
-                      text-xl
-                      font-bold
-                      text-foreground
-                    "
                   >
-                    Košnice
-                  </Text>
-
-                  <Text
-                    className="
-                      mt-1
-                      text-sm
-                      text-muted
-                    "
-                  >
-                    {hives.length === 0
-                      ? 'Nema košnica'
-                      : filteredHives.length === hives.length && hives.length === 1
-                        ? '1 košnica'
-                        : filteredHives.length === hives.length
-                          ? `${hives.length} košnica`
-                          : `${filteredHives.length} od ${hives.length} košnica`}
+                    {apiary.identificationNumber}
                   </Text>
                 </View>
-              </View>
-
-              <HiveListFilters
-                labelSearch={labelSearch}
-                onLabelSearchChange={setLabelSearch}
-                selectedStatus={selectedStatus}
-                onStatusChange={setSelectedStatus}
-                selectedType={selectedType}
-                onTypeChange={setSelectedType}
-                selectedColor={selectedColor}
-                onColorChange={setSelectedColor}
-                availableColors={availableColors}
-                hasColorlessHives={hives.some((hive) => hive.colorHex === null)}
-              />
+              )}
             </View>
-          }
-          ListEmptyComponent={
-            <View
-              className="
-                rounded-3xl
-                border
-                border-border
-                bg-surface
-                px-6
-                py-8
-              "
-            >
-              <Text
-                className="
-                  text-center
-                  text-base
-                  font-semibold
-                  text-foreground
-                "
-              >
-                {hives.length === 0
-                  ? 'Pčelinjak još nema košnica.'
-                  : 'Nema košnica za izabrane filtere.'}
-              </Text>
 
-              <Text
-                className="
-                  mt-2
-                  text-center
-                  text-sm
-                  text-muted
-                "
-              >
-                {hives.length === 0
-                  ? 'Dodajte prvu košnicu iz menija Više.'
-                  : 'Promenite filtere da biste videli druge košnice.'}
-              </Text>
+            <View className="mt-8">
+              <Text className="text-xl font-bold text-foreground">Raspored košnica</Text>
+
+              {layoutQuery.isPending && layoutQuery.fetchStatus !== 'paused' ? (
+                <View className="mt-4 items-center rounded-3xl border border-border bg-surface px-5 py-8">
+                  <ActivityIndicator color={colors.primary} />
+                  <Text className="mt-3 text-sm text-muted">Učitavanje rasporeda košnica...</Text>
+                </View>
+              ) : !layoutQuery.data ? (
+                <View className="mt-4 rounded-3xl border border-border bg-surface px-5 py-6">
+                  <Text className="text-base font-semibold text-foreground">
+                    {layoutQuery.error instanceof ApiError &&
+                    layoutQuery.error.problem?.code === 'apiaries.layout_no_active_stay'
+                      ? 'Pčelinjak nema aktivan boravak, pa trenutni raspored nije dostupan.'
+                      : layoutQuery.fetchStatus === 'paused'
+                        ? 'Nema mrežne veze. Raspored košnica trenutno nije dostupan.'
+                        : 'Nije moguće učitati raspored košnica.'}
+                  </Text>
+                  <Pressable
+                    onPress={() => void layoutQuery.refetch()}
+                    accessibilityRole="button"
+                    className="mt-4 self-start rounded-2xl bg-primary px-5 py-3 active:opacity-80"
+                  >
+                    <Text className="font-bold text-background">Pokušaj ponovo</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <>
+                  {layoutQuery.isError && (
+                    <View className="mt-4 rounded-2xl border border-border bg-surface px-4 py-3">
+                      <Text className="text-sm text-muted">
+                        Osvežavanje rasporeda nije uspelo. Prikazan je poslednji učitani raspored.
+                      </Text>
+                      <Pressable
+                        onPress={() => void layoutQuery.refetch()}
+                        accessibilityRole="button"
+                        className="mt-2 self-start py-2"
+                      >
+                        <Text className="font-semibold text-primary">Pokušaj ponovo</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                  <View className="relative mt-4 overflow-hidden rounded-3xl">
+                    <ApiaryMap
+                      hives={layoutHives?.placed ?? []}
+                      parentScrollGesture={parentScrollGesture}
+                      onHivePress={handleHivePress}
+                      style={{
+                        height: mapHeight,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: 24,
+                        backgroundColor: colors.surfaceWarm,
+                      }}
+                    />
+                    {layoutQuery.data.hives.length === 0 && (
+                      <View
+                        pointerEvents="none"
+                        className="absolute inset-0 items-center justify-center px-8"
+                      >
+                        <Text className="text-center text-base font-semibold text-foreground">
+                          Pčelinjak još nema košnica.
+                        </Text>
+                        <Text className="mt-2 text-center text-sm text-muted">
+                          Dodajte prvu košnicu iz menija Više.
+                        </Text>
+                      </View>
+                    )}
+                    {layoutQuery.data.hives.length > 0 && layoutHives?.placed.length === 0 && (
+                      <View
+                        pointerEvents="none"
+                        className="absolute inset-0 items-center justify-center px-8"
+                      >
+                        <Text className="text-center text-sm text-muted">
+                          Košnice još nisu postavljene na raspored.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <View className="mt-3">
+                    <UnplacedHiveTray
+                      hives={layoutHives?.unplaced ?? []}
+                      onHivePress={handleHivePress}
+                    />
+                  </View>
+                </>
+              )}
             </View>
-          }
-          renderItem={({ item }) => (
-            <HiveCard
-              label={item.label}
-              identificationNumber={item.identificationNumber}
-              type={item.type}
-              colorHex={item.colorHex}
-              status={item.status}
-              onPress={() => {
-                router.push({
-                  pathname: '/hives/[hiveId]',
-
-                  params: {
-                    hiveId: item.id,
-                  },
-                });
-              }}
-            />
-          )}
-          ListFooterComponent={
             <CurrentStaySection
               currentStay={currentStayQuery.data}
               isLoading={currentStayQuery.isLoading || locationQuery.isLoading}
               hasError={currentStayQuery.isError || locationQuery.isError}
               location={locationQuery.data}
             />
-          }
-        />
+          </ScrollView>
+        </GestureDetector>
       </Screen>
 
       <ActionOverflowSheet
