@@ -213,6 +213,14 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
     });
   };
 
+  const handleLayoutEditorPress = () => {
+    setIsMoreOpen(false);
+    router.push({
+      pathname: '/apiaries/[apiaryId]/layout-editor',
+      params: { apiaryId },
+    });
+  };
+
   const handleDeactivatePress = () => {
     setIsMoreOpen(false);
 
@@ -599,6 +607,21 @@ export function ApiaryHivesScreen({ apiaryId }: ApiaryHivesScreenProps) {
         }}
         title="Pčelinjak"
         actions={[
+          ...(layoutQuery.data &&
+          !(
+            layoutQuery.error instanceof ApiError &&
+            layoutQuery.error.problem?.code === 'apiaries.layout_no_active_stay'
+          )
+            ? [
+                {
+                  key: 'layout-editor',
+                  label: 'Uredi raspored',
+                  icon: 'grid-outline' as const,
+                  accessibilityLabel: 'Uredi raspored košnica',
+                  onPress: handleLayoutEditorPress,
+                },
+              ]
+            : []),
           {
             key: 'add-hive',
 
