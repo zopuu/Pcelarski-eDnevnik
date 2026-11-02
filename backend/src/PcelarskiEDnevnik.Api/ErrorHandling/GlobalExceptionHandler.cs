@@ -15,6 +15,9 @@ internal sealed class GlobalExceptionHandler(
         CancellationToken cancellationToken) {
         var problemDetails =
             exception switch {
+                BadRequestException badRequest =>
+                    CreateBadRequestProblem(httpContext, badRequest),
+
                 NotFoundException notFound =>
                     CreateNotFoundProblem(
                         httpContext,
@@ -56,6 +59,24 @@ internal sealed class GlobalExceptionHandler(
             });
 
         return true;
+    }
+
+    private static ProblemDetails CreateBadRequestProblem(
+        HttpContext context,
+        BadRequestException exception) {
+        var problem = new ProblemDetails {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Invalid request",
+            Detail = exception.Message,
+            Instance = context.Request.Path
+        };
+
+        problem.Extensions["code"] = exception.Code;
+        if (exception.Violations is not null) {
+            problem.Extensions["violations"] = exception.Violations;
+        }
+
+        return problem;
     }
 
     private static ProblemDetails CreateConflictProblem(

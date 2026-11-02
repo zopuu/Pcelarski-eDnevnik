@@ -49,4 +49,17 @@ public sealed class ApiaryLayoutPosition {
         int x,
         int y) =>
         new(layoutId, hiveId, x, y);
+
+    public void MoveTo(int x, int y) {
+        if (x < 0) {
+            throw new ArgumentOutOfRangeException(nameof(x));
+        }
+
+        if (y < 0) {
+            throw new ArgumentOutOfRangeException(nameof(y));
+        }
+
+        X = x;
+        Y = y;
+    }
 }
