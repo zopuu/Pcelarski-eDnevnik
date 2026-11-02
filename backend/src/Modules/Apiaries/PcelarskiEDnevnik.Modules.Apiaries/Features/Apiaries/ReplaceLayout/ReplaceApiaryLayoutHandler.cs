@@ -37,10 +37,8 @@ public sealed class ReplaceApiaryLayoutHandler(
                 "The apiary layout was not found.");
         }
 
-        // Lock order: active stay, then its layout. Future membership writes must
-        // enlist all module DbContexts in one PostgreSQL transaction, lock affected
-        // stays by ID, then layouts by ID, before changing HiveStays or versions.
-        // Existing membership writers have not yet adopted that protocol.
+        // Lock order: active stay, then its layout. Selected-hive relocation
+        // follows the same order for both affected apiaries.
         // A concurrent stay closure waits here; the active predicate is rechecked.
         var stay = await dbContext.ApiaryStays
             .FromSqlInterpolated($"""

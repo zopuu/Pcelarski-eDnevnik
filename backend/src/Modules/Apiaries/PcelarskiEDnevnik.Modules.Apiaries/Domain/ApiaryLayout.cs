@@ -36,6 +36,27 @@ public sealed class ApiaryLayout {
     public static ApiaryLayout Create(Guid apiaryStayId) =>
         new(apiaryStayId);
 
+    // Membership changes invalidate layout editors even when no hive was placed.
+    public IReadOnlyCollection<ApiaryLayoutPosition> ApplyMembershipChange(
+        IReadOnlyCollection<Guid> departingHiveIds) {
+        ArgumentNullException.ThrowIfNull(departingHiveIds);
+
+        var departing = departingHiveIds.ToHashSet();
+        if (departing.Contains(Guid.Empty)) {
+            throw new ArgumentException("Hive IDs cannot be empty.", nameof(departingHiveIds));
+        }
+
+        var removed = _positions
+            .Where(position => departing.Contains(position.HiveId))
+            .ToArray();
+        _positions.RemoveAll(position => departing.Contains(position.HiveId));
+
+        Version = checked(Version + 1);
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        return removed;
+    }
+
     // The caller must validate active membership and geometry before replacing positions.
     public void ReplacePositions(
         IReadOnlyCollection<(Guid HiveId, int X, int Y)> positions) {

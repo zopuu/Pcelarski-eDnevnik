@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
+using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
@@ -22,10 +23,14 @@ internal sealed class CreateRelocationHandler {
     private readonly RelocationTransactionCoordinator
         _transactionCoordinator;
 
+    private readonly IApiaryHiveRelocationLayoutUpdater
+        _layoutUpdater;
+
     public CreateRelocationHandler(
         ApiariesDbContext apiariesDbContext,
         HivesDbContext hivesDbContext,
         RelocationsDbContext relocationsDbContext,
+        IApiaryHiveRelocationLayoutUpdater layoutUpdater,
         RelocationTransactionCoordinator
             transactionCoordinator) {
         _apiariesDbContext =
@@ -39,6 +44,8 @@ internal sealed class CreateRelocationHandler {
 
         _transactionCoordinator =
             transactionCoordinator;
+
+        _layoutUpdater = layoutUpdater;
     }
 
     public async Task<CreateRelocationResponse>
@@ -337,8 +344,9 @@ internal sealed class CreateRelocationHandler {
                 "The requested resource was not found.");
         }
 
-        var originStays =
+        var initialOriginStays =
             await _hivesDbContext.HiveStays
+                .AsNoTracking()
                 .Where(
                     x =>
                         hiveIds.Contains(
@@ -349,14 +357,14 @@ internal sealed class CreateRelocationHandler {
                 .ToListAsync(
                     cancellationToken);
 
-        if (originStays.Count !=
+        if (initialOriginStays.Count !=
             hiveIds.Length) {
             throw new ConflictException(
                 "relocations.hive_has_no_active_stay_in_source_apiary",
                 "One or more selected hives do not have an active stay in the source apiary.");
         }
         var invalidHiveStay =
-            originStays.Any(
+            initialOriginStays.Any(
                 x =>
                     request.OccurredAtUtc <=
                     x.StartedAtUtc);
@@ -366,6 +374,50 @@ internal sealed class CreateRelocationHandler {
                         "relocations.occurred_before_current_hive_stay",
                         "The relocation date must be after the current stay of every selected hive started.");
                 }
+
+        var lockedStays = await _layoutUpdater.LockCurrentLayoutsAsync(
+            request.SourceApiaryId,
+            destinationApiaryId,
+            cancellationToken);
+
+        if (lockedStays.SourceStayId != sourceApiaryStay.Id ||
+            lockedStays.DestinationStayId != destinationApiaryStay.Id) {
+            throw new ConflictException(
+                "relocations.concurrent_stay_conflict",
+                "The relocation could not be completed because an active apiary stay changed.");
+        }
+
+        if (request.OccurredAtUtc <= lockedStays.SourceStartedAtUtc) {
+            throw new ConflictException(
+                "relocations.occurred_before_source_current_stay",
+                "The relocation date must be after the current source apiary stay started.");
+        }
+
+        if (request.OccurredAtUtc < lockedStays.DestinationStartedAtUtc) {
+            throw new ConflictException(
+                "relocations.occurred_before_destination_current_stay",
+                "The relocation date cannot be before the current destination apiary stay started.");
+        }
+
+        // The initial membership read is only a precheck. A prior transfer may
+        // have committed while this request waited for the apiary stay locks.
+        var originStays = await _hivesDbContext.HiveStays
+            .Where(stay => hiveIds.Contains(stay.HiveId) &&
+                           stay.ApiaryId == request.SourceApiaryId &&
+                           stay.EndedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        if (originStays.Count != hiveIds.Length) {
+            throw new ConflictException(
+                "relocations.hive_has_no_active_stay_in_source_apiary",
+                "One or more selected hives do not have an active stay in the source apiary.");
+        }
+
+        if (originStays.Any(stay => request.OccurredAtUtc <= stay.StartedAtUtc)) {
+            throw new ConflictException(
+                "relocations.occurred_before_current_hive_stay",
+                "The relocation date must be after the current stay of every selected hive started.");
+        }
 
         var relocation =
             Relocation.Create(
@@ -423,6 +475,11 @@ internal sealed class CreateRelocationHandler {
         await _hivesDbContext
             .SaveChangesAsync(
                 cancellationToken);
+
+        await _layoutUpdater.ApplyHiveTransferAsync(
+            lockedStays,
+            hiveIds,
+            cancellationToken);
 
         await _relocationsDbContext
             .SaveChangesAsync(
