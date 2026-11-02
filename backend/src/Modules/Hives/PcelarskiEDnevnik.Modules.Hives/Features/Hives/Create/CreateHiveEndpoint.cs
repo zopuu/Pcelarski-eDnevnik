@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
 using PcelarskiEDnevnik.Modules.Hives.Domain.Hives;
 using PcelarskiEDnevnik.Modules.Hives.Infrastructure.Persistence;
@@ -20,6 +21,7 @@ public static class CreateHiveEndpoint {
                 CreateHiveRequest request,
                 ICurrentBeekeeperContext currentBeekeeper,
                 IApiaryAccessChecker apiaryAccessChecker,
+                IApiaryHiveCreationLayoutUpdater layoutUpdater,
                 HivesDbContext dbContext,
                 CancellationToken cancellationToken) => {
                     var beekeeperId =
@@ -101,45 +103,50 @@ public static class CreateHiveEndpoint {
                             request.Material,
                             request.PurchaseDate);
 
-                    var stay =
-                        HiveStay.Create(
-                            hive.Id,
-                            apiaryId,
-                            DateTimeOffset.UtcNow);
+                    var response = await layoutUpdater.ExecuteAsync(
+                        apiaryId,
+                        beekeeperId,
+                        async (connection, transaction, ct) => {
+                            dbContext.Database.SetDbConnection(
+                                connection,
+                                contextOwnsConnection: false);
+                            await dbContext.Database.UseTransactionAsync(
+                                transaction,
+                                ct);
 
-                    dbContext.Hives.Add(
-                        hive);
+                            var stay = HiveStay.Create(
+                                hive.Id,
+                                apiaryId,
+                                DateTimeOffset.UtcNow);
 
-                    dbContext.HiveStays.Add(
-                        stay);
+                            dbContext.Hives.Add(hive);
+                            dbContext.HiveStays.Add(stay);
 
-                    try {
-                        await dbContext.SaveChangesAsync(
-                            cancellationToken);
-                    }
-                    catch (DbUpdateException exception)
-                        when (
-                            HivePersistenceErrors
-                                .IsIdentificationNumberUniqueViolation(
-                                    exception)) {
-                        throw new ConflictException(
-                            "hives.identification_number_already_exists",
-                            "A hive with this identification number already exists.",
-                            exception);
-                    }
+                            try {
+                                await dbContext.SaveChangesAsync(ct);
+                            }
+                            catch (DbUpdateException exception)
+                                when (HivePersistenceErrors
+                                    .IsIdentificationNumberUniqueViolation(exception)) {
+                                throw new ConflictException(
+                                    "hives.identification_number_already_exists",
+                                    "A hive with this identification number already exists.",
+                                    exception);
+                            }
 
-                    var response =
-                        new CreateHiveResponse(
-                            hive.Id,
-                            hive.IdentificationNumber,
-                            hive.Label,
-                            hive.Type,
-                            hive.Status,
-                            hive.HasFeeder,
-                            apiaryId,
-                            stay.Id,
-                            stay.StartedAtUtc,
-                            hive.CreatedAtUtc);
+                            return new CreateHiveResponse(
+                                hive.Id,
+                                hive.IdentificationNumber,
+                                hive.Label,
+                                hive.Type,
+                                hive.Status,
+                                hive.HasFeeder,
+                                apiaryId,
+                                stay.Id,
+                                stay.StartedAtUtc,
+                                hive.CreatedAtUtc);
+                        },
+                        cancellationToken);
 
                     return Results.Created(
                         $"/api/hives/{hive.Id}",

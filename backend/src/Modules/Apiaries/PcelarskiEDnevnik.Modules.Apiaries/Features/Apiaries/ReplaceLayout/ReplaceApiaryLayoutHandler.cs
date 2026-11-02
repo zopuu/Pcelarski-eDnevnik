@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PcelarskiEDnevnik.Modules.Apiaries.Contracts;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain;
 using PcelarskiEDnevnik.Modules.Apiaries.Domain.LayoutGeometry;
+using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure;
 using PcelarskiEDnevnik.Modules.Apiaries.Infrastructure.Persistence;
 using PcelarskiEDnevnik.SharedKernel.Authentication;
 using PcelarskiEDnevnik.SharedKernel.Errors;
@@ -40,14 +41,8 @@ public sealed class ReplaceApiaryLayoutHandler(
         // Lock order: active stay, then its layout. Selected-hive relocation
         // follows the same order for both affected apiaries.
         // A concurrent stay closure waits here; the active predicate is rechecked.
-        var stay = await dbContext.ApiaryStays
-            .FromSqlInterpolated($"""
-                SELECT * FROM apiaries.apiary_stays
-                WHERE apiary_id = {apiaryId} AND ended_at_utc IS NULL
-                FOR UPDATE
-                """)
-            .AsNoTracking()
-            .SingleOrDefaultAsync(cancellationToken);
+        var stay = await ApiaryLayoutLocks.LockActiveStayAsync(
+            dbContext, apiaryId, cancellationToken);
 
         if (stay is null) {
             if (request.ExpectedApiaryStayId is Guid expectedStayId &&
@@ -82,13 +77,8 @@ public sealed class ReplaceApiaryLayoutHandler(
                 "The active apiary stay has changed.");
         }
 
-        var layout = await dbContext.ApiaryLayouts
-            .FromSqlInterpolated($"""
-                SELECT * FROM apiaries.apiary_layouts
-                WHERE apiary_stay_id = {stay.Id}
-                FOR UPDATE
-                """)
-            .SingleOrDefaultAsync(cancellationToken)
+        var layout = await ApiaryLayoutLocks.LockLayoutForStayAsync(
+            dbContext, stay.Id, cancellationToken)
             ?? throw new InvalidOperationException(
                 "An active apiary stay has no layout.");
 

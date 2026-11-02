@@ -26,14 +26,8 @@ internal sealed class ApiaryHiveRelocationLayoutUpdater(ApiariesDbContext dbCont
         var stays = new Dictionary<Guid, ApiaryStay>();
         foreach (var apiaryId in new[] { sourceApiaryId, destinationApiaryId }
                      .OrderBy(id => id)) {
-            var stay = await dbContext.ApiaryStays
-                .FromSqlInterpolated($"""
-                    SELECT * FROM apiaries.apiary_stays
-                    WHERE apiary_id = {apiaryId} AND ended_at_utc IS NULL
-                    FOR UPDATE
-                    """)
-                .AsNoTracking()
-                .SingleOrDefaultAsync(cancellationToken);
+            var stay = await ApiaryLayoutLocks.LockActiveStayAsync(
+                dbContext, apiaryId, cancellationToken);
 
             if (stay is null) {
                 throw new ConflictException(
@@ -68,13 +62,8 @@ internal sealed class ApiaryHiveRelocationLayoutUpdater(ApiariesDbContext dbCont
         var layouts = new Dictionary<Guid, ApiaryLayout>();
         foreach (var layoutId in new[] { sourceLayoutId, destinationLayoutId }
                      .OrderBy(id => id)) {
-            var layout = await dbContext.ApiaryLayouts
-                .FromSqlInterpolated($"""
-                    SELECT * FROM apiaries.apiary_layouts
-                    WHERE id = {layoutId}
-                    FOR UPDATE
-                    """)
-                .SingleOrDefaultAsync(cancellationToken)
+            var layout = await ApiaryLayoutLocks.LockLayoutByIdAsync(
+                dbContext, layoutId, cancellationToken)
                 ?? throw new ConflictException(
                     "relocations.current_layout_missing",
                     "An active apiary stay has no layout.");

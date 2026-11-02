@@ -35,6 +35,9 @@ public static class ApiariesModule {
         services.AddScoped<
             IApiaryHiveRelocationLayoutUpdater,
             ApiaryHiveRelocationLayoutUpdater>();
+        services.AddScoped<
+            IApiaryHiveCreationLayoutUpdater,
+            ApiaryHiveCreationLayoutUpdater>();
 
         services.AddHttpClient(
             OpenTopoDataClient.HttpClientName,

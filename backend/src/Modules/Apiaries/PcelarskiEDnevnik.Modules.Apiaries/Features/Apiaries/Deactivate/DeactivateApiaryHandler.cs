@@ -23,11 +23,20 @@ public sealed class DeactivateApiaryHandler(
             await BeginTransactionAsync(cancellationToken);
 
         try {
-            var apiary =
-                await dbContext.Apiaries.SingleOrDefaultAsync(
-                    x =>
-                        x.Id == command.ApiaryId &&
-                        x.OwnerBeekeeperId == beekeeperId,
+            // Serialize deactivation with whole-apiary relocation before
+            // selecting the active stay.
+            var apiary = dbContext.Database.IsRelational()
+                ? await dbContext.Apiaries
+                    .FromSqlInterpolated($"""
+                        SELECT * FROM apiaries.apiaries
+                        WHERE id = {command.ApiaryId}
+                          AND owner_beekeeper_id = {beekeeperId}
+                        FOR UPDATE
+                        """)
+                    .SingleOrDefaultAsync(cancellationToken)
+                : await dbContext.Apiaries.SingleOrDefaultAsync(
+                    x => x.Id == command.ApiaryId &&
+                         x.OwnerBeekeeperId == beekeeperId,
                     cancellationToken);
 
             if (apiary is null) {
@@ -40,11 +49,19 @@ public sealed class DeactivateApiaryHandler(
                     "The apiary is already inactive.");
             }
 
-            var activeApiaryStay =
-                await dbContext.ApiaryStays.SingleOrDefaultAsync(
-                    x =>
-                        x.ApiaryId == command.ApiaryId &&
-                        x.EndedAtUtc == null,
+            // Wait for any layout PUT and recheck the active predicate.
+            var activeApiaryStay = dbContext.Database.IsRelational()
+                ? await dbContext.ApiaryStays
+                    .FromSqlInterpolated($"""
+                        SELECT * FROM apiaries.apiary_stays
+                        WHERE apiary_id = {command.ApiaryId}
+                          AND ended_at_utc IS NULL
+                        FOR UPDATE
+                        """)
+                    .SingleOrDefaultAsync(cancellationToken)
+                : await dbContext.ApiaryStays.SingleOrDefaultAsync(
+                    x => x.ApiaryId == command.ApiaryId &&
+                         x.EndedAtUtc == null,
                     cancellationToken);
 
             var deactivatedAtUtc = DateTimeOffset.UtcNow;

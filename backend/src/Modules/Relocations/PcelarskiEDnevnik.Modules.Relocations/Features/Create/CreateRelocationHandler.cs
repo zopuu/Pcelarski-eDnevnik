@@ -96,20 +96,31 @@ internal sealed class CreateRelocationHandler {
             Guid beekeeperId,
             CreateRelocationRequest request,
             CancellationToken cancellationToken) {
-        var apiary =
-            await _apiariesDbContext.Apiaries
-                .SingleOrDefaultAsync(
-                    x =>
-                        x.Id ==
-                        request.SourceApiaryId &&
-                        x.OwnerBeekeeperId ==
-                        beekeeperId,
-                    cancellationToken);
+        // Serialize whole-apiary transitions before selecting the active stay.
+        var apiary = _apiariesDbContext.Database.IsRelational()
+            ? await _apiariesDbContext.Apiaries
+                .FromSqlInterpolated($"""
+                    SELECT * FROM apiaries.apiaries
+                    WHERE id = {request.SourceApiaryId}
+                      AND owner_beekeeper_id = {beekeeperId}
+                    FOR UPDATE
+                    """)
+                .SingleOrDefaultAsync(cancellationToken)
+            : await _apiariesDbContext.Apiaries.SingleOrDefaultAsync(
+                x => x.Id == request.SourceApiaryId &&
+                     x.OwnerBeekeeperId == beekeeperId,
+                cancellationToken);
 
         if (apiary is null) {
             throw new NotFoundException(
                 "relocations.resource_not_found",
                 "The requested resource was not found.");
+        }
+
+        if (apiary.Status == ApiaryStatus.Inactive) {
+            throw new ConflictException(
+                "relocations.apiary_inactive",
+                "An inactive apiary cannot be relocated.");
         }
 
         var destinationLocationId =
@@ -131,14 +142,18 @@ internal sealed class CreateRelocationHandler {
                 "The destination location was not found.");
         }
 
-        var originStay =
-            await _apiariesDbContext.ApiaryStays
-                .SingleOrDefaultAsync(
-                    x =>
-                        x.ApiaryId ==
-                        apiary.Id &&
-                        x.EndedAtUtc == null,
-                    cancellationToken);
+        // Layout PUT holds this row lock until its positions are committed.
+        var originStay = _apiariesDbContext.Database.IsRelational()
+            ? await _apiariesDbContext.ApiaryStays
+                .FromSqlInterpolated($"""
+                    SELECT * FROM apiaries.apiary_stays
+                    WHERE apiary_id = {apiary.Id} AND ended_at_utc IS NULL
+                    FOR UPDATE
+                    """)
+                .SingleOrDefaultAsync(cancellationToken)
+            : await _apiariesDbContext.ApiaryStays.SingleOrDefaultAsync(
+                x => x.ApiaryId == apiary.Id && x.EndedAtUtc == null,
+                cancellationToken);
 
         if (originStay is null) {
             throw new ConflictException(
