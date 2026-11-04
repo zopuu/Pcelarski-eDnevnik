@@ -7,6 +7,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import { colors } from '@/shared/theme/colors';
 
 import type { ApiaryLayoutHive } from '../../types/apiary-layout';
 import { partitionApiaryLayoutHives } from '../apiary-layout-selectors';
@@ -38,6 +39,7 @@ export type ApiaryMapProps = {
   dragHandlers?: HiveDragHandlers;
   activeDragHiveId?: SharedValue<string | null>;
   onMarkerReady?: (hiveId: string, x: number, y: number) => void;
+  highlightedHiveIds?: ReadonlySet<string>;
 };
 
 export const ApiaryMap = memo(function ApiaryMap({
@@ -55,6 +57,7 @@ export const ApiaryMap = memo(function ApiaryMap({
   dragHandlers,
   activeDragHiveId,
   onMarkerReady,
+  highlightedHiveIds,
 }: ApiaryMapProps) {
   const { positionedHives, contentBounds } = useMemo(() => {
     const { placed } = partitionApiaryLayoutHives(hives);
@@ -98,6 +101,7 @@ export const ApiaryMap = memo(function ApiaryMap({
           interactionLocked={interactionLocked}
           activeDragHiveId={activeDragHiveId}
           onMarkerReady={onMarkerReady}
+          highlighted={highlightedHiveIds?.has(hive.id) ?? false}
         />
       ))}
     </MapViewport>
@@ -114,6 +118,7 @@ function PositionedMarker({
   interactionLocked,
   activeDragHiveId,
   onMarkerReady,
+  highlighted,
 }: {
   hive: ApiaryLayoutHive & { x: number; y: number };
   footprint: HiveFootprint;
@@ -124,6 +129,7 @@ function PositionedMarker({
   interactionLocked?: SharedValue<boolean>;
   activeDragHiveId?: SharedValue<string | null>;
   onMarkerReady?: (hiveId: string, x: number, y: number) => void;
+  highlighted: boolean;
 }) {
   const artworkDisplayed = useRef(false);
   const laidOutAt = useRef<{ x: number; y: number } | null>(null);
@@ -171,6 +177,7 @@ function PositionedMarker({
             : undefined
         }
       />
+      {highlighted && <View pointerEvents="none" style={styles.validationOutline} />}
     </Animated.View>
   );
 }
@@ -178,5 +185,11 @@ function PositionedMarker({
 const styles = StyleSheet.create({
   positioned: {
     position: 'absolute',
+  },
+  validationOutline: {
+    ...StyleSheet.absoluteFill,
+    borderWidth: 2,
+    borderRadius: 8,
+    borderColor: colors.error,
   },
 });

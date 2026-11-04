@@ -39,7 +39,7 @@ function validCoordinate(value: number): boolean {
 
 /** A single editing session keeps its first server snapshot even when the query refetches. */
 export function useApiaryLayoutEditor(layout: ApiaryLayoutResponse) {
-  const [snapshot] = useState<EditorSnapshot>(() => ({
+  const [snapshot, setSnapshot] = useState<EditorSnapshot>(() => ({
     apiaryStayId: layout.apiaryStayId,
     version: layout.version,
     hives: layout.hives.map((hive) => ({ ...hive })),
@@ -86,6 +86,17 @@ export function useApiaryLayoutEditor(layout: ApiaryLayoutResponse) {
     setWorkingPositions(snapshot.originalPositions.map((position) => ({ ...position })));
   }, [snapshot]);
 
+  const reloadLayout = useCallback((latest: ApiaryLayoutResponse) => {
+    const nextSnapshot: EditorSnapshot = {
+      apiaryStayId: latest.apiaryStayId,
+      version: latest.version,
+      hives: latest.hives.map((hive) => ({ ...hive })),
+      originalPositions: positionsFromHives(latest.hives),
+    };
+    setSnapshot(nextSnapshot);
+    setWorkingPositions(nextSnapshot.originalPositions.map((position) => ({ ...position })));
+  }, []);
+
   const { placedHives, unplacedHives } = useMemo(() => {
     const positionsById = new Map(workingPositions.map((position) => [position.hiveId, position]));
     const placed: PlacedApiaryLayoutHive[] = [];
@@ -116,5 +127,6 @@ export function useApiaryLayoutEditor(layout: ApiaryLayoutResponse) {
     moveHive,
     removeHive,
     resetPositions,
+    reloadLayout,
   };
 }

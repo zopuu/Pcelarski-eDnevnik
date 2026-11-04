@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/immutability */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import { colors } from '@/shared/theme/colors';
 import {
   measure,
@@ -73,6 +74,7 @@ export function useHiveLayoutDrag(
   placedHives: readonly HivePlacement[],
   operations: EditorOperations,
   camera: MapCameraValues,
+  editingBlocked?: SharedValue<boolean>,
 ) {
   const rootRef = useAnimatedRef<View>();
   const mapRef = useAnimatedRef<View>();
@@ -245,7 +247,7 @@ export function useHiveLayoutDrag(
 
     const start: HiveDragHandlers['start'] = (hive, source, absoluteX, absoluteY) => {
       'worklet';
-      if (locked.value) return;
+      if (locked.value || editingBlocked?.value) return;
       const root = measure(rootRef);
       const map = measure(mapRef);
       if (!root || !map) return;
@@ -341,6 +343,7 @@ export function useHiveLayoutDrag(
     camera,
     commit,
     draggingHive,
+    editingBlocked,
     dragGeneration,
     grabX,
     grabY,
