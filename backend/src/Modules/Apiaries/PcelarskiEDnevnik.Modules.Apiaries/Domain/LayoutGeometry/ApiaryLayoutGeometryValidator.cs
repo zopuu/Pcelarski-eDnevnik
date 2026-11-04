@@ -1,7 +1,7 @@
 namespace PcelarskiEDnevnik.Modules.Apiaries.Domain.LayoutGeometry;
 
 public static class ApiaryLayoutGeometryValidator {
-    public const int MinimumGap = 16;
+    public const int MinimumGap = 8;
 
     public const int MaxReportedCollisions = 100;
 

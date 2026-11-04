@@ -5,7 +5,7 @@ export const MAX_LAYOUT_COORDINATE = 2_147_483_647;
 
 export type HivePlacement = Pick<ApiaryLayoutHive, 'id' | 'hiveType'> & { x: number; y: number };
 
-/** Mirrors the backend's strict rectangle comparisons: a gap of exactly 16 is valid. */
+/** Mirrors the backend's strict rectangle comparisons: a gap of exactly 10 is valid. */
 export function canPlaceHive(
   hive: Pick<ApiaryLayoutHive, 'id' | 'hiveType'>,
   x: number,

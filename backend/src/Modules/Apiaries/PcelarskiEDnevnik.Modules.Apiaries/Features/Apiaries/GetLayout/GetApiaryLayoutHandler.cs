@@ -53,7 +53,7 @@ public sealed class GetApiaryLayoutHandler(
                 "The apiary has no active stay.");
         }
 
-        var layout = await dbContext.ApiaryLayouts
+         var layout = await dbContext.ApiaryLayouts
             .AsNoTracking()
             .Where(candidate => candidate.ApiaryStayId == stayId.Value)
             .Select(candidate => new {

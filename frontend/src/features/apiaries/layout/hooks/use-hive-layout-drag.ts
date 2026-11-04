@@ -20,7 +20,7 @@ import { viewportToLogical, windowToViewport } from '../geometry/coordinates';
 import { resolveHiveFootprint } from '../geometry/hive-footprints';
 import { canPlaceHive, type HivePlacement } from '../geometry/placement';
 import { clampCameraPosition, getCameraLimits } from '../geometry/camera-bounds';
-import { resolveMagneticPlacement, type Alignment } from '../geometry/magnetic-alignment';
+import { resolveMagneticPlacement, type MagneticAlignments } from '../geometry/magnetic-alignment';
 import type { MapCameraValues } from '../components/map-viewport';
 
 export type DragOrigin = 'map' | 'tray';
@@ -32,7 +32,7 @@ export type HiveDragHandlers = {
   finalize: () => void;
 };
 
-type DragSession = { hive: ApiaryLayoutHive; origin: DragOrigin };
+type DragSession = { hive: ApiaryLayoutHive; origin: DragOrigin; generation: number };
 type PendingDrop = { id: string; target: 'map' | 'tray'; x: number; y: number };
 type EditorOperations = {
   placeHive: (id: string, x: number, y: number) => void;
@@ -55,6 +55,7 @@ function contains(
 }
 
 const AUTO_PAN = { edgeDp: 40, maxSpeedDpPerSecond: 400 } as const;
+const TRAY_DRAG_FINGER_GAP_DP = 16;
 
 function edgeVelocity(distance: number, extent: number): number {
   'worklet';
@@ -81,7 +82,7 @@ export function useHiveLayoutDrag(
   const [magneticEnabled, setMagneticEnabledState] = useState(true);
   const placed = useSharedValue<readonly HivePlacement[]>(placedHives);
   const magnetic = useSharedValue(true);
-  const alignment = useSharedValue<Alignment | null>(null);
+  const alignment = useSharedValue<MagneticAlignments | null>(null);
   const pointerX = useSharedValue(0);
   const pointerY = useSharedValue(0);
   const autoPanActive = useSharedValue(false);
@@ -99,6 +100,8 @@ export function useHiveLayoutDrag(
   const previewScale = useSharedValue(1);
   const previewValid = useSharedValue(false);
   const previewVisible = useSharedValue(false);
+  // Keep the source visible until both images in the floating marker have rendered.
+  const previewReady = useSharedValue(false);
   const previewOpacity = useSharedValue(1);
   const previewSettled = useSharedValue(false);
   const settledX = useSharedValue(0);
@@ -107,6 +110,7 @@ export function useHiveLayoutDrag(
   const mapOffsetY = useSharedValue(0);
   const pendingDrop = useSharedValue<PendingDrop | null>(null);
   const markerReady = useSharedValue(false);
+  const dragGeneration = useSharedValue(0);
 
   useEffect(() => {
     placed.value = placedHives;
@@ -130,6 +134,7 @@ export function useHiveLayoutDrag(
         locked.value = false;
         draggingHive.value = null;
         previewVisible.value = false;
+        previewReady.value = false;
         previewSettled.value = false;
         runOnJS(setSession)(null);
         return;
@@ -139,6 +144,7 @@ export function useHiveLayoutDrag(
         locked.value = false;
         draggingHive.value = null;
         previewVisible.value = false;
+        previewReady.value = false;
         previewSettled.value = false;
         runOnJS(setSession)(null);
       });
@@ -172,6 +178,23 @@ export function useHiveLayoutDrag(
     [markerReady, pendingDrop],
   );
 
+  const markPreviewReady = useCallback(
+    (id: string, generation: number) => {
+      runOnUI((readyId: string, readyGeneration: number) => {
+        'worklet';
+        if (
+          !previewVisible.value ||
+          draggingHive.value?.id !== readyId ||
+          dragGeneration.value !== readyGeneration
+        )
+          return;
+        previewReady.value = true;
+        activeHiveId.value = readyId;
+      })(id, generation);
+    },
+    [activeHiveId, dragGeneration, draggingHive, previewReady, previewVisible],
+  );
+
   const handlers = useMemo<HiveDragHandlers>(() => {
     const update: HiveDragHandlers['update'] = (absoluteX, absoluteY) => {
       'worklet';
@@ -186,9 +209,10 @@ export function useHiveLayoutDrag(
       const onMap = contains(absoluteX, absoluteY, map);
       const onTray = tray !== null && contains(absoluteX, absoluteY, tray);
       const scale = onMap ? camera.zoom.value : 1;
+      const fingerGap = origin.value === 'tray' ? TRAY_DRAG_FINGER_GAP_DP : 0;
       previewScale.value = scale;
       previewX.value = absoluteX - root.pageX - grabX.value * scale;
-      previewY.value = absoluteY - root.pageY - grabY.value * scale;
+      previewY.value = absoluteY - root.pageY - grabY.value * scale - fingerGap;
       if (onMap) {
         const logicalPointer = viewportToLogical(
           windowToViewport({ x: absoluteX, y: absoluteY }, { x: map.pageX, y: map.pageY }),
@@ -197,7 +221,9 @@ export function useHiveLayoutDrag(
         const resolved = resolveMagneticPlacement(
           hive,
           logicalPointer.x - grabX.value,
-          logicalPointer.y - grabY.value,
+          logicalPointer.y - grabY.value - fingerGap / scale,
+          logicalPointer.x,
+          logicalPointer.y,
           placed.value,
           camera.zoom.value,
           magnetic.value,
@@ -208,11 +234,8 @@ export function useHiveLayoutDrag(
         proposedY.value = resolved.y;
         proposedValid.value = resolved.valid;
         previewValid.value = resolved.valid;
-        if (resolved.alignment?.axis === 'x') {
-          previewX.value = map.pageX - root.pageX + (resolved.x - camera.x.value) * scale;
-        } else if (resolved.alignment?.axis === 'y') {
-          previewY.value = map.pageY - root.pageY + (resolved.y - camera.y.value) * scale;
-        }
+        previewX.value = map.pageX - root.pageX + (resolved.x - camera.x.value) * scale;
+        previewY.value = map.pageY - root.pageY + (resolved.y - camera.y.value) * scale;
       } else {
         alignment.value = null;
         proposedValid.value = false;
@@ -235,25 +258,30 @@ export function useHiveLayoutDrag(
       grabX.value =
         source === 'map' && hive.x !== null ? logicalPointer.x - hive.x : footprint.width / 2;
       grabY.value =
-        source === 'map' && hive.y !== null ? logicalPointer.y - hive.y : footprint.height / 2;
+        source === 'map' && hive.y !== null ? logicalPointer.y - hive.y : footprint.height;
       draggingHive.value = hive;
-      activeHiveId.value = hive.id;
+      dragGeneration.value += 1;
       origin.value = source;
       locked.value = true;
       alignment.value = null;
       autoPanActive.value = true;
       runOnJS(setFrameRunning)(true);
       previewVisible.value = true;
+      previewReady.value = false;
       previewOpacity.value = 1;
       previewSettled.value = false;
       markerReady.value = false;
       const scale = source === 'map' ? camera.zoom.value : 1;
       previewScale.value = scale;
       previewX.value = absoluteX - root.pageX - grabX.value * scale;
-      previewY.value = absoluteY - root.pageY - grabY.value * scale;
+      previewY.value =
+        absoluteY -
+        root.pageY -
+        grabY.value * scale -
+        (source === 'tray' ? TRAY_DRAG_FINGER_GAP_DP : 0);
       previewValid.value = source === 'map';
       update(absoluteX, absoluteY);
-      runOnJS(setSession)({ hive, origin: source });
+      runOnJS(setSession)({ hive, origin: source, generation: dragGeneration.value });
     };
 
     const end: HiveDragHandlers['end'] = (absoluteX, absoluteY, success) => {
@@ -300,6 +328,7 @@ export function useHiveLayoutDrag(
       draggingHive.value = null;
       activeHiveId.value = null;
       previewVisible.value = false;
+      previewReady.value = false;
       previewSettled.value = false;
       runOnJS(setSession)(null);
     };
@@ -312,6 +341,7 @@ export function useHiveLayoutDrag(
     camera,
     commit,
     draggingHive,
+    dragGeneration,
     grabX,
     grabY,
     locked,
@@ -330,6 +360,7 @@ export function useHiveLayoutDrag(
     proposedY,
     previewScale,
     previewOpacity,
+    previewReady,
     previewSettled,
     previewValid,
     previewVisible,
@@ -369,7 +400,7 @@ export function useHiveLayoutDrag(
     const seconds = Math.min(frame.timeSincePreviousFrame ?? 0, 50) / 1000;
     if (seconds <= 0) return;
     const zoom = camera.zoom.value;
-    const limits = getCameraLimits(zoom, { width: map.width, height: map.height });
+    const limits = getCameraLimits(zoom, { width: map.width, height: map.height }, undefined, true);
     const next = clampCameraPosition(
       {
         x: camera.x.value + (velocityX * seconds) / zoom,
@@ -400,7 +431,10 @@ export function useHiveLayoutDrag(
   );
 
   const previewStyle = useAnimatedStyle(() => ({
-    opacity: previewVisible.value ? previewOpacity.value * (previewSettled.value ? 1 : 0.92) : 0,
+    opacity:
+      previewVisible.value && previewReady.value
+        ? previewOpacity.value * (previewSettled.value ? 1 : 0.92)
+        : 0,
     left: previewSettled.value
       ? mapOffsetX.value + (settledX.value - camera.x.value) * camera.zoom.value
       : previewX.value,
@@ -410,8 +444,6 @@ export function useHiveLayoutDrag(
     transform: [{ scale: previewSettled.value ? camera.zoom.value : previewScale.value }],
     borderWidth: previewSettled.value ? 0 : 2,
     borderColor: previewValid.value || previewSettled.value ? 'transparent' : colors.error,
-    backgroundColor: previewSettled.value ? 'transparent' : colors.surface,
-    elevation: previewSettled.value ? 0 : 8,
   }));
 
   return {
@@ -427,5 +459,6 @@ export function useHiveLayoutDrag(
     alignment,
     previewStyle,
     markMarkerReady,
+    markPreviewReady,
   };
 }

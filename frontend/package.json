@@ -66,6 +66,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "lint:fix": "expo lint --fix",
+    "test:layout": "node --test tests/magnetic-alignment.test.cjs",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "typecheck": "tsc --noEmit"

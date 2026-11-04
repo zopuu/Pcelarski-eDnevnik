@@ -1,7 +1,7 @@
 import { memo, useMemo, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import type { SharedValue } from 'react-native-reanimated';
+import { runOnJS, useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
 import { colors } from '@/shared/theme/colors';
@@ -38,35 +38,102 @@ export const HiveMapMarker = memo(function HiveMapMarker({
   onArtworkDisplay,
 }: HiveMapMarkerProps) {
   const viewportGestures = useMapViewportGestures();
+  const viewportPan = viewportGestures?.pan;
+  const viewportPinch = viewportGestures?.pinch;
+  const viewportTwoFingerPan = viewportGestures?.twoFingerPan;
+  const viewportIsPanning = viewportGestures?.isPanning;
+  const multiTouchActive = viewportGestures?.multiTouchActive;
+  const touchSequence = viewportGestures?.touchSequence;
+  const tapStartSequence = useSharedValue(0);
+  const tapSawMultiTouch = useSharedValue(false);
+  const dragStartSequence = useSharedValue(0);
+  const dragStarted = useSharedValue(false);
   const gesture = useMemo(() => {
     if (!onPress && !onLongPress && !onPressHive && !onLongPressHive && !dragHandlers) return null;
 
     const tap = Gesture.Tap()
       .maxDistance(4)
       .maxDuration(250)
-      .runOnJS(true)
+      .onBegin(() => {
+        tapStartSequence.value = touchSequence?.value ?? 0;
+        if (multiTouchActive?.value) tapSawMultiTouch.value = true;
+      })
+      .onTouchesDown((event) => {
+        if (event.numberOfTouches > 1) tapSawMultiTouch.value = true;
+      })
       .onEnd((_event, success) => {
-        if (success && !interactionLocked?.value) {
-          onPress?.();
-          onPressHive?.(hive.id);
-        }
+        if (
+          !success ||
+          interactionLocked?.value ||
+          tapSawMultiTouch.value ||
+          multiTouchActive?.value ||
+          tapStartSequence.value !== (touchSequence?.value ?? 0)
+        )
+          return;
+        if (onPress) runOnJS(onPress)();
+        if (onPressHive) runOnJS(onPressHive)(hive.id);
+      })
+      .onFinalize(() => {
+        tapSawMultiTouch.value = false;
       });
 
-    if (viewportGestures) {
-      tap.requireExternalGestureToFail(viewportGestures.pan, viewportGestures.pinch);
+    if (viewportPan && viewportPinch && viewportTwoFingerPan) {
+      tap.requireExternalGestureToFail(viewportPan, viewportPinch, viewportTwoFingerPan);
     }
     if (dragHandlers) {
+      // Movement must fail the pending drag before it can activate; the hold timer starts it.
       const drag = Gesture.Pan()
-        .activateAfterLongPress(500)
-        .minDistance(0)
+        .activateAfterLongPress(650)
+        .minDistance(16)
+        .failOffsetX([-4, 4])
+        .failOffsetY([-4, 4])
         .maxPointers(1)
         .averageTouches(true)
-        .onStart((event) => dragHandlers.start(hive, 'map', event.absoluteX, event.absoluteY))
-        .onUpdate((event) => dragHandlers.update(event.absoluteX, event.absoluteY))
-        .onEnd((event, success) => dragHandlers.end(event.absoluteX, event.absoluteY, success))
-        .onFinalize(() => dragHandlers.finalize());
-      if (viewportGestures) {
-        drag.simultaneousWithExternalGesture(viewportGestures.pan, viewportGestures.pinch);
+        .onBegin(() => {
+          dragStartSequence.value = touchSequence?.value ?? 0;
+          dragStarted.value = false;
+        })
+        .onTouchesDown((event) => {
+          if (event.numberOfTouches > 1 && dragStarted.value) {
+            dragHandlers.finalize();
+            dragStarted.value = false;
+          }
+        })
+        .onStart((event) => {
+          if (
+            viewportIsPanning?.value ||
+            multiTouchActive?.value ||
+            dragStartSequence.value !== (touchSequence?.value ?? 0)
+          )
+            return;
+          dragStarted.value = true;
+          dragHandlers.start(hive, 'map', event.absoluteX, event.absoluteY);
+        })
+        .onUpdate((event) => {
+          if (!dragStarted.value) return;
+          if (multiTouchActive?.value || dragStartSequence.value !== (touchSequence?.value ?? 0)) {
+            dragHandlers.finalize();
+            dragStarted.value = false;
+            return;
+          }
+          dragHandlers.update(event.absoluteX, event.absoluteY);
+        })
+        .onEnd((event, success) => {
+          if (!dragStarted.value) return;
+          dragHandlers.end(
+            event.absoluteX,
+            event.absoluteY,
+            success &&
+              !multiTouchActive?.value &&
+              dragStartSequence.value === (touchSequence?.value ?? 0),
+          );
+        })
+        .onFinalize(() => {
+          if (dragStarted.value) dragHandlers.finalize();
+          dragStarted.value = false;
+        });
+      if (viewportPan && viewportPinch && viewportTwoFingerPan) {
+        drag.simultaneousWithExternalGesture(viewportPan, viewportPinch, viewportTwoFingerPan);
       }
       return Gesture.Simultaneous(drag, tap);
     }
@@ -89,10 +156,19 @@ export const HiveMapMarker = memo(function HiveMapMarker({
     onLongPress,
     onPressHive,
     onLongPressHive,
-    viewportGestures,
+    viewportPan,
+    viewportPinch,
+    viewportTwoFingerPan,
+    viewportIsPanning,
+    multiTouchActive,
+    touchSequence,
     dragHandlers,
     interactionLocked,
     hive,
+    tapStartSequence,
+    tapSawMultiTouch,
+    dragStartSequence,
+    dragStarted,
   ]);
 
   const illustrationSize = Math.min(footprint.width - 4, footprint.height - 4);
@@ -114,7 +190,7 @@ export const HiveMapMarker = memo(function HiveMapMarker({
           : undefined
       }
       onAccessibilityAction={(event) => {
-        if (interactionLocked?.value) return;
+        if (interactionLocked?.value || multiTouchActive?.value) return;
         if (event.nativeEvent.actionName === 'activate') {
           onPress?.();
           onPressHive?.(hive.id);

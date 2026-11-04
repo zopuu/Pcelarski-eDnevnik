@@ -15,10 +15,11 @@ export function getCameraLimits(
   zoom: number,
   viewport: { width: number; height: number },
   contentBounds?: MapContentBounds,
+  extendPositiveCanvas = false,
 ): CameraLimits {
   'worklet';
-  const minX = -MAP_CAMERA_LIMITS.originMargin / zoom;
-  const minY = -MAP_CAMERA_LIMITS.originMargin / zoom;
+  const minX = -(extendPositiveCanvas ? viewport.width : MAP_CAMERA_LIMITS.originMargin) / zoom;
+  const minY = -(extendPositiveCanvas ? viewport.height : MAP_CAMERA_LIMITS.originMargin) / zoom;
 
   if (!contentBounds) {
     return { minX, minY, maxX: Infinity, maxY: Infinity };

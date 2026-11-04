@@ -6,7 +6,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import type { GestureType } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 import type { ApiaryLayoutHive } from '../../types/apiary-layout';
@@ -14,7 +13,7 @@ import { partitionApiaryLayoutHives } from '../apiary-layout-selectors';
 import type { MapContentBounds } from '../geometry/coordinates';
 import { resolveHiveFootprint, type HiveFootprint } from '../geometry/hive-footprints';
 import { HiveMapMarker } from './hive-map-marker';
-import { MapViewport, type MapCameraValues } from './map-viewport';
+import { MapViewport, type MapCameraValues, type ParentScrollGesture } from './map-viewport';
 import type { HiveDragHandlers } from '../hooks/use-hive-layout-drag';
 
 type PositionedHive = {
@@ -28,7 +27,7 @@ export type ApiaryMapProps = {
   style?: StyleProp<ViewStyle>;
   overlay?: ReactNode;
   extendPositiveCanvas?: boolean;
-  parentScrollGesture?: GestureType;
+  parentScrollGesture?: ParentScrollGesture;
   onHivePress?: (hiveId: string) => void;
   onHiveLongPress?: (hiveId: string) => void;
   /** Custom content stays within the existing hive artwork's front face. */
@@ -84,6 +83,7 @@ export const ApiaryMap = memo(function ApiaryMap({
       style={style}
       cameraValues={cameraValues}
       interactionLocked={interactionLocked}
+      onMultiTouchStart={dragHandlers?.finalize}
       viewportRef={viewportRef}
     >
       {positionedHives.map(({ hive, footprint }) => (

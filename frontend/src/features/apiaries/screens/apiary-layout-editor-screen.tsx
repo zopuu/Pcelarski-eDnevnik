@@ -9,13 +9,12 @@ import {
   Alert,
   Platform,
   Pressable,
-  ScrollView,
   Text,
   useWindowDimensions,
   View,
   StyleSheet,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -131,7 +130,7 @@ function LoadedEditor({
   const navigation = useNavigation();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const parentScrollGesture = useMemo(() => Gesture.Native(), []);
+  const parentScrollRef = useRef<ScrollView>(null);
   const [allowLeave, setAllowLeave] = useState(false);
   const pendingNavigation = useRef<(() => void) | null>(null);
   const staleLayout =
@@ -182,124 +181,125 @@ function LoadedEditor({
     return () => window.removeEventListener('beforeunload', preventUnload);
   }, [editor.isDirty]);
 
+  const dragSession = drag.session;
+
   return (
     <Animated.View ref={drag.rootRef} collapsable={false} className="flex-1">
-      <GestureDetector gesture={parentScrollGesture}>
-        <ScrollView
-          scrollEnabled={!drag.session}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
+      <ScrollView
+        ref={parentScrollRef}
+        scrollEnabled={!drag.session}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
+      >
+        <Text className="text-2xl font-bold text-foreground">Uredi raspored</Text>
+        <Text className="mt-1 text-sm text-muted">
+          Postavljeno: {editor.placedHives.length} · Nepostavljeno: {editor.unplacedHives.length} ·
+          Ukupno: {editor.totalHiveCount}
+        </Text>
+        <Pressable
+          accessibilityRole="switch"
+          accessibilityLabel="Magnetno poravnanje"
+          accessibilityState={{ checked: drag.magneticEnabled }}
+          onPress={() => drag.setMagneticEnabled(!drag.magneticEnabled)}
+          className="mt-2 min-h-11 flex-row items-center self-start rounded-xl border border-border bg-surface px-3 active:opacity-80"
         >
-          <Text className="text-2xl font-bold text-foreground">Uredi raspored</Text>
-          <Text className="mt-1 text-sm text-muted">
-            Postavljeno: {editor.placedHives.length} · Nepostavljeno: {editor.unplacedHives.length}{' '}
-            · Ukupno: {editor.totalHiveCount}
+          <Ionicons
+            name="magnet-outline"
+            size={18}
+            color={drag.magneticEnabled ? colors.primary : colors.muted}
+          />
+          <Text className="ml-2 text-sm font-semibold text-foreground">
+            Magnetno poravnanje: {drag.magneticEnabled ? 'uključeno' : 'isključeno'}
           </Text>
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityLabel="Magnetno poravnanje"
-            accessibilityState={{ checked: drag.magneticEnabled }}
-            onPress={() => drag.setMagneticEnabled(!drag.magneticEnabled)}
-            className="mt-2 min-h-11 flex-row items-center self-start rounded-xl border border-border bg-surface px-3 active:opacity-80"
-          >
-            <Ionicons
-              name="magnet-outline"
-              size={18}
-              color={drag.magneticEnabled ? colors.primary : colors.muted}
-            />
-            <Text className="ml-2 text-sm font-semibold text-foreground">
-              Magnetno poravnanje: {drag.magneticEnabled ? 'uključeno' : 'isključeno'}
+        </Pressable>
+
+        {staleLayout && (
+          <View className="mt-3 rounded-2xl border border-warning bg-surface px-4 py-3">
+            <Text className="text-sm text-foreground">
+              Raspored je promenjen tokom uređivanja. Vaše izmene su zadržane u ovom prikazu.
             </Text>
-          </Pressable>
-
-          {staleLayout && (
-            <View className="mt-3 rounded-2xl border border-warning bg-surface px-4 py-3">
-              <Text className="text-sm text-foreground">
-                Raspored je promenjen tokom uređivanja. Vaše izmene su zadržane u ovom prikazu.
-              </Text>
-            </View>
-          )}
-          {noActiveStay && (
-            <View className="mt-3 rounded-2xl border border-warning bg-surface px-4 py-3">
-              <Text className="text-sm text-foreground">
-                Pčelinjak više nema aktivan boravak. Prikazan je raspored sa početka uređivanja.
-              </Text>
-            </View>
-          )}
-          {refreshError && !noActiveStay && (
-            <View className="mt-3 rounded-2xl border border-border bg-surface px-4 py-3">
-              <Text className="text-sm text-muted">Osvežavanje rasporeda nije uspelo.</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={onRetry}
-                className="mt-1 self-start py-2"
-              >
-                <Text className="font-semibold text-primary">Pokušaj ponovo</Text>
-              </Pressable>
-            </View>
-          )}
-
-          <View
-            className="mt-4 overflow-hidden rounded-3xl"
-            style={{
-              borderWidth: 1,
-              borderColor: colors.border,
-              backgroundColor: colors.surfaceWarm,
-            }}
-          >
-            <ApiaryMap
-              hives={editor.placedHives}
-              overlay={<AlignmentGuides alignment={drag.alignment} camera={camera} />}
-              extendPositiveCanvas
-              parentScrollGesture={parentScrollGesture}
-              cameraValues={camera}
-              interactionLocked={drag.locked}
-              viewportRef={drag.mapRef}
-              dragHandlers={drag.handlers}
-              activeDragHiveId={drag.activeHiveId}
-              onMarkerReady={drag.markMarkerReady}
-              onHivePress={selectHive}
-              style={mapStyle}
-            />
-            {editor.totalHiveCount === 0 && (
-              <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
-                <Text className="text-center text-sm text-muted">Pčelinjak još nema košnica.</Text>
-              </View>
-            )}
-            {editor.totalHiveCount > 0 && editor.placedHives.length === 0 && (
-              <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
-                <Text className="text-center text-sm text-muted">
-                  Košnice još nisu postavljene na raspored.
-                </Text>
-              </View>
-            )}
           </View>
-          {selectedHive && (
+        )}
+        {noActiveStay && (
+          <View className="mt-3 rounded-2xl border border-warning bg-surface px-4 py-3">
+            <Text className="text-sm text-foreground">
+              Pčelinjak više nema aktivan boravak. Prikazan je raspored sa početka uređivanja.
+            </Text>
+          </View>
+        )}
+        {refreshError && !noActiveStay && (
+          <View className="mt-3 rounded-2xl border border-border bg-surface px-4 py-3">
+            <Text className="text-sm text-muted">Osvežavanje rasporeda nije uspelo.</Text>
             <Pressable
               accessibilityRole="button"
-              disabled={Boolean(drag.session)}
-              onPress={() => {
-                editor.removeHive(selectedHive.id);
-                setSelectedHiveId(null);
-              }}
-              className="mt-2 min-h-12 self-start justify-center rounded-xl border border-border bg-surface px-4 active:opacity-80"
+              onPress={onRetry}
+              className="mt-1 self-start py-2"
             >
-              <Text className="font-semibold text-foreground">
-                Ukloni sa rasporeda · {selectedHive.label}
-              </Text>
+              <Text className="font-semibold text-primary">Pokušaj ponovo</Text>
             </Pressable>
-          )}
-          <View className="mt-3">
-            <UnplacedHiveTray
-              hives={editor.unplacedHives}
-              showWhenEmpty
-              dragHandlers={drag.handlers}
-              activeDragHiveId={drag.activeHiveId}
-              trayRef={drag.trayRef}
-            />
           </View>
-        </ScrollView>
-      </GestureDetector>
+        )}
+
+        <View
+          className="mt-4 overflow-hidden rounded-3xl"
+          style={{
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surfaceWarm,
+          }}
+        >
+          <ApiaryMap
+            hives={editor.placedHives}
+            overlay={<AlignmentGuides alignment={drag.alignment} camera={camera} />}
+            extendPositiveCanvas
+            parentScrollGesture={parentScrollRef}
+            cameraValues={camera}
+            interactionLocked={drag.locked}
+            viewportRef={drag.mapRef}
+            dragHandlers={drag.handlers}
+            activeDragHiveId={drag.activeHiveId}
+            onMarkerReady={drag.markMarkerReady}
+            onHivePress={selectHive}
+            style={mapStyle}
+          />
+          {editor.totalHiveCount === 0 && (
+            <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
+              <Text className="text-center text-sm text-muted">Pčelinjak još nema košnica.</Text>
+            </View>
+          )}
+          {editor.totalHiveCount > 0 && editor.placedHives.length === 0 && (
+            <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
+              <Text className="text-center text-sm text-muted">
+                Košnice još nisu postavljene na raspored.
+              </Text>
+            </View>
+          )}
+        </View>
+        {selectedHive && (
+          <Pressable
+            accessibilityRole="button"
+            disabled={Boolean(drag.session)}
+            onPress={() => {
+              editor.removeHive(selectedHive.id);
+              setSelectedHiveId(null);
+            }}
+            className="mt-2 min-h-12 self-start justify-center rounded-xl border border-border bg-surface px-4 active:opacity-80"
+          >
+            <Text className="font-semibold text-foreground">
+              Ukloni sa rasporeda · {selectedHive.label}
+            </Text>
+          </Pressable>
+        )}
+        <View className="mt-3">
+          <UnplacedHiveTray
+            hives={editor.unplacedHives}
+            showWhenEmpty
+            dragHandlers={drag.handlers}
+            activeDragHiveId={drag.activeHiveId}
+            trayRef={drag.trayRef}
+          />
+        </View>
+      </ScrollView>
 
       <View
         className="flex-row gap-3 border-t border-border bg-background px-4 pt-3"
@@ -321,21 +321,24 @@ function LoadedEditor({
           <Text className="font-bold text-background">Sačuvaj</Text>
         </Pressable>
       </View>
-      {drag.session && (
+      {dragSession && (
         <View pointerEvents="none" style={styles.dragOverlay}>
           <Animated.View
             style={[
               styles.dragPreview,
               {
-                width: resolveHiveFootprint(drag.session.hive.hiveType).width,
-                height: resolveHiveFootprint(drag.session.hive.hiveType).height,
+                width: resolveHiveFootprint(dragSession.hive.hiveType).width,
+                height: resolveHiveFootprint(dragSession.hive.hiveType).height,
               },
               drag.previewStyle,
             ]}
           >
             <HiveMapMarker
-              hive={drag.session.hive}
-              footprint={resolveHiveFootprint(drag.session.hive.hiveType)}
+              hive={dragSession.hive}
+              footprint={resolveHiveFootprint(dragSession.hive.hiveType)}
+              onArtworkDisplay={() =>
+                drag.markPreviewReady(dragSession.hive.id, dragSession.generation)
+              }
             />
           </Animated.View>
         </View>
