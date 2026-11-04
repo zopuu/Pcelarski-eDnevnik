@@ -7,6 +7,7 @@ import { colors } from '@/shared/theme/colors';
 
 import type { ApiaryLayoutHive } from '../../types/apiary-layout';
 import type { HiveFootprint } from '../geometry/hive-footprints';
+import type { HiveDragHandlers } from '../hooks/use-hive-layout-drag';
 import { useMapViewportGestures } from './map-viewport';
 
 export type HiveMapMarkerProps = {
@@ -16,6 +17,10 @@ export type HiveMapMarkerProps = {
   faceContent?: ReactNode;
   onPress?: () => void;
   onLongPress?: () => void;
+  onPressHive?: (hiveId: string) => void;
+  onLongPressHive?: (hiveId: string) => void;
+  dragHandlers?: HiveDragHandlers;
+  onArtworkDisplay?: () => void;
 };
 
 export const HiveMapMarker = memo(function HiveMapMarker({
@@ -24,34 +29,59 @@ export const HiveMapMarker = memo(function HiveMapMarker({
   faceContent,
   onPress,
   onLongPress,
+  onPressHive,
+  onLongPressHive,
+  dragHandlers,
+  onArtworkDisplay,
 }: HiveMapMarkerProps) {
   const viewportGestures = useMapViewportGestures();
   const gesture = useMemo(() => {
-    if (!onPress && !onLongPress) return null;
+    if (!onPress && !onLongPress && !onPressHive && !onLongPressHive && !dragHandlers) return null;
 
     const tap = Gesture.Tap()
       .maxDistance(4)
       .maxDuration(250)
       .runOnJS(true)
       .onEnd((_event, success) => {
-        if (success) onPress?.();
+        if (success) {
+          onPress?.();
+          onPressHive?.(hive.id);
+        }
       });
 
     if (viewportGestures) {
       tap.requireExternalGestureToFail(viewportGestures.pan, viewportGestures.pinch);
     }
-    if (!onLongPress) return tap;
+    if (dragHandlers) {
+      const drag = Gesture.Pan()
+        .activateAfterLongPress(500)
+        .minDistance(0)
+        .maxPointers(1)
+        .averageTouches(true)
+        .onStart((event) => dragHandlers.start(hive, 'map', event.absoluteX, event.absoluteY))
+        .onUpdate((event) => dragHandlers.update(event.absoluteX, event.absoluteY))
+        .onEnd((event, success) => dragHandlers.end(event.absoluteX, event.absoluteY, success))
+        .onFinalize(() => dragHandlers.finalize());
+      if (viewportGestures) {
+        drag.simultaneousWithExternalGesture(viewportGestures.pan, viewportGestures.pinch);
+      }
+      return Gesture.Simultaneous(drag, tap);
+    }
+    if (!onLongPress && !onLongPressHive) return tap;
 
     const longPress = Gesture.LongPress()
       .numberOfPointers(1)
       .minDuration(500)
       .maxDistance(4)
       .runOnJS(true)
-      .onStart(() => onLongPress());
+      .onStart(() => {
+        onLongPress?.();
+        onLongPressHive?.(hive.id);
+      });
 
     // A long press wins over a tap; movement activates the viewport pan instead.
     return Gesture.Exclusive(longPress, tap);
-  }, [onPress, onLongPress, viewportGestures]);
+  }, [onPress, onLongPress, onPressHive, onLongPressHive, viewportGestures, dragHandlers, hive]);
 
   const illustrationSize = Math.min(footprint.width - 4, footprint.height - 4);
   const illustrationTop = (footprint.height - illustrationSize) / 2 + illustrationSize * 0.125;
@@ -66,14 +96,20 @@ export const HiveMapMarker = memo(function HiveMapMarker({
       accessibilityActions={
         gesture
           ? [
-              ...(onPress ? [{ name: 'activate' as const }] : []),
-              ...(onLongPress ? [{ name: 'longpress' as const }] : []),
+              ...(onPress || onPressHive ? [{ name: 'activate' as const }] : []),
+              ...(onLongPress || onLongPressHive ? [{ name: 'longpress' as const }] : []),
             ]
           : undefined
       }
       onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === 'activate') onPress?.();
-        if (event.nativeEvent.actionName === 'longpress') onLongPress?.();
+        if (event.nativeEvent.actionName === 'activate') {
+          onPress?.();
+          onPressHive?.(hive.id);
+        }
+        if (event.nativeEvent.actionName === 'longpress') {
+          onLongPress?.();
+          onLongPressHive?.(hive.id);
+        }
       }}
       style={[styles.marker, { width: footprint.width, height: footprint.height }]}
     >
@@ -89,6 +125,7 @@ export const HiveMapMarker = memo(function HiveMapMarker({
           colorHex={hive.colorHex}
           size={illustrationSize}
           accessible={false}
+          onDisplay={onArtworkDisplay}
         />
       </View>
       <View

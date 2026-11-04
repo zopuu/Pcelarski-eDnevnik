@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { View } from 'react-native';
 
 import { Image } from 'expo-image';
@@ -10,6 +11,7 @@ type HiveHeaderIllustrationProps = {
   size?: number;
 
   accessible?: boolean;
+  onDisplay?: () => void;
 };
 
 const ILLUSTRATION_SIZE = 128;
@@ -19,8 +21,25 @@ export function HiveHeaderIllustration({
   colorHex,
   size = ILLUSTRATION_SIZE,
   accessible = true,
+  onDisplay,
 }: HiveHeaderIllustrationProps) {
   const scale = size / ILLUSTRATION_SIZE;
+  const displayed = useRef({ background: false, hive: false });
+  const reportDisplay = () => {
+    if (displayed.current.background && displayed.current.hive) onDisplay?.();
+  };
+  const markBackgroundDisplayed = onDisplay
+    ? () => {
+        displayed.current.background = true;
+        reportDisplay();
+      }
+    : undefined;
+  const markHiveDisplayed = onDisplay
+    ? () => {
+        displayed.current.hive = true;
+        reportDisplay();
+      }
+    : undefined;
 
   return (
     <View
@@ -42,6 +61,8 @@ export function HiveHeaderIllustration({
         source={require('../../../../assets/images/hive_background.png')}
         contentFit="contain"
         tintColor={colorHex ?? colors.surfaceWarm}
+        onDisplay={markBackgroundDisplayed}
+        onError={markBackgroundDisplayed}
         style={{
           position: 'absolute',
           width: size,
@@ -57,6 +78,8 @@ export function HiveHeaderIllustration({
       <Image
         source={require('../../../../assets/images/hive.png')}
         contentFit="contain"
+        onDisplay={markHiveDisplayed}
+        onError={markHiveDisplayed}
         style={{
           width: size,
           height: size,

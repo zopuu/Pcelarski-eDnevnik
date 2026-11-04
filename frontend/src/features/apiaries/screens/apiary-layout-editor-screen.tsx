@@ -1,6 +1,8 @@
+/* Reanimated animated refs and styles are passed to views, not read during render. */
+/* eslint-disable react-hooks/refs */
 import { router, useNavigation } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,14 +12,19 @@ import {
   Text,
   useWindowDimensions,
   View,
+  StyleSheet,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useApiaryLayout } from '@/features/apiaries/hooks/use-apiary-layout';
 import { useApiaryLayoutEditor } from '@/features/apiaries/layout/hooks/use-apiary-layout-editor';
 import { ApiaryMap } from '@/features/apiaries/layout/components/apiary-map';
 import { UnplacedHiveTray } from '@/features/apiaries/layout/components/unplaced-hive-tray';
+import { HiveMapMarker } from '@/features/apiaries/layout/components/hive-map-marker';
+import { useHiveLayoutDrag } from '@/features/apiaries/layout/hooks/use-hive-layout-drag';
+import { resolveHiveFootprint } from '@/features/apiaries/layout/geometry/hive-footprints';
 import type { ApiaryLayoutResponse } from '@/features/apiaries/types/apiary-layout';
 import { ApiError } from '@/shared/api/api-error';
 import { AppHeader } from '@/shared/components/navigation/app-header';
@@ -100,6 +107,25 @@ function LoadedEditor({
   onRetry: () => void;
 }) {
   const editor = useApiaryLayoutEditor(layout);
+  const cameraX = useSharedValue(0);
+  const cameraY = useSharedValue(0);
+  const cameraZoom = useSharedValue(1);
+  const camera = useMemo(
+    () => ({ x: cameraX, y: cameraY, zoom: cameraZoom }),
+    [cameraX, cameraY, cameraZoom],
+  );
+  const operations = useMemo(
+    () => ({
+      placeHive: editor.placeHive,
+      moveHive: editor.moveHive,
+      removeHive: editor.removeHive,
+    }),
+    [editor.placeHive, editor.moveHive, editor.removeHive],
+  );
+  const drag = useHiveLayoutDrag(editor.placedHives, operations, camera);
+  const [selectedHiveId, setSelectedHiveId] = useState<string | null>(null);
+  const selectedHive = editor.placedHives.find((hive) => hive.id === selectedHiveId);
+  const selectHive = useCallback((id: string) => setSelectedHiveId(id), []);
   const navigation = useNavigation();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -111,6 +137,12 @@ function LoadedEditor({
   const mapHeight = Math.max(
     180,
     Math.min(windowHeight * 0.6, windowHeight - insets.top - insets.bottom - 64 - 84 - 100 - 128),
+  );
+  const mapStyle = useMemo(
+    () => ({
+      height: mapHeight - 2,
+    }),
+    [mapHeight],
   );
 
   usePreventRemove(editor.isDirty && !allowLeave, ({ data }) => {
@@ -149,9 +181,10 @@ function LoadedEditor({
   }, [editor.isDirty]);
 
   return (
-    <View className="flex-1">
+    <Animated.View ref={drag.rootRef} collapsable={false} className="flex-1">
       <GestureDetector gesture={parentScrollGesture}>
         <ScrollView
+          scrollEnabled={!drag.session}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 }}
         >
@@ -188,17 +221,25 @@ function LoadedEditor({
             </View>
           )}
 
-          <View className="mt-4 overflow-hidden rounded-3xl">
+          <View
+            className="mt-4 overflow-hidden rounded-3xl"
+            style={{
+              borderWidth: 1,
+              borderColor: colors.border,
+              backgroundColor: colors.surfaceWarm,
+            }}
+          >
             <ApiaryMap
               hives={editor.placedHives}
               parentScrollGesture={parentScrollGesture}
-              style={{
-                height: mapHeight,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 24,
-                backgroundColor: colors.surfaceWarm,
-              }}
+              cameraValues={camera}
+              interactionLocked={drag.locked}
+              viewportRef={drag.mapRef}
+              dragHandlers={drag.handlers}
+              activeDragHiveId={drag.activeHiveId}
+              onMarkerReady={drag.markMarkerReady}
+              onHivePress={selectHive}
+              style={mapStyle}
             />
             {editor.totalHiveCount === 0 && (
               <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
@@ -213,8 +254,29 @@ function LoadedEditor({
               </View>
             )}
           </View>
+          {selectedHive && (
+            <Pressable
+              accessibilityRole="button"
+              disabled={Boolean(drag.session)}
+              onPress={() => {
+                editor.removeHive(selectedHive.id);
+                setSelectedHiveId(null);
+              }}
+              className="mt-2 min-h-12 self-start justify-center rounded-xl border border-border bg-surface px-4 active:opacity-80"
+            >
+              <Text className="font-semibold text-foreground">
+                Ukloni sa rasporeda · {selectedHive.label}
+              </Text>
+            </Pressable>
+          )}
           <View className="mt-3">
-            <UnplacedHiveTray hives={editor.unplacedHives} showWhenEmpty />
+            <UnplacedHiveTray
+              hives={editor.unplacedHives}
+              showWhenEmpty
+              dragHandlers={drag.handlers}
+              activeDragHiveId={drag.activeHiveId}
+              trayRef={drag.trayRef}
+            />
           </View>
         </ScrollView>
       </GestureDetector>
@@ -239,6 +301,38 @@ function LoadedEditor({
           <Text className="font-bold text-background">Sačuvaj</Text>
         </Pressable>
       </View>
-    </View>
+      {drag.session && (
+        <View pointerEvents="none" style={styles.dragOverlay}>
+          <Animated.View
+            style={[
+              styles.dragPreview,
+              {
+                width: resolveHiveFootprint(drag.session.hive.hiveType).width,
+                height: resolveHiveFootprint(drag.session.hive.hiveType).height,
+              },
+              drag.previewStyle,
+            ]}
+          >
+            <HiveMapMarker
+              hive={drag.session.hive}
+              footprint={resolveHiveFootprint(drag.session.hive.hiveType)}
+            />
+          </Animated.View>
+        </View>
+      )}
+    </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  dragOverlay: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 20,
+    overflow: 'visible',
+  },
+  dragPreview: {
+    position: 'absolute',
+    borderRadius: 8,
+    transformOrigin: [0, 0, 0],
+  },
+});

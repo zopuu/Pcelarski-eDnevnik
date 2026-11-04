@@ -1,6 +1,9 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { memo, useCallback, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import type { HiveDragHandlers } from '../hooks/use-hive-layout-drag';
 
 import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
 import { colors } from '@/shared/theme/colors';
@@ -19,6 +22,9 @@ export type UnplacedHiveTrayProps = {
   renderCardContent?: (hive: UnplacedApiaryLayoutHive) => ReactNode;
   initiallyExpanded?: boolean;
   showWhenEmpty?: boolean;
+  dragHandlers?: HiveDragHandlers;
+  activeDragHiveId?: SharedValue<string | null>;
+  trayRef?: Ref<View>;
 };
 
 type HiveTrayCardProps = {
@@ -28,6 +34,8 @@ type HiveTrayCardProps = {
   content?: ReactNode;
   onPress?: (hiveId: string) => void;
   onLongPress?: (hiveId: string) => void;
+  dragHandlers?: HiveDragHandlers;
+  activeDragHiveId?: SharedValue<string | null>;
 };
 
 const HiveTrayCard = memo(function HiveTrayCard({
@@ -37,11 +45,31 @@ const HiveTrayCard = memo(function HiveTrayCard({
   content,
   onPress,
   onLongPress,
+  dragHandlers,
+  activeDragHiveId,
 }: HiveTrayCardProps) {
   const longPressFired = useRef(false);
-  const interactive = !disabled && Boolean(onPress || onLongPress);
+  const interactive = !disabled && Boolean(onPress || onLongPress || dragHandlers);
+  const sourceStyle = useAnimatedStyle(() => ({
+    opacity: activeDragHiveId?.value === hive.id ? 0 : 1,
+  }));
+  const dragGesture = useMemo(
+    () =>
+      dragHandlers && !disabled
+        ? Gesture.Pan()
+            .activateAfterLongPress(500)
+            .minDistance(0)
+            .maxPointers(1)
+            .averageTouches(true)
+            .onStart((event) => dragHandlers.start(hive, 'tray', event.absoluteX, event.absoluteY))
+            .onUpdate((event) => dragHandlers.update(event.absoluteX, event.absoluteY))
+            .onEnd((event, success) => dragHandlers.end(event.absoluteX, event.absoluteY, success))
+            .onFinalize(() => dragHandlers.finalize())
+        : null,
+    [dragHandlers, disabled, hive],
+  );
 
-  return (
+  const card = (
     <Pressable
       disabled={!interactive}
       accessibilityRole={interactive ? 'button' : 'text'}
@@ -68,7 +96,7 @@ const HiveTrayCard = memo(function HiveTrayCard({
       }}
       onLongPress={() => {
         longPressFired.current = true;
-        onLongPress?.(hive.id);
+        if (!dragHandlers) onLongPress?.(hive.id);
       }}
       delayLongPress={500}
       className={`min-h-20 flex-row items-center rounded-2xl border bg-surface px-2 py-2 active:opacity-80 ${
@@ -94,13 +122,19 @@ const HiveTrayCard = memo(function HiveTrayCard({
       )}
     </Pressable>
   );
+  const wrappedCard = <Animated.View style={sourceStyle}>{card}</Animated.View>;
+  return dragGesture ? (
+    <GestureDetector gesture={dragGesture}>{wrappedCard}</GestureDetector>
+  ) : (
+    wrappedCard
+  );
 });
 
 function CardSeparator() {
   return <View style={{ width: CARD_GAP }} />;
 }
 
-export function UnplacedHiveTray({
+export const UnplacedHiveTray = memo(function UnplacedHiveTray({
   hives,
   onHivePress,
   onHiveLongPress,
@@ -109,6 +143,9 @@ export function UnplacedHiveTray({
   renderCardContent,
   initiallyExpanded = true,
   showWhenEmpty = false,
+  dragHandlers,
+  activeDragHiveId,
+  trayRef,
 }: UnplacedHiveTrayProps) {
   const [expanded, setExpanded] = useState(initiallyExpanded);
 
@@ -121,15 +158,29 @@ export function UnplacedHiveTray({
         content={renderCardContent?.(item)}
         onPress={onHivePress}
         onLongPress={onHiveLongPress}
+        dragHandlers={dragHandlers}
+        activeDragHiveId={activeDragHiveId}
       />
     ),
-    [disabledHiveIds, selectedHiveIds, renderCardContent, onHivePress, onHiveLongPress],
+    [
+      disabledHiveIds,
+      selectedHiveIds,
+      renderCardContent,
+      onHivePress,
+      onHiveLongPress,
+      dragHandlers,
+      activeDragHiveId,
+    ],
   );
 
   if (hives.length === 0 && !showWhenEmpty) return null;
 
   return (
-    <View className="w-full overflow-hidden rounded-2xl border border-border bg-surface">
+    <View
+      ref={trayRef}
+      collapsable={false}
+      className="w-full overflow-hidden rounded-2xl border border-border bg-surface"
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Nepostavljene košnice (${hives.length})`}
@@ -173,4 +224,4 @@ export function UnplacedHiveTray({
       </View>
     </View>
   );
-}
+});

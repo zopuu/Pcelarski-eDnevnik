@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode, type Ref } from 'react';
 import {
   StyleSheet,
   View,
@@ -36,6 +36,16 @@ export type MapViewportProps = {
   style?: StyleProp<ViewStyle>;
   /** Pass the host scroll gesture when the map is nested in a scrollable screen. */
   parentScrollGesture?: GestureType;
+  /** Optional editor access to the same camera used by the viewport renderer. */
+  cameraValues?: MapCameraValues;
+  interactionLocked?: SharedValue<boolean>;
+  viewportRef?: Ref<View>;
+};
+
+export type MapCameraValues = {
+  x: SharedValue<number>;
+  y: SharedValue<number>;
+  zoom: SharedValue<number>;
 };
 
 const MapGesturesContext = createContext<{ pan: GestureType; pinch: GestureType } | null>(null);
@@ -68,15 +78,21 @@ export function MapViewport({
   contentBounds,
   style,
   parentScrollGesture,
+  cameraValues,
+  interactionLocked,
+  viewportRef,
 }: MapViewportProps) {
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const viewportWidth = useSharedValue(0);
   const viewportHeight = useSharedValue(0);
-  const cameraX = useSharedValue(INITIAL_MAP_CAMERA.x);
-  const cameraY = useSharedValue(INITIAL_MAP_CAMERA.y);
+  const localCameraX = useSharedValue(INITIAL_MAP_CAMERA.x);
+  const localCameraY = useSharedValue(INITIAL_MAP_CAMERA.y);
   const panRawX = useSharedValue(INITIAL_MAP_CAMERA.x);
   const panRawY = useSharedValue(INITIAL_MAP_CAMERA.y);
-  const zoom = useSharedValue(INITIAL_MAP_CAMERA.zoom);
+  const localZoom = useSharedValue(INITIAL_MAP_CAMERA.zoom);
+  const cameraX = cameraValues?.x ?? localCameraX;
+  const cameraY = cameraValues?.y ?? localCameraY;
+  const zoom = cameraValues?.zoom ?? localZoom;
   const isPanning = useSharedValue(false);
   const isPinching = useSharedValue(false);
   const pinchStartZoom = useSharedValue(INITIAL_MAP_CAMERA.zoom);
@@ -100,6 +116,7 @@ export function MapViewport({
     .maxPointers(1)
     .averageTouches(true)
     .onStart(() => {
+      if (interactionLocked?.value) return;
       cancelAnimation(cameraX);
       cancelAnimation(cameraY);
       isPanning.value = true;
@@ -107,7 +124,7 @@ export function MapViewport({
       panRawY.value = cameraY.value;
     })
     .onChange((event) => {
-      if (isPinching.value || event.numberOfPointers !== 1) return;
+      if (interactionLocked?.value || isPinching.value || event.numberOfPointers !== 1) return;
       panRawX.value -= event.changeX / zoom.value;
       panRawY.value -= event.changeY / zoom.value;
       const next = {
@@ -125,11 +142,12 @@ export function MapViewport({
     })
     .onFinalize(() => {
       isPanning.value = false;
-      if (!isPinching.value) settleCamera();
+      if (!interactionLocked?.value && !isPinching.value) settleCamera();
     });
 
   const pinch = Gesture.Pinch()
     .onStart((event) => {
+      if (interactionLocked?.value) return;
       cancelAnimation(cameraX);
       cancelAnimation(cameraY);
       isPinching.value = true;
@@ -142,6 +160,7 @@ export function MapViewport({
       pinchAnchorY.value = anchor.y;
     })
     .onUpdate((event) => {
+      if (interactionLocked?.value) return;
       const nextZoom = Math.min(
         MAP_CAMERA_LIMITS.maxZoom,
         Math.max(MAP_CAMERA_LIMITS.minZoom, pinchStartZoom.value * event.scale),
@@ -164,7 +183,7 @@ export function MapViewport({
       isPinching.value = false;
       panRawX.value = cameraX.value;
       panRawY.value = cameraY.value;
-      if (!isPanning.value) settleCamera();
+      if (!interactionLocked?.value && !isPanning.value) settleCamera();
     });
 
   if (parentScrollGesture) {
@@ -224,7 +243,12 @@ export function MapViewport({
 
   return (
     <GestureDetector gesture={gesture}>
-      <View collapsable={false} onLayout={handleLayout} style={[styles.viewport, style]}>
+      <View
+        ref={viewportRef}
+        collapsable={false}
+        onLayout={handleLayout}
+        style={[styles.viewport, style]}
+      >
         <Animated.View
           onLayout={handleContentLayout}
           pointerEvents="box-none"

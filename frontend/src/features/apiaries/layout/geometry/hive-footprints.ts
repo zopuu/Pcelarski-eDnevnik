@@ -5,5 +5,6 @@ export const STANDARD_HIVE_FOOTPRINT: HiveFootprint = { width: 80, height: 80 };
 export const MINIMUM_HIVE_SPACING = 16;
 
 export function resolveHiveFootprint(_hiveType: string): HiveFootprint {
+  'worklet';
   return STANDARD_HIVE_FOOTPRINT;
 }
