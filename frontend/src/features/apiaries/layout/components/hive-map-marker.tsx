@@ -1,6 +1,7 @@
 import { memo, useMemo, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { HiveHeaderIllustration } from '@/features/hives/components/hive-header-illustration';
 import { colors } from '@/shared/theme/colors';
@@ -20,6 +21,7 @@ export type HiveMapMarkerProps = {
   onPressHive?: (hiveId: string) => void;
   onLongPressHive?: (hiveId: string) => void;
   dragHandlers?: HiveDragHandlers;
+  interactionLocked?: SharedValue<boolean>;
   onArtworkDisplay?: () => void;
 };
 
@@ -32,6 +34,7 @@ export const HiveMapMarker = memo(function HiveMapMarker({
   onPressHive,
   onLongPressHive,
   dragHandlers,
+  interactionLocked,
   onArtworkDisplay,
 }: HiveMapMarkerProps) {
   const viewportGestures = useMapViewportGestures();
@@ -43,7 +46,7 @@ export const HiveMapMarker = memo(function HiveMapMarker({
       .maxDuration(250)
       .runOnJS(true)
       .onEnd((_event, success) => {
-        if (success) {
+        if (success && !interactionLocked?.value) {
           onPress?.();
           onPressHive?.(hive.id);
         }
@@ -81,7 +84,16 @@ export const HiveMapMarker = memo(function HiveMapMarker({
 
     // A long press wins over a tap; movement activates the viewport pan instead.
     return Gesture.Exclusive(longPress, tap);
-  }, [onPress, onLongPress, onPressHive, onLongPressHive, viewportGestures, dragHandlers, hive]);
+  }, [
+    onPress,
+    onLongPress,
+    onPressHive,
+    onLongPressHive,
+    viewportGestures,
+    dragHandlers,
+    interactionLocked,
+    hive,
+  ]);
 
   const illustrationSize = Math.min(footprint.width - 4, footprint.height - 4);
   const illustrationTop = (footprint.height - illustrationSize) / 2 + illustrationSize * 0.125;
@@ -102,6 +114,7 @@ export const HiveMapMarker = memo(function HiveMapMarker({
           : undefined
       }
       onAccessibilityAction={(event) => {
+        if (interactionLocked?.value) return;
         if (event.nativeEvent.actionName === 'activate') {
           onPress?.();
           onPressHive?.(hive.id);

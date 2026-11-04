@@ -30,8 +30,11 @@ import {
 export type MapViewportProps = {
   /** Children use absolute positions in logical map units. */
   children?: ReactNode;
+  overlay?: ReactNode;
   /** Union of child footprints, used to limit panning past visible content. */
   contentBounds?: MapContentBounds;
+  /** Allows an editing host to navigate beyond currently positioned content. */
+  extendPositiveCanvas?: boolean;
   /** The host supplies height; the viewport fills its available width. */
   style?: StyleProp<ViewStyle>;
   /** Pass the host scroll gesture when the map is nested in a scrollable screen. */
@@ -75,7 +78,9 @@ function updateViewportSize(
 
 export function MapViewport({
   children,
+  overlay,
   contentBounds,
+  extendPositiveCanvas = false,
   style,
   parentScrollGesture,
   cameraValues,
@@ -95,6 +100,7 @@ export function MapViewport({
   const zoom = cameraValues?.zoom ?? localZoom;
   const isPanning = useSharedValue(false);
   const isPinching = useSharedValue(false);
+  const cameraBounds = extendPositiveCanvas ? undefined : contentBounds;
   const pinchStartZoom = useSharedValue(INITIAL_MAP_CAMERA.zoom);
   const pinchAnchorX = useSharedValue(0);
   const pinchAnchorY = useSharedValue(0);
@@ -104,7 +110,7 @@ export function MapViewport({
     const limits = getCameraLimits(
       zoom.value,
       { width: viewportWidth.value, height: viewportHeight.value },
-      contentBounds,
+      cameraBounds,
     );
     const settled = clampCameraPosition({ x: cameraX.value, y: cameraY.value }, limits);
     cameraX.value = withTiming(settled.x, { duration: MAP_CAMERA_LIMITS.settleDurationMs });
@@ -134,7 +140,7 @@ export function MapViewport({
       const limits = getCameraLimits(
         zoom.value,
         { width: viewportWidth.value, height: viewportHeight.value },
-        contentBounds,
+        cameraBounds,
       );
       const softened = softenCameraPosition(next, limits, zoom.value);
       cameraX.value = softened.x;
@@ -172,7 +178,7 @@ export function MapViewport({
       const limits = getCameraLimits(
         nextZoom,
         { width: viewportWidth.value, height: viewportHeight.value },
-        contentBounds,
+        cameraBounds,
       );
       const softened = softenCameraPosition(next, limits, nextZoom);
       zoom.value = nextZoom;
@@ -211,7 +217,7 @@ export function MapViewport({
       cameraX,
       cameraY,
       zoom,
-      contentBounds,
+      cameraBounds,
     );
     setViewport((previous) =>
       previous.width === width && previous.height === height ? previous : { width, height },
@@ -228,7 +234,7 @@ export function MapViewport({
       cameraX,
       cameraY,
       zoom,
-      contentBounds,
+      cameraBounds,
     );
   };
 
@@ -258,6 +264,7 @@ export function MapViewport({
             {children}
           </MapGesturesContext.Provider>
         </Animated.View>
+        {overlay}
       </View>
     </GestureDetector>
   );

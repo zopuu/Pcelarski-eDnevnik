@@ -26,6 +26,8 @@ export type ApiaryMapProps = {
   hives: readonly ApiaryLayoutHive[];
   /** The host owns the viewport height and any surrounding visual treatment. */
   style?: StyleProp<ViewStyle>;
+  overlay?: ReactNode;
+  extendPositiveCanvas?: boolean;
   parentScrollGesture?: GestureType;
   onHivePress?: (hiveId: string) => void;
   onHiveLongPress?: (hiveId: string) => void;
@@ -42,6 +44,8 @@ export type ApiaryMapProps = {
 export const ApiaryMap = memo(function ApiaryMap({
   hives,
   style,
+  overlay,
+  extendPositiveCanvas,
   parentScrollGesture,
   onHivePress,
   onHiveLongPress,
@@ -74,6 +78,8 @@ export const ApiaryMap = memo(function ApiaryMap({
   return (
     <MapViewport
       contentBounds={contentBounds}
+      overlay={overlay}
+      extendPositiveCanvas={extendPositiveCanvas}
       parentScrollGesture={parentScrollGesture}
       style={style}
       cameraValues={cameraValues}
@@ -89,6 +95,7 @@ export const ApiaryMap = memo(function ApiaryMap({
           onHivePress={onHivePress}
           onHiveLongPress={onHiveLongPress}
           dragHandlers={dragHandlers}
+          interactionLocked={interactionLocked}
           activeDragHiveId={activeDragHiveId}
           onMarkerReady={onMarkerReady}
         />
@@ -104,6 +111,7 @@ function PositionedMarker({
   onHivePress,
   onHiveLongPress,
   dragHandlers,
+  interactionLocked,
   activeDragHiveId,
   onMarkerReady,
 }: {
@@ -113,6 +121,7 @@ function PositionedMarker({
   onHivePress?: (id: string) => void;
   onHiveLongPress?: (id: string) => void;
   dragHandlers?: HiveDragHandlers;
+  interactionLocked?: SharedValue<boolean>;
   activeDragHiveId?: SharedValue<string | null>;
   onMarkerReady?: (hiveId: string, x: number, y: number) => void;
 }) {
@@ -152,6 +161,7 @@ function PositionedMarker({
         onPressHive={onHivePress}
         onLongPressHive={onHiveLongPress}
         dragHandlers={dragHandlers}
+        interactionLocked={interactionLocked}
         onArtworkDisplay={
           onMarkerReady
             ? () => {

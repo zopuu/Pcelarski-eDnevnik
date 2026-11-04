@@ -1,6 +1,7 @@
 /* Reanimated animated refs and styles are passed to views, not read during render. */
 /* eslint-disable react-hooks/refs */
 import { router, useNavigation } from 'expo-router';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -21,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApiaryLayout } from '@/features/apiaries/hooks/use-apiary-layout';
 import { useApiaryLayoutEditor } from '@/features/apiaries/layout/hooks/use-apiary-layout-editor';
 import { ApiaryMap } from '@/features/apiaries/layout/components/apiary-map';
+import { AlignmentGuides } from '@/features/apiaries/layout/components/alignment-guides';
 import { UnplacedHiveTray } from '@/features/apiaries/layout/components/unplaced-hive-tray';
 import { HiveMapMarker } from '@/features/apiaries/layout/components/hive-map-marker';
 import { useHiveLayoutDrag } from '@/features/apiaries/layout/hooks/use-hive-layout-drag';
@@ -193,6 +195,22 @@ function LoadedEditor({
             Postavljeno: {editor.placedHives.length} · Nepostavljeno: {editor.unplacedHives.length}{' '}
             · Ukupno: {editor.totalHiveCount}
           </Text>
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityLabel="Magnetno poravnanje"
+            accessibilityState={{ checked: drag.magneticEnabled }}
+            onPress={() => drag.setMagneticEnabled(!drag.magneticEnabled)}
+            className="mt-2 min-h-11 flex-row items-center self-start rounded-xl border border-border bg-surface px-3 active:opacity-80"
+          >
+            <Ionicons
+              name="magnet-outline"
+              size={18}
+              color={drag.magneticEnabled ? colors.primary : colors.muted}
+            />
+            <Text className="ml-2 text-sm font-semibold text-foreground">
+              Magnetno poravnanje: {drag.magneticEnabled ? 'uključeno' : 'isključeno'}
+            </Text>
+          </Pressable>
 
           {staleLayout && (
             <View className="mt-3 rounded-2xl border border-warning bg-surface px-4 py-3">
@@ -231,6 +249,8 @@ function LoadedEditor({
           >
             <ApiaryMap
               hives={editor.placedHives}
+              overlay={<AlignmentGuides alignment={drag.alignment} camera={camera} />}
+              extendPositiveCanvas
               parentScrollGesture={parentScrollGesture}
               cameraValues={camera}
               interactionLocked={drag.locked}
